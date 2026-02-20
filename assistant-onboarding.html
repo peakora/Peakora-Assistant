@@ -1,178 +1,143 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Peakora Onboarding</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="assistant.css">
-</head>
-<body>
-  <div class="assistant-shell">
-    <div class="assistant-card">
-      <header class="assistant-header">
-        <div class="brand">
-          <div class="brand-mark"></div>
-          <div>
-            <div class="brand-name">PEAKORA</div>
-            <div class="brand-tagline">Gentle guidance. Real momentum.</div>
-          </div>
-        </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Peakora Assistant — Onboarding</title>
+    <link rel="stylesheet" href="assistant.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="theme-color" content="#ffffff" />
+  </head>
+
+  <body>
+    <main id="onboarding-root" class="card">
+      <header class="card-header">
+        <img src="assets/peakora-logo.png" alt="Peakora" class="logo" />
+        <h1>Welcome to Peakora Assistant</h1>
+        <p class="muted">Let's get you set up — a few quick questions and you'll be ready.</p>
       </header>
 
-      <div class="assistant-progress">
-        <div class="progress-label">Step 1 of 13</div>
-        <div class="progress-bar"><div class="progress-fill"></div></div>
-      </div>
+      <section id="step-1" class="onboarding-step">
+        <h2>1. Tell us about your goal</h2>
+        <p class="muted">What do you want the assistant to help you with today?</p>
 
-      <main id="step-container" class="assistant-body"></main>
+        <div class="form-row">
+          <label for="goal-input">Primary goal</label>
+          <input id="goal-input" type="text" placeholder="e.g., plan a 30-day fitness routine" />
+        </div>
 
-      <footer class="assistant-footer">
-        © 2026 Peakora™ — For a Better You.
+        <div class="form-row">
+          <label for="audience-select">Who is this for?</label>
+          <select id="audience-select">
+            <option value="self">Myself</option>
+            <option value="team">Team</option>
+            <option value="client">Client</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button id="to-step-2" class="btn primary">Next</button>
+        </div>
+      </section>
+
+      <section id="step-2" class="onboarding-step hidden">
+        <h2>2. Preferences</h2>
+        <p class="muted">Small preferences to personalize your plan.</p>
+
+        <div class="form-row">
+          <label for="tone-select">Tone</label>
+          <select id="tone-select">
+            <option value="friendly">Friendly</option>
+            <option value="professional">Professional</option>
+            <option value="concise">Concise</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label for="length-range">Plan length (weeks)</label>
+          <input id="length-range" type="range" min="1" max="52" value="4" />
+          <span id="length-value">4</span>
+        </div>
+
+        <div class="actions">
+          <button id="back-to-step-1" class="btn">Back</button>
+          <button id="to-step-3" class="btn primary">Next</button>
+        </div>
+      </section>
+
+      <section id="step-3" class="onboarding-step hidden">
+        <h2>3. Confirm and create</h2>
+        <p class="muted">Review your choices and create your first plan.</p>
+
+        <div id="summary" class="card">
+          <h3>Summary</h3>
+          <p><strong>Goal:</strong> <span id="summary-goal">—</span></p>
+          <p><strong>Audience:</strong> <span id="summary-audience">—</span></p>
+          <p><strong>Tone:</strong> <span id="summary-tone">—</span></p>
+          <p><strong>Length:</strong> <span id="summary-length">—</span> weeks</p>
+        </div>
+
+        <div class="actions">
+          <button id="back-to-step-2" class="btn">Back</button>
+          <button id="create-plan" class="btn primary">Create plan</button>
+        </div>
+      </section>
+
+      <footer class="card-footer muted">
+        <p>By continuing you agree to our <a href="terms.html">terms</a> and <a href="privacy.html">privacy policy</a>.</p>
       </footer>
-    </div>
-  </div>
+    </main>
 
-  <script>
-    const steps = [
-      "welcome","explanation","goal","challenge","time","insight",
-      "extended1","extended2","email","processing","recommendations",
-      "pricing","done"
-    ];
+    <!-- Inline scripts and small helpers -->
+    <script>
+      (function () {
+        const qs = (s) => document.querySelector(s);
+        const steps = Array.from(document.querySelectorAll('.onboarding-step'));
+        let current = 0;
 
-    const STORAGE_KEY = "peakora_assistant_state_v1";
-    const state = { stepIndex: 0, answers: {}, email: "", completed: false };
+        function showStep(i) {
+          steps.forEach((s, idx) => s.classList.toggle('hidden', idx !== i));
+          current = i;
+        }
 
-    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function loadState(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return false;
-      try{ Object.assign(state, JSON.parse(raw)); return true; }catch{ return false; }
-    }
-    function clearState(){ localStorage.removeItem(STORAGE_KEY); state.stepIndex=0; state.answers={}; state.email=""; state.completed=false; }
+        qs('#to-step-2').addEventListener('click', () => {
+          const goal = qs('#goal-input').value.trim();
+          if (!goal) {
+            alert('Please enter a primary goal to continue.');
+            return;
+          }
+          qs('#summary-goal').textContent = goal;
+          qs('#summary-audience').textContent = qs('#audience-select').value;
+          showStep(1);
+        });
 
-    function goToStepKey(key){
-      const index = steps.indexOf(key);
-      if(index>=0){ state.stepIndex=index; saveState(); renderStep(); }
-    }
-    function goToPrevious(){ if(state.stepIndex>0){ state.stepIndex--; saveState(); renderStep(); } }
+        qs('#back-to-step-1').addEventListener('click', () => showStep(0));
+        qs('#to-step-3').addEventListener('click', () => {
+          qs('#summary-tone').textContent = qs('#tone-select').value;
+          qs('#summary-length').textContent = qs('#length-range').value;
+          showStep(2);
+        });
+        qs('#back-to-step-2').addEventListener('click', () => showStep(1));
 
-    function setProgress(){
-      const key = steps[state.stepIndex];
-      const bar=document.querySelector(".progress-fill");
-      const label=document.querySelector(".progress-label");
-      if(!bar||!label) return;
-      const pct=((state.stepIndex+1)/steps.length)*100;
-      bar.style.width=pct+"%";
-      label.textContent="Step "+(state.stepIndex+1)+" of "+steps.length;
-    }
+        qs('#length-range').addEventListener('input', (e) => {
+          qs('#length-value').textContent = e.target.value;
+        });
 
-    function renderStep(){
-      const container=document.getElementById("step-container");
-      const key=steps[state.stepIndex];
-      setProgress();
+        qs('#create-plan').addEventListener('click', () => {
+          const payload = {
+            goal: qs('#goal-input').value.trim(),
+            audience: qs('#audience-select').value,
+            tone: qs('#tone-select').value,
+            length: parseInt(qs('#length-range').value, 10),
+          };
+          // simple local save for now
+          localStorage.setItem('peakora_onboarding', JSON.stringify(payload));
+          window.location.href = 'assistant.html';
+        });
 
-      if(key==="welcome"){
-        container.innerHTML='<div class="step"><h1>Hi, I’m Peakora.</h1><p>Let’s take a gentle step toward the version of you that feels more grounded and steady.</p><div class="actions"><button class="btn primary" onclick="goToStepKey(\'explanation\')">Begin</button></div></div>';
-        return;
-      }
-      if(key==="explanation"){
-        container.innerHTML='<div class="step"><h2>How this works</h2><p>I’ll ask a few simple questions about your energy, your time, and what’s been weighing on you.</p><p>Then I’ll shape a 7-day plan that feels doable, not overwhelming.</p><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="goToStepKey(\'goal\')">Continue</button></div></div>';
-        return;
-      }
-      if(key==="goal"){
-        container.innerHTML='<div class="step"><h2>What’s one area you’d like to feel better in?</h2><textarea class="input" id="goal-input"></textarea><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="handleGoal()">Continue</button></div></div>';
-        return;
-      }
-      if(key==="challenge"){
-        container.innerHTML='<div class="step"><h2>What’s been making this hard lately?</h2><textarea class="input" id="challenge-input"></textarea><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="handleChallenge()">Continue</button></div></div>';
-        return;
-      }
-      if(key==="time"){
-        container.innerHTML='<div class="step"><h2>How much time feels doable?</h2><div class="options"><button class="btn ghost" onclick="handleTime(\'5–10 minutes\')">5–10 minutes</button><button class="btn ghost" onclick="handleTime(\'15–20 minutes\')">15–20 minutes</button><button class="btn ghost" onclick="handleTime(\'30+ minutes\')">30+ minutes</button></div></div>';
-        return;
-      }
-      if(key==="insight"){
-        container.innerHTML='<div class="step"><h2>Anything else I should know?</h2><textarea class="input" id="insight-input"></textarea><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="handleInsight()">Continue</button></div></div>';
-        return;
-      }
-      if(key==="extended1"){
-        container.innerHTML='<div class="step"><h2>What would feel like a gentle win?</h2><textarea class="input" id="extended1-input"></textarea><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="handleExtended1()">Continue</button></div></div>';
-        return;
-      }
-      if(key==="extended2"){
-        container.innerHTML='<div class="step"><h2>What tends to throw you off?</h2><textarea class="input" id="extended2-input"></textarea><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="handleExtended2()">Continue</button></div></div>';
-        return;
-      }
-      if(key==="email"){
-        container.innerHTML='<div class="step"><h2>Where should I send your plan?</h2><input type="email" class="input" id="email-input" value="'+(state.email||"")+'"><div class="actions"><button class="btn secondary" onclick="goToPrevious()">Back</button><button class="btn primary" onclick="handleEmail()">Send my plan</button></div></div>';
-        return;
-      }
-      if(key==="processing"){
-        container.innerHTML='<div class="step step-centered"><h2>One moment</h2><p>I’m shaping your plan…</p><div class="loader"></div></div>';
-        setTimeout(()=>goToStepKey("recommendations"),2000);
-        return;
-      }
-      if(key==="recommendations"){
-        container.innerHTML='<div class="step"><h2>Your plan is ready</h2><p>Preview: daily focus, anchor habit, forgiveness for off days.</p><div class="actions"><button class="btn primary" onclick="goToStepKey(\'pricing\')">Continue</button></div></div>';
-        return;
-      }
-      if(key==="pricing"){
-        container.innerHTML='<div class="step"><h2>What’s coming next</h2><p>Peakora is free now. Soon you’ll be able to save multiple plans, track check-ins, and more.</p><div class="actions"><button class="btn primary" onclick="goToStepKey(\'done\')">Finish</button></div></div>';
-        return;
-      }
-      if(key==="done"){
-        state.completed=true; saveState();
-        container.innerHTML='<div class="step step-centered"><h2>Your plan is on its way</h2><p>You showed up for yourself today.</p><a href="assistant-home.html" class="btn primary">Go to home</a></div>';
-        return;
-      }
-    }
-
-    function handleGoal(){ const v=document.getElementById("goal-input").value.trim(); if(!v){alert("Please share your goal.");return;} state.answers.goal=v; saveState(); goToStepKey("challenge"); }
-    function handleChallenge(){ const v=document.getElementById("challenge-input").value.trim(); if(!v){alert("Please share your challenge.");return;} state.answers.challenge=v; saveState(); goToStepKey("time"); }
-    function handleTime(choice){ state.answers.time=choice; saveState(); goToStepKey("insight"); }
-    function handleInsight(){ state.answers.insight=document.getElementById("insight-input").value.trim(); saveState(); goToStepKey("extended1"); }
-        function handleExtended1(){
-      state.answers.extended1=document.getElementById("extended1-input").value.trim();
-      saveState();
-      goToStepKey("extended2");
-    }
-
-    function handleExtended2(){
-      state.answers.extended2=document.getElementById("extended2-input").value.trim();
-      saveState();
-      goToStepKey("email");
-    }
-
-    function handleEmail(){
-      const v=document.getElementById("email-input").value.trim();
-      if(!v || v.indexOf("@")===-1){
-        alert("Please enter a valid email address.");
-        return;
-      }
-      state.email=v;
-      saveState();
-      goToStepKey("processing");
-    }
-
-    function restartOnboarding(){
-      clearState();
-      state.stepIndex=steps.indexOf("welcome");
-      saveState();
-      renderStep();
-    }
-
-    document.addEventListener("DOMContentLoaded",function(){
-      const hasState=loadState();
-      if(!hasState){ goToStepKey("welcome"); return; }
-      if(state.completed){ window.location.href="assistant-home.html"; return; }
-      renderStep();
-    });
-  </script>
-
-  <script>
-    if("serviceWorker" in navigator){
-      navigator.serviceWorker.register("./service-worker.js");
-    }
-  </script>
-</body>
+        // initialize
+        showStep(0);
+      })();
+    </script>
+  </body>
 </html>
