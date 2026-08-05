@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — Peakora</title>
+  <link rel="stylesheet" href="aboutus.css">
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let theme = urlParams.get('theme');
+      if (!theme) {
+        try { theme = localStorage.getItem('peakora_theme'); } catch(e){}
+      }
+      if (!theme) theme = 'sunrise';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (document.body) document.body.setAttribute('data-theme', theme);
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.setAttribute('data-theme', theme);
+      });
+    })();
+  </script>
+</head>
+
+<body>
+
+  <section class="page-section">
+    <h1 class="page-title">About Peakora</h1>
+    <p class="page-subtitle">A calmer way to grow</p>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      Peakora was created for people who want to feel better, think clearer, and reconnect with themselves.
+      Life can feel heavy at times. We built Peakora to be a place where you can slow down, breathe, and find your way again.
+    </p>
+
+    <p class="page-text">
+      Our goal is simple. We want to help you understand your emotions, build healthier habits, and feel more grounded in your daily life.
+      We believe that small steps, taken consistently, can change everything.
+    </p>
+
+    <h2 class="page-heading">Why Peakora Exists</h2>
+    <p class="page-text">
+      Many people struggle in silence. They feel overwhelmed, stressed, or disconnected, but they do not know where to start.
+      Peakora was created to offer a gentle starting point. A place that feels safe, warm, and human.
+      A place where you can explore your inner world without pressure or judgment.
+    </p>
+
+    <h2 class="page-heading">Our Philosophy</h2>
+    <p class="page-text">
+      We believe in clarity, compassion, and emotional honesty.
+      Growth does not come from forcing yourself to be better.
+      It comes from understanding yourself, accepting your feelings, and taking small steps forward.
+    </p>
+
+    <ul class="page-list">
+      <li>Clarity helps you see what matters.</li>
+      <li>Compassion helps you stay gentle with yourself.</li>
+      <li>Consistency helps you build real change.</li>
+    </ul>
+
+    <h2 class="page-heading">What Makes Peakora Different</h2>
+    <p class="page-text">
+      Peakora is not just another wellness tool.
+      It is a companion that grows with you.
+      Every part of the experience is designed to feel calm, supportive, and emotionally grounded.
+    </p>
+
+    <ul class="page-list">
+      <li>A gentle tone that respects your emotional space.</li>
+      <li>Simple guidance that reduces overwhelm.</li>
+      <li>Tools that help you understand yourself better.</li>
+      <li>A design that feels peaceful and human.</li>
+    </ul>
+
+    <h2 class="page-heading">The Peakora Assistant</h2>
+    <p class="page-text">
+      The Peakora Assistant is your personal guide.
+      It helps you reflect, understand your emotions, and take small steps toward a better version of yourself.
+      It is not here to judge you or rush you.
+      It is here to support you, one moment at a time.
+    </p>
+
+    <h2 class="page-heading">Our Promise & Contact</h2>
+    <p class="page-text">
+      We promise to keep Peakora simple, honest, and human.
+      We will continue improving the experience with care, always focusing on what truly helps people feel better.
+      If you ever have questions or need assistance, reach out to our team at <strong>peakora.network@gmail.com</strong>.
+    </p>
+
+    <p class="page-text">
+      Thank you for being here.
+      Your journey matters, and we are honored to be part of it.
+    </p>
+
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Peakora Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assistant.css">
+</head>
+<body>
+  <div class="assistant-shell">
+    <div class="assistant-card">
+      <header class="assistant-header">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="brand-name">PEAKORA</div>
+            <div class="brand-tagline">Gentle guidance. Real momentum.</div>
+          </div>
+        </div>
+      </header>
+
+      <main id="step-container" class="assistant-body"></main>
+
+      <footer class="assistant-footer">
+        © 2026 Peakora™ — For a Better You.
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const steps = [
+      "home","daily_intro","daily_checkin","daily_summary",
+      "breathing","journal","reset_focus","install_prompt",
+      "plan_full","exit"
+    ];
+
+    const STORAGE_KEY = "peakora_assistant_state_v1";
+    const CHECKINS_KEY = "peakora_checkins_v1";
+
+    const state = {
+      stepIndex: 0,
+      answers: {},
+      email: "",
+      completed: true,
+      installPromptShown: false,
+      plan: null,
+      planStartDate: null
+    };
+
+    let focusTools=false, focusPlan=false;
+
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function loadState(){
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      try{ Object.assign(state, JSON.parse(raw)); return true; }catch{ return false; }
+    }
+    function clearState(){ localStorage.removeItem(STORAGE_KEY); state.stepIndex=0; state.answers={}; state.email=""; state.completed=false; state.plan=null; state.planStartDate=null; }
+
+    function getCheckins(){ const raw=localStorage.getItem(CHECKINS_KEY); if(!raw) return []; try{ return JSON.parse(raw)||[]; }catch{ return []; } }
+    function addCheckin(feeling){ const list=getCheckins(); const today=new Date().toISOString().slice(0,10); list.push({date:today,feeling}); localStorage.setItem(CHECKINS_KEY, JSON.stringify(list.slice(-30))); }
+
+    // Mood helpers
+    function getMoodFamily(feeling){ const f=(feeling||"").toLowerCase(); if(!f) return "neutral"; if(f.includes("tired")||f.includes("sad")) return "heavy"; if(f.includes("wired")||f.includes("anxious")) return "anxious"; if(f.includes("hopeful")||f.includes("better")||f.includes("light")) return "hopeful"; if(f.includes("ready")||f.includes("strong")||f.includes("energ")) return "energized"; return "neutral"; }
+    function getMoodColor(family){ switch(family){ case "heavy":return "#E8A0A0"; case "anxious":return "#F5C26B"; case "hopeful":return "#AEE6C5"; case "energized":return "#6EC8C8"; default:return "#F5B35C"; } }
+    function renderMoodBubbles(){ const canvas=document.getElementById("mood-bubble-canvas"); const summaryEl=document.getElementById("mood-summary-text"); if(!canvas||!summaryEl) return; const data=getCheckins().slice(-7); canvas.innerHTML=""; if(!data.length){ summaryEl.textContent="You haven’t checked in yet."; return; } data.forEach((item)=>{ const family=getMoodFamily(item.feeling); const bubble=document.createElement("div"); bubble.className="mood-bubble"; bubble.style.background=getMoodColor(family); bubble.title=item.feeling; canvas.appendChild(bubble); }); summaryEl.textContent="Your week shows "+data.map(d=>d.feeling).join(" → "); }
+
+    // Plan generation
+    function getTodayPlanIndex(){ if(!state.plan||!state.planStartDate) return 0; const start=new Date(state.planStartDate); const today=new Date(); const diffMs=today.setHours(0,0,0,0)-start.setHours(0,0,0,0); const diffDays=Math.floor(diffMs/(1000*60*60*24)); return Math.min(Math.max(diffDays,0),6); }
+    function generatePlanFromAnswers(answers){ return [ {title:"Day 1",focus:"Start gently",action:"Tiny step",reflection:"Notice care",forgiveness:"Do smallest version"}, {title:"Day 2",focus:"Momentum",action:"Stack kindness",reflection:"What felt easier?",forgiveness:"Offer yourself same tone"}, {title:"Day 3",focus:"Reset",action:"Breathing + name challenge",reflection:"Jot one sentence",forgiveness:"Just do breathing"}, {title:"Day 4",focus:"Gentle win",action:"Do your gentle win",reflection:"Notice body",forgiveness:"Progress not erased"}, {title:"Day 5",focus:"Obstacles",action:"Sidestep pattern",reflection:"What makes it easier?",forgiveness:"Data not failure"}, {title:"Day 6",focus:"Check-in",action:"Quick energy check",reflection:"Adjust tomorrow",forgiveness:"Restart allowed"}, {title:"Day 7",focus:"Integration",action:"Choose one thing to keep",reflection:"Finish sentence",forgiveness:"Messy week still matters"} ]; }
+    function ensurePlanGenerated(){ if(!state.plan){ state.plan=generatePlanFromAnswers(state.answers); state.planStartDate=new Date().toISOString().slice(0,10); saveState(); } }
+
+    const anchors=["Pause for quiet","Stretch gently","Drink water","Send a kind message","Take three deep breaths","Write one goal for tomorrow"];
+
+    function goToStepKey(key){ const index=steps.indexOf(key); if(index>=0){ state.stepIndex=index; saveState(); renderStep(); } }
+
+    function renderStep(){
+      const container=document.getElementById("step-container");
+      const key=steps[state.stepIndex];
+
+      if(key==="home"){
+        ensurePlanGenerated();
+        const plan=state.plan||[];
+        const todayIndex=getTodayPlanIndex();
+        const todayAnchor=anchors[Math.floor(Math.random()*anchors.length)];
+        const today=plan[todayIndex]||{title:"Today",focus:todayAnchor,action:"Choose one small action",reflection:"Notice how it feels",forgiveness:"Try again tomorrow"};
+
+        container.innerHTML='<div class="step"><div class="home-grid">'+
+          '<div class="card"><h2>Today’s anchor</h2><p>'+todayAnchor+'</p></div>'+
+          '<div class="card" id="plan-card"><h2>Your plan</h2><h3>'+today.title+'</h3><ul><li>Focus: '+today.focus+'</li><li>Action: '+today.action+'</li><li>Reflection: '+today.reflection+'</li><li>Forgiveness: '+today.forgiveness+'</li></ul><button onclick="goToStepKey(\'plan_full\')">View full plan</button></div>'+
+          '<div class="card" id="tools-card"><h2>Tools</h2><button onclick="goToStepKey(\'daily_intro\')">Daily check-in</button><button onclick="goToStepKey(\'breathing\')">Breathing reset</button><button onclick="goToStepKey(\'journal\')">Micro-journal</button><button onclick="goToStepKey(\'reset_focus\')">Reset focus</button><button onclick="restartOnboarding()">Start new plan</button></div>'+
+          '<div class="card"><h2>Your week</h2><div id="mood-bubble-canvas"></div><p id="mood-summary-text"></p></div>'+
+          '<div class="card"><h2>Choose your path</h2><p>Free vs Peakora+</p></div>'+
+          '<div class="card"><h2>Peakora Picks</h2><ul><li><a href="#">Mindfulness Guide</a></li></ul></div>'+
+          '<div class="card"><h2>Share Your Story</h2><textarea id="story-input"></textarea><button onclick="handleShareStory()">Share</button></div>'+
+          '</div></div>';
+        renderMoodBubbles();
+        return;
+      }
+
+      if(key==="daily_intro"){ container.innerHTML='<div class="step"><h2>Quick check-in</h2><button onclick="goToStepKey(\'daily_checkin\')">Begin</button></div>'; return; }
+      if(key==="daily_checkin"){ container.innerHTML='<div class="step"><h2>How are you feeling?</h2><textarea id="daily-checkin-input"></textarea><button onclick="handleDailyCheckin()">Continue</button></div>'; return; }
+           if(key==="daily_summary"){
+        const feeling=state.answers.daily_checkin||"today";
+        container.innerHTML='<div class="step step-centered"><h2>Thank you for checking in</h2><p>I’ve noted '+feeling+' as part of your ongoing pattern.</p><p class="soft-note">Small moments of honesty like this slowly shift things.</p><button onclick="goToStepKey(\'home\')">Done</button></div>';
+        return;
+      }
+
+      if(key==="breathing"){
+        container.innerHTML='<div class="step step-centered"><h2>Breathing reset</h2><p>A slow inhale, a softer exhale.</p><div class="breathing-circle"></div><button onclick="goToStepKey(\'home\')">Back to home</button></div>';
+        return;
+      }
+
+      if(key==="journal"){
+        container.innerHTML='<div class="step"><h2>Micro-journal</h2><textarea id="journal-input"></textarea><button onclick="handleJournal()">Save</button></div>';
+        return;
+      }
+
+      if(key==="reset_focus"){
+        container.innerHTML='<div class="step"><h2>Reset your focus</h2><textarea id="reset-focus-input"></textarea><button onclick="handleResetFocus()">Save</button></div>';
+        return;
+      }
+
+      if(key==="install_prompt"){
+        container.innerHTML='<div class="step step-centered"><h2>Make Peakora your space</h2><p>Add Peakora to your home screen for faster access.</p><button onclick="triggerInstall()">Install</button><button onclick="goToStepKey(\'home\')">Maybe later</button></div>';
+        return;
+      }
+
+      if(key==="plan_full"){
+        ensurePlanGenerated();
+        const plan=state.plan||[];
+        let html='<div class="step"><h2>Your full 7-day plan</h2><div class="plan-full-list">';
+        plan.forEach(day=>{
+          html+='<div class="card"><h3>'+day.title+'</h3><p><strong>Focus:</strong> '+day.focus+'</p><p><strong>Action:</strong> '+day.action+'</p><p><strong>Reflection:</strong> '+day.reflection+'</p><p><strong>Forgiveness:</strong> '+day.forgiveness+'</p></div>';
+        });
+        html+='</div><button onclick="goToStepKey(\'home\')">Back to home</button></div>';
+        container.innerHTML=html;
+        return;
+      }
+
+      if(key==="exit"){
+        container.innerHTML='<div class="step step-centered"><h2>See you soon</h2><p>You can close this tab whenever you’re ready.</p></div>';
+        return;
+      }
+    }
+
+    // Handlers
+    function handleDailyCheckin(){
+      const v=document.getElementById("daily-checkin-input").value.trim();
+      state.answers.daily_checkin=v;
+      addCheckin(v);
+      saveState();
+      goToStepKey("daily_summary");
+    }
+    function handleJournal(){ saveState(); goToStepKey("home"); }
+    function handleResetFocus(){ saveState(); goToStepKey("home"); }
+    function restartOnboarding(){ clearState(); window.location.href="assistant-onboarding.html"; }
+    function triggerInstall(){ /* simplified install prompt */ alert("Install prompt triggered."); }
+    function handleShareStory(){ const v=document.getElementById("story-input").value.trim(); if(v){ alert("Story shared: "+v); } }
+
+    document.addEventListener("DOMContentLoaded",function(){
+      const hasState=loadState();
+      if(!hasState || !state.plan){ window.location.href="assistant-onboarding.html"; return; }
+      goToStepKey("home");
+    });
+  </script>
+
+  <script>
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("./service-worker.js");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* ===== Peakora: match Why section typography to hero body =====
+   This block sets the Why section lead, card copy and close line
+   to the same metrics used by the hero body. Adjust the values
+   below if your hero uses different numbers. ===== */
+:root{
+  --peakora-hero-font-size: 18px;
+  --peakora-hero-line-height: 1.6;
+  --peakora-hero-color: #222222;
+  --peakora-hero-weight: 400;
+  --peakora-hero-align: center;
+}
+
+/* Apply hero metrics to Why section text above and below the cards */
+#why .lead,
+#why .why-card p,
+#why .close {
+  font-size: var(--peakora-hero-font-size);
+  line-height: var(--peakora-hero-line-height);
+  color: var(--peakora-hero-color);
+  font-weight: var(--peakora-hero-weight);
+  text-align: var(--peakora-hero-align);
+  margin: 0 0 1rem 0;
+}
+
+/* Keep card headings visually distinct but aligned */
+#why .why-card h3 {
+  text-align: var(--peakora-hero-align);
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+/* Ensure grid and container alignment matches hero alignment */
+#why .why-grid,
+#why .container {
+  text-align: var(--peakora-hero-align);
+}
+
+/* Small-screen tweak */
+@media (max-width: 720px) {
+  :root{ --peakora-hero-font-size: 16px; }
+  #why .why-card { margin-bottom: 1.25rem; }
+}
+/* ===== Why section: force hero body typography (override) ===== */
+#why .lead,
+#why .why-card p,
+#why .close {
+  font-size: 18px !important;
+  line-height: 1.6 !important;
+  color: #222222 !important;
+  font-weight: 400 !important;
+  text-align: center !important;
+  margin: 0 0 1rem 0 !important;
+}
+
+/* Keep card headings aligned with body */
+#why .why-card h3 {
+  text-align: center !important;
+  margin: 0 0 0.5rem 0 !important;
+  font-weight: 600 !important;
+  font-size: 1.05rem !important;
+}
+
+/* Ensure container/grid alignment */
+#why .why-grid,
+#why .container {
+  text-align: center !important;
+}
+
+/* Small-screen tweak */
+@media (max-width: 720px) {
+  #why .lead,
+  #why .why-card p,
+  #why .close { font-size: 16px !important; }
+}

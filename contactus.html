@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — Peakora</title>
+  <link rel="stylesheet" href="contactus.css">
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let theme = urlParams.get('theme');
+      if (!theme) {
+        try { theme = localStorage.getItem('peakora_theme'); } catch(e){}
+      }
+      if (!theme) theme = 'sunrise';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (document.body) document.body.setAttribute('data-theme', theme);
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.setAttribute('data-theme', theme);
+      });
+    })();
+  </script>
+</head>
+
+<body>
+
+  <section class="contact-section">
+    <h1 class="page-title">Contact Us</h1>
+    <p class="page-subtitle">We’re here to listen</p>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      Whether you have a question about your 7-day reset plan, subscription billing, Peakora+ features, or simply want to share feedback, we are here for you.
+      Every message is read with care. We respond within 24–48 hours (Monday through Friday), thoughtfully and without judgment.
+    </p>
+
+    <div class="info-card" style="margin-bottom:24px;">
+      <h2 style="font-size:18px; margin-top:0; color:var(--heading-color);">Direct Support Channels</h2>
+      <p style="font-size:15px; margin:6px 0; color:var(--text-main);"><strong>Email Support:</strong> <a href="mailto:peakora.network@gmail.com" style="color:var(--accent-color); text-decoration:underline;">peakora.network@gmail.com</a></p>
+      <p style="font-size:14px; margin:6px 0; color:var(--text-muted);"><strong>Response Guarantee:</strong> Within 24–48 hours</p>
+    </div>
+
+    <form id="contactForm" class="contact-form" novalidate>
+      <div class="form-group">
+        <label for="contactEmail">Email Address</label>
+        <input type="email" id="contactEmail" placeholder="your.email@example.com">
+        <div id="contactEmailError" class="form-error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="contactSubject">Subject</label>
+        <input type="text" id="contactSubject" placeholder="How can we support you today?">
+        <div id="contactSubjectError" class="form-error-msg"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="contactMessage">Your Message</label>
+        <textarea id="contactMessage" rows="5" placeholder="Share your question, feedback, or reset plan inquiry..."></textarea>
+        <div id="contactMessageError" class="form-error-msg"></div>
+      </div>
+
+      <button type="submit" class="submit-btn">Send Message</button>
+    </form>
+  </section>
+
+  <!-- MODAL -->
+  <div id="contactModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box">
+      <button id="contactClose" class="modal-close" aria-label="Close">&times;</button>
+      <div style="margin-bottom:12px;">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+      <h3 style="margin:0 0 8px; color:var(--heading-color); font-size:18px;">Message Sent</h3>
+      <p class="modal-text" style="font-size:14px; color:var(--text-muted); margin:0 0 16px; line-height:1.5;">Thank you. We have received your inquiry and will respond to your email within 24–48 hours.</p>
+      <button type="button" class="btn primary" style="width:100%; font-size:13px;" onclick="closeContactModal()">Done</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    function closeContactModal() {
+      const modal = document.getElementById("contactModal");
+      if (modal) {
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const form = document.getElementById("contactForm");
+      const modal = document.getElementById("contactModal");
+      const closeBtn = document.getElementById("contactClose");
+
+      if (closeBtn) {
+        closeBtn.addEventListener("click", closeContactModal);
+      }
+
+      if (modal) {
+        modal.addEventListener("click", function(e) {
+          if (e.target === modal) closeContactModal();
+        });
+      }
+
+      if (form) {
+        form.addEventListener("submit", function(e) {
+          e.preventDefault();
+
+          const emailInput = document.getElementById("contactEmail");
+          const subjectInput = document.getElementById("contactSubject");
+          const messageInput = document.getElementById("contactMessage");
+
+          const emailErr = document.getElementById("contactEmailError");
+          const subjectErr = document.getElementById("contactSubjectError");
+          const messageErr = document.getElementById("contactMessageError");
+
+          // Reset errors
+          emailErr.textContent = "";
+          subjectErr.textContent = "";
+          messageErr.textContent = "";
+
+          emailInput.style.borderColor = "";
+          subjectInput.style.borderColor = "";
+          messageInput.style.borderColor = "";
+
+          let isValid = true;
+
+          // 1. Email validation
+          const emailVal = emailInput.value.trim();
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailVal) {
+            emailErr.textContent = "Please enter your email address.";
+            emailInput.style.borderColor = "#ef4444";
+            isValid = false;
+          } else if (!emailRegex.test(emailVal)) {
+            emailErr.textContent = "Please enter a valid email address (e.g., name@example.com).";
+            emailInput.style.borderColor = "#ef4444";
+            isValid = false;
+          }
+
+          // 2. Subject validation
+          const subjectVal = subjectInput.value.trim();
+          if (!subjectVal) {
+            subjectErr.textContent = "Please enter a subject line for your message.";
+            subjectInput.style.borderColor = "#ef4444";
+            isValid = false;
+          } else if (subjectVal.length < 3) {
+            subjectErr.textContent = "Subject must be at least 3 characters long.";
+            subjectInput.style.borderColor = "#ef4444";
+            isValid = false;
+          }
+
+          // 3. Message validation
+          const messageVal = messageInput.value.trim();
+          if (!messageVal) {
+            messageErr.textContent = "Please enter your message.";
+            messageInput.style.borderColor = "#ef4444";
+            isValid = false;
+          } else if (messageVal.length < 10) {
+            messageErr.textContent = "Message must be at least 10 characters long.";
+            messageInput.style.borderColor = "#ef4444";
+            isValid = false;
+          }
+
+          if (isValid) {
+            // Form is valid! Open thank-you modal and clear fields
+            form.reset();
+            if (modal) {
+              modal.classList.add("active");
+              modal.setAttribute("aria-hidden", "false");
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

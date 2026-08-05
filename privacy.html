@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Peakora</title>
+  <link rel="stylesheet" href="privacy.css">
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let theme = urlParams.get('theme');
+      if (!theme) {
+        try { theme = localStorage.getItem('peakora_theme'); } catch(e){}
+      }
+      if (!theme) theme = 'sunrise';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (document.body) document.body.setAttribute('data-theme', theme);
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.setAttribute('data-theme', theme);
+      });
+    })();
+  </script>
+</head>
+
+<body>
+
+  <section class="page-section">
+    <h1 class="page-title">Privacy Policy</h1>
+    <p class="page-subtitle">Your privacy matters to us</p>
+    <div class="divider"></div>
+
+    <p class="page-text">
+      This Privacy Policy explains how Peakora collects, uses, and protects your information. 
+      We are committed to keeping your data safe and treating it with respect. 
+      By using Peakora, you agree to the practices described in this policy.
+    </p>
+
+    <h2 class="page-heading">1. Information We Collect</h2>
+    <p class="page-text">
+      We collect information that helps us provide a better experience. 
+      This includes information you choose to share and information collected automatically when you use our services.
+    </p>
+
+    <ul class="page-list">
+      <li>Information you enter in forms, such as your email or messages.</li>
+      <li>Basic device and browser information.</li>
+      <li>Usage data that helps us understand how people use Peakora.</li>
+    </ul>
+
+    <h2 class="page-heading">2. How We Use Your Information</h2>
+    <p class="page-text">
+      We use your information to improve Peakora, communicate with you, and provide a smoother experience.
+    </p>
+
+    <ul class="page-list">
+      <li>To respond to your messages or requests.</li>
+      <li>To improve our tools and features.</li>
+      <li>To understand how users interact with Peakora.</li>
+      <li>To maintain the safety and stability of our services.</li>
+    </ul>
+
+    <h2 class="page-heading">3. How We Protect Your Information</h2>
+    <p class="page-text">
+      We use security measures to protect your information from unauthorized access, loss, or misuse. 
+      While no system is perfect, we work to keep your data as safe as possible.
+    </p>
+
+    <h2 class="page-heading">4. Cookies and Tracking</h2>
+    <p class="page-text">
+      Peakora may use cookies or similar technologies to improve your experience. 
+      These tools help us remember your preferences and understand how people use our website.
+    </p>
+
+    <h2 class="page-heading">5. Third Party Services & Payment Processing</h2>
+    <p class="page-text">
+      Peakora integrates with trusted third-party service providers to deliver our features. 
+      Specifically, when you purchase a Peakora+ subscription, payment processing and order management are handled securely by our reseller and Merchant of Record, <strong>Paddle.com</strong>. 
+      Paddle collects transaction details necessary to process payment, issue receipts, and manage tax compliance. Peakora does not store full payment card numbers or banking information on our servers.
+    </p>
+
+    <h2 class="page-heading">6. Data Retention</h2>
+    <p class="page-text">
+      Your personal reflection notes, check-ins, and 7-day plans are stored locally in your browser's client-side storage. 
+      We retain account-level membership flags only as long as necessary to provide subscription access or fulfill legal obligations. 
+      You can clear your local data at any time via your browser settings or by resetting your plan within the Peakora Assistant.
+    </p>
+
+    <h2 class="page-heading">7. Your Rights (GDPR & CCPA Compliance)</h2>
+    <p class="page-text">
+      Depending on your location, you have rights regarding your personal data, including the right to access, rectify, export, or request permanent deletion of any personal information we hold. 
+      To exercise your data privacy rights, please contact our Privacy Team at <strong>peakora.network@gmail.com</strong>.
+    </p>
+
+    <h2 class="page-heading">8. Children’s Privacy</h2>
+    <p class="page-text">
+      Peakora is not intended for children under 16. 
+      We do not knowingly collect information from children. 
+      If we learn that information was collected from a child, we will remove it.
+    </p>
+
+    <h2 class="page-heading">9. International Users</h2>
+    <p class="page-text">
+      If you access Peakora from outside your home country, your information may be processed in other regions. 
+      By using Peakora, you agree to this processing.
+    </p>
+
+    <h2 class="page-heading">10. Updates to This Policy</h2>
+    <p class="page-text">
+      We may update this Privacy Policy from time to time. 
+      When we make changes, we will update the date at the bottom of this page. 
+      Continued use of Peakora means you accept the updated policy.
+    </p>
+
+    <h2 class="page-heading">11. Contact Information</h2>
+    <p class="page-text">
+      If you have questions or concerns about this Privacy Policy, our data practices, or your personal information, please email our Privacy Officer at <strong>peakora.network@gmail.com</strong>. 
+      We respond to all privacy inquiries within 24–48 hours (Monday through Friday).
+    </p>
+
+    <p class="page-text">
+      Last updated: January 2026
+    </p>
+
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+/* ===== Peakora: Dark Luxury Wellness Theme Typography ===== */
+
+:root {
+  --peakora-hero-font-size: 18px;
+  --peakora-hero-line-height: 1.65;
+  --peakora-hero-color: #a0aec0;
+  --peakora-hero-weight: 400;
+  --peakora-hero-align: center;
+}
+
+/* Why Section Typography */
+#why .lead,
+#why .why-card p,
+#why .close {
+  font-size: 18px !important;
+  line-height: 1.65 !important;
+  color: #a0aec0 !important;
+  font-weight: 400 !important;
+  text-align: center !important;
+  margin: 0 0 1rem 0 !important;
+}
+
+/* Card Headings */
+#why .why-card h3 {
+  text-align: center !important;
+  margin: 0 0 0.5rem 0 !important;
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  color: #ffffff !important;
+}
+
+/* Container & Grid Alignment */
+#why .container,
+#why .why-grid {
+  text-align: center !important;
+}
+
+/* Responsive Tweak */
+@media (max-width: 720px) {
+  #why .lead,
+  #why .close,
+  #why .why-card p {
+    font-size: 15px !important;
+  }
+}

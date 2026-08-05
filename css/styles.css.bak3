@@ -1,0 +1,591 @@
+/* ------------------------------------------------------
+   PEAKORA — CALM WELLNESS THEME
+   Global Styles, Layout, Components, Effects
+------------------------------------------------------ */
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: "Inter", sans-serif;
+  background: #f7faff;
+  color: #1a1a1a;
+  scroll-behavior: smooth;
+}
+
+/* CONTAINERS */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ------------------------------------------------------
+   HEADER
+------------------------------------------------------ */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.brand-logo {`n    height: 64px;
+  height: 48px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #1a1a1a;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #0057ff;
+}
+
+/* HEADER SOCIAL ICONS */
+.header-social {
+  display: flex;
+  gap: 14px;
+}
+
+.social-icon {
+  width: 22px;
+  height: 22px;
+  /* background-size removed for SVG */
+  opacity: 0.85;
+  transition: 0.2s ease;
+}
+
+.social-icon:hover {
+  opacity: 1;
+}
+
+/* Social icon images */
+/* /* .ig { removed } */ */
+/* /* .pin { removed } */ */
+/* /* .fb { removed } */ */
+/* /* .tt { removed } */ */
+/* /* .yt { removed } */ */
+
+/* ------------------------------------------------------
+   HERO SECTION
+------------------------------------------------------ */
+
+
+
+/* Soft animated gradient */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #dbe8ff, #eaf1ff, #f7faff);
+  animation: gradientShift 12s ease infinite;
+  z-index: -1;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.hero-title {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f1f3d;
+}
+
+.hero-sub {
+  margin-top: 16px;
+  font-size: 20px;
+  color: #3a4a6a;
+  max-width: 480px;
+}
+
+.hero-ctas {
+  margin-top: 28px;
+  display: flex;
+  gap: 16px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.btn.primary {
+  background: #0057ff;
+  color: white;
+  border: 2px solid #0057ff;
+}
+
+.btn.primary:hover {
+  background: #0044cc;
+  color: white;
+}
+
+.btn.outline {
+  background: transparent;
+  color: #0057ff;
+  border: 2px solid #0057ff;
+}
+
+.btn.outline:hover {
+  background: #0057ff;
+  color: white;
+}
+
+.hero-img {
+  width: 760px;
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 87, 255, 0.25);
+}
+
+/* ------------------------------------------------------
+   WHY PEAKORA
+------------------------------------------------------ */
+
+.section-title {
+  font-size: 36px;
+  text-align: center;
+  margin-bottom: 40px;
+  color: #0f1f3d;
+}
+
+.why-grid {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.why-card {
+  background: white;
+  padding: 28px;
+  border-radius: 16px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 87, 255, 0.08);
+  transition: 0.2s ease;
+}
+
+.why-card:hover {
+  transform: translateY(-4px);
+}
+
+.icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 87, 255, 0.15);
+}
+
+/* ------------------------------------------------------
+   HOW IT WORKS
+------------------------------------------------------ */
+
+.how-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 80px 0;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.step-num {
+  width: 40px;
+  height: 40px;
+  background: #0057ff;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.how-img {
+  width: 420px;
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 87, 255, 0.25);
+}
+
+/* ------------------------------------------------------
+   WHAT YOU GET
+------------------------------------------------------ */
+
+.what-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  padding: 40px 0;
+}
+
+.what-card {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 87, 255, 0.08);
+}
+
+/* ------------------------------------------------------
+   WHY IT WORKS
+------------------------------------------------------ */
+
+.why-works-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 80px 0;
+}
+
+.why-img {
+  width: 420px;
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 87, 255, 0.25);
+}
+
+/* ------------------------------------------------------
+   FINAL CTA
+------------------------------------------------------ */
+
+.final-inner {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.final-img {
+  width: 480px;
+  max-width: 100%;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 40px rgba(0, 87, 255, 0.25);
+}
+
+.final-btn {
+  margin-top: 20px;
+}
+
+/* ------------------------------------------------------
+   START SECTION
+------------------------------------------------------ */
+
+.start-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 60px 0;
+}
+
+.start-img {
+  width: 420px;
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 87, 255, 0.25);
+}
+
+/* ------------------------------------------------------
+   FOOTER
+------------------------------------------------------ */
+
+.footer {
+  background: #0f1f3d;
+  color: white;
+  padding: 40px 0;
+  margin-top: 80px;
+}
+
+.footer-inner {
+  text-align: center;
+}
+
+.footer-links {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.footer-links a {
+  color: #dbe8ff;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: white;
+}
+
+.footer-social {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.footer-social .social-icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* ------------------------------------------------------
+   AGENT MODAL
+------------------------------------------------------ */
+
+.agent-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0057ff;
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 87, 255, 0.25);
+}
+
+.agent-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.agent-modal.active {
+  display: flex;
+}
+
+.agent-panel {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  width: 380px;
+  max-width: 90%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+}
+
+.agent-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  float: right;
+  cursor: pointer;
+}
+
+.agent-actions {
+  margin-top: 20px;
+}
+
+.agent-thanks {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.brand-logo { height: 64px !important; }
+
+/* FIX #1: Force logo size */
+.brand-logo { height: 64px !important; }
+
+/* FIX #1: Force logo size (200px) */
+.brand-logo { height: 200px !important; }
+
+/* FIX #1: Force logo size (120px) */
+.brand-logo { height: 120px !important; }
+.header-social, .footer-social {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.social-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: white;
+  transition: opacity 0.2s ease;
+}
+
+.social-icon:hover svg {
+  opacity: 0.7;
+}
+.header-social, .footer-social {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.social-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: white;
+  transition: opacity 0.2s ease;
+}
+
+.social-icon:hover svg {
+  opacity: 0.7;
+}
+
+
+
+
+
+.hero { padding: 80px 0 120px; }
+/* Minimal override: center lead and close, 18px, small gap to cards */
+#why .lead { font-size:18px !important; line-height:1.6 !important; text-align:center !important; color:#222 !important; font-weight:400 !important; margin:0 0 12px 0 !important; display:block !important; }
+#why .close { font-size:18px !important; line-height:1.6 !important; text-align:center !important; color:#222 !important; font-weight:400 !important; margin:12px 0 0 0 !important; display:block !important; }
+#why .why-card p { font-size:18px !important; line-height:1.6 !important; text-align:center !important; margin:0 0 12px 0 !important; color:#222 !important; }
+#why .why-card h3 { text-align:center !important; margin:0 0 8px 0 !important; font-weight:600 !important; }
+#why .container, #why .why-grid { text-align:center !important; }
+/* responsive tweak */
+@media (max-width:720px){ #why .lead, #why .close, #why .why-card p { font-size:16px !important; } }
+/* Small extra gap for Why section: increase spacing below lead and above close */
+#why .lead { margin-bottom: 18px !important; }
+#why .close { margin-top: 18px !important; }
+/* Social proof section — matches hero typography and alignment */
+#social-proof { padding: 56px 0; background: #fff; }
+#social-proof .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; text-align: center; }
+
+#social-proof .section-title { font-size: 28px; margin-bottom: 12px; font-weight:700; }
+#social-proof .lead { font-size: 18px !important; line-height: 1.6 !important; color: #222 !important; font-weight:400 !important; margin: 0 0 18px 0 !important; text-align:center !important; }
+
+/* testimonial grid */
+.proof-grid { display:flex; gap:20px; justify-content:center; align-items:stretch; margin-top:12px; flex-wrap:wrap; }
+.test-card { background:#fafafa; border-radius:10px; padding:18px; width:320px; box-shadow:0 6px 18px rgba(20,20,20,0.04); text-align:center; }
+.test-card blockquote { margin:0 0 10px 0; font-style:normal; color:#333; font-size:16px; }
+.test-card figcaption { font-weight:600; color:#555; font-size:14px; margin-top:8px; }
+
+/* metric + affiliate row */
+.proof-row { display:flex; gap:28px; justify-content:center; align-items:center; margin-top:20px; flex-wrap:wrap; }
+.stat { font-weight:700; color:#0a8f6a; font-size:20px; }
+.affiliate { max-width:420px; text-align:center; }
+.affiliate h3 { margin:0 0 8px 0; font-size:18px; font-weight:600; }
+.affiliate p { margin:0 0 10px 0; font-size:16px; color:#333; }
+
+/* CTA button */
+.btn.small { display:inline-block; padding:8px 14px; background:#0a8f6a; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; }
+
+/* UGC prompt */
+.ugc-cta .lead { margin-top:18px; }
+
+/* Responsive */
+@media (max-width:880px) {
+  .proof-grid { gap:14px; }
+  .test-card { width:100%; max-width:520px; }
+  .proof-row { flex-direction:column; gap:12px; }
+}
+/* HOW IT WORKS LAYOUT */
+.how-container { text-align:center; padding:60px 0; }
+.how-layout { display:flex; gap:40px; justify-content:center; align-items:center; flex-wrap:wrap; }
+.how-illustration img { max-width:420px; width:100%; }
+.how-steps { max-width:420px; text-align:left; }
+.how-step h3 { font-size:20px; font-weight:600; margin:0 0 6px 0; }
+.how-step p { font-size:18px; line-height:1.6; margin:0 0 16px 0; }
+.how-cta { display:inline-block; margin-top:10px; padding:10px 18px; background:#0a8f6a; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; }
+
+/* SOCIAL PROOF SECTION */
+#social-proof { padding:60px 0; background:#f8f8f8; }
+#social-proof .lead { font-size:18px; line-height:1.6; margin-bottom:20px; }
+.proof-grid { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:20px; }
+.test-card { background:#fff; padding:20px; border-radius:10px; width:300px; box-shadow:0 6px 18px rgba(0,0,0,0.05); }
+.test-card blockquote { font-size:16px; margin:0 0 10px 0; }
+.test-card figcaption { font-size:14px; font-weight:600; }
+
+.proof-row { display:flex; gap:30px; justify-content:center; flex-wrap:wrap; margin-top:20px; }
+.stat { font-size:20px; font-weight:700; color:#0a8f6a; }
+.affiliate { max-width:380px; text-align:center; }
+.affiliate h3 { font-size:18px; margin-bottom:6px; }
+.affiliate p { font-size:16px; margin-bottom:10px; }
+
+.ugc-cta .lead { margin-top:20px; }
+
+/* DARK MODE READY (will activate later) */
+.dark #social-proof { background:#111; color:#eee; }
+.dark #social-proof .test-card { background:#1a1a1a; color:#eee; }
+.dark #social-proof .stat { color:#4cd3a8; }
+/* HOW IT WORKS LAYOUT */
+.how-container { text-align:center; padding:60px 0; }
+.how-layout { display:flex; gap:40px; justify-content:center; align-items:center; flex-wrap:wrap; }
+.how-illustration img { max-width:420px; width:100%; }
+.how-steps { max-width:420px; text-align:left; }
+.how-step h3 { font-size:20px; font-weight:600; margin:0 0 6px 0; }
+.how-step p { font-size:18px; line-height:1.6; margin:0 0 16px 0; }
+
+/* Use same button color and outline style */
+.btn { border-radius:8px; font-weight:600; text-decoration:none; cursor:pointer; }
+.how-cta { padding:10px 18px; background:#0a8f6a; color:#fff; border:1px solid #0a8f6a; }
+.btn.btn-outline { padding:8px 16px; background:transparent; color:#0a8f6a; border:1px solid #0a8f6a; }
+
+/* SOCIAL PROOF SECTION */
+#social-proof { padding:60px 0; background:#f8f8f8; }
+#social-proof .lead { font-size:18px; line-height:1.6; margin-bottom:20px; text-align:center; }
+.proof-grid { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:20px; }
+.test-card { background:#fff; padding:20px; border-radius:10px; width:300px; box-shadow:0 6px 18px rgba(0,0,0,0.05); text-align:left; }
+.test-card blockquote { font-size:16px; margin:0 0 10px 0; }
+.test-card figcaption { font-size:14px; font-weight:600; }
+
+.proof-row { display:flex; gap:30px; justify-content:center; flex-wrap:wrap; margin-top:20px; align-items:center; }
+.stat { font-size:20px; font-weight:700; color:#0a8f6a; }
+.affiliate { max-width:380px; text-align:center; }
+.affiliate h3 { font-size:18px; margin-bottom:6px; }
+.affiliate p { font-size:16px; margin-bottom:10px; }
+
+.ugc-cta .lead { margin-top:20px; }
+
+/* Responsive */
+@media (max-width:880px) {
+  .how-layout { flex-direction:column; }
+  .how-steps { text-align:left; }
+  .proof-grid { gap:14px; }
+  .test-card { width:100%; max-width:520px; }
+  .proof-row { flex-direction:column; gap:12px; }
+}

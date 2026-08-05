@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Peakora Assistant — Onboarding</title>
+    <link rel="stylesheet" href="assistant.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="theme-color" content="#ffffff" />
+  </head>
+
+  <body>
+    <main id="onboarding-root" class="card">
+      <header class="card-header">
+        <img src="assets/peakora-logo.png" alt="Peakora" class="logo" />
+        <h1>Welcome to Peakora Assistant</h1>
+        <p class="muted">Let's get you set up — a few quick questions and you'll be ready.</p>
+      </header>
+
+      <section id="step-1" class="onboarding-step">
+        <h2>1. Tell us about your goal</h2>
+        <p class="muted">What do you want the assistant to help you with today?</p>
+
+        <div class="form-row">
+          <label for="goal-input">Primary goal</label>
+          <input id="goal-input" type="text" placeholder="e.g., plan a 30-day fitness routine" />
+        </div>
+
+        <div class="form-row">
+          <label for="audience-select">Who is this for?</label>
+          <select id="audience-select">
+            <option value="self">Myself</option>
+            <option value="team">Team</option>
+            <option value="client">Client</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button id="to-step-2" class="btn primary">Next</button>
+        </div>
+      </section>
+
+      <section id="step-2" class="onboarding-step hidden">
+        <h2>2. Preferences</h2>
+        <p class="muted">Small preferences to personalize your plan.</p>
+
+        <div class="form-row">
+          <label for="tone-select">Tone</label>
+          <select id="tone-select">
+            <option value="friendly">Friendly</option>
+            <option value="professional">Professional</option>
+            <option value="concise">Concise</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label for="length-range">Plan length (weeks)</label>
+          <input id="length-range" type="range" min="1" max="52" value="4" />
+          <span id="length-value">4</span>
+        </div>
+
+        <div class="actions">
+          <button id="back-to-step-1" class="btn">Back</button>
+          <button id="to-step-3" class="btn primary">Next</button>
+        </div>
+      </section>
+
+      <section id="step-3" class="onboarding-step hidden">
+        <h2>3. Confirm and create</h2>
+        <p class="muted">Review your choices and create your first plan.</p>
+
+        <div id="summary" class="card">
+          <h3>Summary</h3>
+          <p><strong>Goal:</strong> <span id="summary-goal">—</span></p>
+          <p><strong>Audience:</strong> <span id="summary-audience">—</span></p>
+          <p><strong>Tone:</strong> <span id="summary-tone">—</span></p>
+          <p><strong>Length:</strong> <span id="summary-length">—</span> weeks</p>
+        </div>
+
+        <div class="actions">
+          <button id="back-to-step-2" class="btn">Back</button>
+          <button id="create-plan" class="btn primary">Create plan</button>
+        </div>
+      </section>
+
+      <footer class="card-footer muted">
+        <p>By continuing you agree to our <a href="terms.html">terms</a> and <a href="privacy.html">privacy policy</a>.</p>
+      </footer>
+    </main>
+
+    <!-- Inline scripts and small helpers -->
+    <script>
+      (function () {
+        const qs = (s) => document.querySelector(s);
+        const steps = Array.from(document.querySelectorAll('.onboarding-step'));
+        let current = 0;
+
+        function showStep(i) {
+          steps.forEach((s, idx) => s.classList.toggle('hidden', idx !== i));
+          current = i;
+        }
+
+        qs('#to-step-2').addEventListener('click', () => {
+          const goal = qs('#goal-input').value.trim();
+          if (!goal) {
+            alert('Please enter a primary goal to continue.');
+            return;
+          }
+          qs('#summary-goal').textContent = goal;
+          qs('#summary-audience').textContent = qs('#audience-select').value;
+          showStep(1);
+        });
+
+        qs('#back-to-step-1').addEventListener('click', () => showStep(0));
+        qs('#to-step-3').addEventListener('click', () => {
+          qs('#summary-tone').textContent = qs('#tone-select').value;
+          qs('#summary-length').textContent = qs('#length-range').value;
+          showStep(2);
+        });
+        qs('#back-to-step-2').addEventListener('click', () => showStep(1));
+
+        qs('#length-range').addEventListener('input', (e) => {
+          qs('#length-value').textContent = e.target.value;
+        });
+
+        qs('#create-plan').addEventListener('click', () => {
+          const payload = {
+            goal: qs('#goal-input').value.trim(),
+            audience: qs('#audience-select').value,
+            tone: qs('#tone-select').value,
+            length: parseInt(qs('#length-range').value, 10),
+          };
+          localStorage.setItem('peakora_onboarding', JSON.stringify(payload));
+          
+          const assistantState = {
+            stepIndex: 22, // home step (dashboard)
+            answers: { goal: payload.goal },
+            email: "",
+            completed: true,
+            installPromptShown: false,
+            plan: null,
+            planStartDate: new Date().toISOString().slice(0, 10)
+          };
+          localStorage.setItem('peakora_assistant_state_v1', JSON.stringify(assistantState));
+          window.location.href = 'assistant.html';
+        });
+
+        // initialize
+        showStep(0);
+      })();
+    </script>
+  </body>
+</html>

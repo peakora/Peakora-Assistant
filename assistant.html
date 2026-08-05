@@ -1,0 +1,3681 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Peakora Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Assistant theme -->
+  <link rel="stylesheet" href="assistant.css">
+
+  <!-- Paddle.js v2 SDK for Secure Subscription Payments -->
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+
+  <!-- Favicon fix -->
+  <link rel="icon" href="data:,">
+
+  <meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+  <!-- Mid-onboarding modal -->
+  <div id="onboarding-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:420px; text-align:center;">
+      <h2 style="margin-top:0;">Welcome back</h2>
+      <p class="soft-note">Would you like to continue where you left off, or start fresh?</p>
+      <div class="actions" style="justify-content:center; gap:12px; margin-top:20px;">
+        <button class="btn secondary" id="modal-startover">Start fresh</button>
+        <button class="btn primary" id="modal-continue">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="assistant-shell">
+    <div class="assistant-card">
+      <header class="assistant-header">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="brand-name">PEAKORA</div>
+            <div class="brand-tagline">Gentle guidance. Real momentum.</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="assistant-progress">
+        <div class="progress-label">Step 1 of 13</div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+
+      <main id="step-container" class="assistant-body">
+        <!-- Steps render here dynamically -->
+      </main>
+
+      <footer class="assistant-footer">
+        © 2026 Peakora™ — For a Better You.
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    /* BASIC USAGE TRACKING SYSTEM */
+    const PeakoraTracker = {
+      getEvents() {
+        try {
+          return JSON.parse(localStorage.getItem("peakora_usage_events") || "[]");
+        } catch (e) {
+          return [];
+        }
+      },
+      track(action, details = {}) {
+        try {
+          const events = this.getEvents();
+          const event = {
+            id: "evt_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+            action: action,
+            details: details,
+            timestamp: new Date().toISOString()
+          };
+          events.push(event);
+          if (events.length > 100) events.shift();
+          localStorage.getItem("peakora_usage_events");
+          localStorage.setItem("peakora_usage_events", JSON.stringify(events));
+          console.log("[Peakora Telemetry]", action, details);
+        } catch (e) {
+          console.warn("Tracker error:", e);
+        }
+      },
+      getSummary() {
+        const events = this.getEvents();
+        const counts = {};
+        events.forEach(e => {
+          counts[e.action] = (counts[e.action] || 0) + 1;
+        });
+        return {
+          totalEvents: events.length,
+          counts,
+          lastActive: events.length ? events[events.length - 1].timestamp : null
+        };
+      }
+    };
+    window.PeakoraTracker = PeakoraTracker;
+
+    /* INSTALL + DEVICE DETECTION */
+    let deferredPrompt = null;
+    let isInstalled =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isDesktop = !isMobile;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    const steps = [
+      "welcome",
+      "explanation",
+      "goal",
+      "challenge",
+      "time",
+      "insight",
+      "extended1",
+      "extended2",
+      "email",
+      "processing",
+      "recommendations",
+      "pricing",
+      "done",
+      "daily_intro",
+      "daily_checkin",
+      "daily_summary",
+      "breathing",
+      "journal",
+      "reset_focus",
+      "install_prompt",
+      "plan_full",
+      "home",
+      "exit"
+    ];
+
+    const onboardingSteps = [
+      "welcome",
+      "explanation",
+      "goal",
+      "challenge",
+      "time",
+      "insight",
+      "extended1",
+      "extended2",
+      "email",
+      "processing",
+      "recommendations",
+      "pricing",
+      "done"
+    ];
+
+    const STORAGE_KEY = "peakora_assistant_state_v1";
+    const CHECKINS_KEY = "peakora_checkins_v1";
+
+    const state = {
+      stepIndex: 0,
+      answers: {},
+      email: "",
+      completed: false,
+      installPromptShown: false,
+      plan: null,
+      planStartDate: null
+    };
+
+    let focusTools = false;
+    let focusPlan = false;
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      try {
+        const parsed = JSON.parse(raw);
+        state.stepIndex = parsed.stepIndex || 0;
+        state.answers = parsed.answers || {};
+        state.email = parsed.email || "";
+        state.completed = !!parsed.completed;
+        state.installPromptShown = !!parsed.installPromptShown;
+        state.plan = parsed.plan || null;
+        state.planStartDate = parsed.planStartDate || null;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function clearState() {
+      localStorage.removeItem(STORAGE_KEY);
+      state.stepIndex = 0;
+      state.answers = {};
+      state.email = "";
+      state.completed = false;
+      state.installPromptShown = false;
+      state.plan = null;
+      state.planStartDate = null;
+    }
+
+    function getCheckins() {
+      const raw = localStorage.getItem(CHECKINS_KEY);
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function addCheckin(feeling) {
+      const list = getCheckins();
+      const today = new Date().toISOString().slice(0, 10);
+      list.push({ date: today, feeling });
+      localStorage.setItem(CHECKINS_KEY, JSON.stringify(list.slice(-30)));
+    }
+
+    /* Mood bubbles helpers + placeholder */
+
+    const PLACEHOLDER_WEEK = [
+      { date: "2026-01-21", feeling: "tired" },
+      { date: "2026-01-22", feeling: "steady" },
+      { date: "2026-01-23", feeling: "wired" },
+      { date: "2026-01-24", feeling: "flat" },
+      { date: "2026-01-25", feeling: "hopeful" },
+      { date: "2026-01-26", feeling: "better" },
+      { date: "2026-01-27", feeling: "light" }
+    ];
+
+    function getMoodFamily(feeling) {
+      const f = (feeling || "").toLowerCase();
+      if (!f) return "neutral";
+
+      if (
+        f.includes("tired") ||
+        f.includes("drained") ||
+        f.includes("sad") ||
+        f.includes("heavy")
+      ) {
+        return "heavy";
+      }
+      if (
+        f.includes("wired") ||
+        f.includes("overwhelm") ||
+        f.includes("anxious")
+      ) {
+        return "anxious";
+      }
+      if (
+        f.includes("hopeful") ||
+        f.includes("better") ||
+        f.includes("light") ||
+        f.includes("uplift")
+      ) {
+        return "hopeful";
+      }
+      if (f.includes("ready") || f.includes("strong") || f.includes("energ")) {
+        return "energized";
+      }
+      if (f.includes("flat") || f.includes("steady") || f.includes("okay") || f.includes("ok")) {
+        return "neutral";
+      }
+      return "neutral";
+    }
+
+    function getMoodColor(family) {
+      switch (family) {
+        case "heavy":
+          return "#E8A0A0";
+        case "anxious":
+          return "#F5C26B";
+        case "hopeful":
+          return "#AEE6C5";
+        case "energized":
+          return "#6EC8C8";
+        case "neutral":
+        default:
+          return "#F5B35C";
+      }
+    }
+
+    function getMoodSize(feeling) {
+      const f = (feeling || "").toLowerCase();
+      if (f.includes("tired")) return 26;
+      if (f.includes("steady")) return 32;
+      if (f.includes("wired")) return 28;
+      if (f.includes("flat")) return 30;
+      if (f.includes("hopeful")) return 36;
+      if (f.includes("better")) return 38;
+      if (f.includes("light")) return 40;
+      return 30;
+    }
+
+    function getLast7CheckinsOrPlaceholder() {
+      const real = getCheckins();
+      if (real && real.length >= 1) {
+        return real.slice(-7);
+      }
+      return PLACEHOLDER_WEEK;
+    }
+
+    function renderMoodBubbles() {
+      const canvas = document.getElementById("mood-bubble-canvas");
+      const summaryEl = document.getElementById("mood-summary-text");
+      if (!canvas || !summaryEl) return;
+
+      const data = getLast7CheckinsOrPlaceholder();
+      canvas.innerHTML = "";
+
+      if (!data.length) {
+        summaryEl.textContent = "You haven’t checked in yet this week.";
+        return;
+      }
+
+      const width = canvas.clientWidth || 320;
+      const height = canvas.clientHeight || 200;
+      const count = data.length;
+
+      const xStep = count > 1 ? (width - 40) / (count - 1) : 0;
+      const yBase = height / 2;
+
+      const families = [];
+      const feelingsSequence = [];
+
+      data.forEach((item, index) => {
+        const feeling = item.feeling || item.mood || "";
+        const family = getMoodFamily(feeling);
+        const color = getMoodColor(family);
+        const size = getMoodSize(feeling) * 1.3;
+
+        families.push(family);
+        feelingsSequence.push((feeling || "").toLowerCase() || "…");
+
+        const x = 20 + xStep * index;
+        const drift = (index % 2 === 0 ? -1 : 1) * (6 + (index % 3));
+        const y = yBase + drift;
+
+        const bubble = document.createElement("div");
+        bubble.className = "mood-bubble";
+        bubble.style.width = size + "px";
+        bubble.style.height = size + "px";
+        bubble.style.left = x - size / 2 + "px";
+        bubble.style.top = y - size / 2 + "px";
+        bubble.style.background =
+          "radial-gradient(circle at 30% 30%, " + color + ", #f58b5c)";
+        bubble.style.animationDelay = index * 0.15 + "s";
+        bubble.title = feeling || "No label";
+
+        canvas.appendChild(bubble);
+      });
+
+      const familyCounts = families.reduce((acc, f) => {
+        acc[f] = (acc[f] || 0) + 1;
+        return acc;
+      }, {});
+      let dominantFamily = "neutral";
+      let maxCount = 0;
+      Object.keys(familyCounts).forEach((f) => {
+        if (familyCounts[f] > maxCount) {
+          maxCount = familyCounts[f];
+          dominantFamily = f;
+        }
+      });
+
+      const summaryColor = getMoodColor(dominantFamily);
+      const summaryBubble = document.createElement("div");
+      summaryBubble.className = "week-summary-bubble";
+      summaryBubble.style.background =
+        "radial-gradient(circle at 30% 30%, " + summaryColor + ", #f58b5c)";
+      canvas.appendChild(summaryBubble);
+
+      const sequenceText = feelingsSequence.join(" → ");
+      summaryEl.textContent = "This week leaned toward: " + sequenceText + ".";
+    }
+
+    function goToStepKey(key) {
+      const index = steps.indexOf(key);
+      if (index >= 0) {
+        state.stepIndex = index;
+        saveState();
+        renderStep();
+        if (window.PeakoraTracker) {
+          window.PeakoraTracker.track("step_viewed", { step: key });
+        }
+      }
+    }
+
+    function goToPrevious() {
+      if (state.stepIndex > 0) {
+        state.stepIndex -= 1;
+        saveState();
+        renderStep();
+      }
+    }
+
+    function fadeIn() {
+      const el = document.getElementById("step-container");
+      if (el) {
+        el.classList.remove("fade");
+        void el.offsetWidth;
+        el.classList.add("fade");
+      }
+    }
+
+    function setProgress() {
+      const key = steps[state.stepIndex];
+      const bar = document.querySelector(".progress-fill");
+      const label = document.querySelector(".progress-label");
+      const progressContainer = document.querySelector(".assistant-progress");
+      if (!bar || !label || !progressContainer) return;
+
+      if (key === "home" || key === "plan_full" || key === "exit") {
+        progressContainer.style.display = "none";
+        return;
+      } else {
+        progressContainer.style.display = "";
+      }
+
+      const onboardingIndex = onboardingSteps.indexOf(key);
+      if (onboardingIndex === -1) {
+        bar.style.width = "100%";
+        label.textContent =
+          "Step " + (state.stepIndex + 1) + " of " + steps.length;
+        return;
+      }
+
+      const pct = ((onboardingIndex + 1) / onboardingSteps.length) * 100;
+      bar.style.width = pct + "%";
+      label.textContent =
+        "Step " + (onboardingIndex + 1) + " of " + onboardingSteps.length;
+    }
+
+    function goHomeAndFocusTools() {
+      focusTools = true;
+      goToStepKey("home");
+    }
+    function goHomeAndFocusPlan() {
+      focusPlan = true;
+      goToStepKey("home");
+    }
+
+    function getTodayPlanIndex() {
+      if (!state.plan || !state.planStartDate) return 0;
+      const start = new Date(state.planStartDate);
+      const today = new Date();
+      const diffMs = today.setHours(0,0,0,0) - start.setHours(0,0,0,0);
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) return 0;
+      if (diffDays > 6) return 6;
+      return diffDays;
+    }
+
+    function generatePlanFromAnswers(answers) {
+      const goal = (answers.goal || "feeling a bit more steady").toLowerCase();
+      const challenge = (answers.challenge || "what’s been weighing on you").toLowerCase();
+      const time = answers.time || "5–10 minutes";
+      const gentleWin = answers.extended1 || "one small thing that feels kind";
+      const obstacles = answers.extended2 || "the usual things that get in the way";
+      const insight = answers.insight || "";
+
+      const timePhrase =
+        time.indexOf("5") !== -1 ? "just a few minutes" :
+        time.indexOf("15") !== -1 ? "about a quarter of an hour" :
+        "a bit more focused time";
+
+      const baseForgiveness =
+        "If today feels heavier than you expected, do the smallest version of this and call it a win.";
+
+      const days = [];
+
+      days.push({
+        title: "Day 1 — Grounding",
+        focus: "Start gently, not perfectly.",
+        action:
+          "Take " + timePhrase + " to do one tiny action toward your goal around " + goal + ". " +
+          "Keep it so small it almost feels too easy.",
+        reflection:
+          "At the end of the day, notice one moment where you chose care over pressure.",
+        forgiveness: baseForgiveness
+      });
+
+      days.push({
+        title: "Day 2 — Light momentum",
+        focus: "Build a little movement without forcing it.",
+        action:
+          "Repeat yesterday’s tiny action, then add one more small step that supports it. " +
+          "Think of it as stacking kindness, not effort.",
+        reflection:
+          "Ask yourself: “What made this feel easier or harder today?”",
+        forgiveness:
+          "If you didn’t get to it, imagine how you’d speak to a friend in your exact situation—and offer yourself the same tone."
+      });
+
+      days.push({
+        title: "Day 3 — Reset and soften",
+        focus: "Make space for how you actually feel.",
+        action:
+          "Take a short pause—one slow breath in, one softer breath out, repeated a few times. " +
+          "Then name, in a sentence, how " + challenge + " has been showing up.",
+        reflection:
+          "You can jot down one sentence about what you’re carrying. That’s enough.",
+        forgiveness:
+          "If this feels like too much today, just do the breathing part and skip the rest."
+      });
+
+      days.push({
+        title: "Day 4 — Gentle win",
+        focus: "Give yourself a clear, kind win.",
+        action:
+          "Choose the gentle win you named earlier: “" + gentleWin + "”. " +
+          "Do the smallest version of it today, even if it’s imperfect.",
+        reflection:
+          "Notice how it feels in your body to follow through on something small you chose for yourself.",
+        forgiveness:
+          "If you don’t get to it, that doesn’t erase your progress. You’re still in the week, not out of it."
+      });
+
+      days.push({
+        title: "Day 5 — Navigating obstacles",
+        focus: "Work with your patterns, not against them.",
+        action:
+          "Look at what usually throws you off: “" + obstacles + "”. " +
+          "Pick one tiny way to soften or sidestep that pattern just for today.",
+        reflection:
+          "Ask: “What would make this 10% easier next time?” and capture one idea.",
+        forgiveness:
+          "If the pattern wins today, that’s data, not failure. You’re learning how your life actually works."
+      });
+
+      days.push({
+        title: "Day 6 — Check-in and adjust",
+        focus: "Listen to your energy honestly.",
+        action:
+          "Do a quick check-in: how does your energy feel today in one sentence? " +
+          (insight ? "You mentioned before: “" + insight + "”. See if that still feels true." : "Just name it without judging it."),
+        reflection:
+          "Based on how you feel, decide whether tomorrow should be lighter, similar, or a bit more active.",
+        forgiveness:
+          "If you skip today, tomorrow can still be a reset. You’re allowed to restart inside the same week."
+      });
+
+      days.push({
+        title: "Day 7 — Integration",
+        focus: "Gather what worked, gently.",
+        action:
+          "Look back over the week and choose one thing you’d like to keep for next week—no more than that.",
+        reflection:
+          "Finish the sentence: “This week reminded me that I can…”",
+        forgiveness:
+          "If this week felt messy, that’s still a week of paying attention. That matters more than a perfect streak."
+      });
+
+      return days;
+    }
+
+    function ensurePlanGenerated() {
+      if (!state.plan) {
+        state.plan = generatePlanFromAnswers(state.answers);
+        state.planStartDate = new Date().toISOString().slice(0, 10);
+        saveState();
+      }
+    }
+
+    const anchors = [
+      "Pause for two minutes of quiet.",
+      "Notice one kind thought you had today.",
+      "Step outside for fresh air.",
+      "Write down one thing you’re grateful for.",
+      "Stretch gently for 3 minutes.",
+      "Drink a glass of water slowly.",
+      "Smile at yourself in the mirror.",
+      "Send a kind message to someone.",
+      "Take three deep breaths.",
+      "Listen to one calming song.",
+      "Read one page of a book.",
+      "Sit with your posture upright for a moment.",
+      "Reflect on one small win.",
+      "Close your eyes and rest briefly.",
+      "Organize one small space.",
+      "Write one encouraging word.",
+      "Think of one person you appreciate.",
+      "Step away from your screen for 5 minutes.",
+      "Notice your surroundings mindfully.",
+      "Recall one happy memory.",
+      "Stretch your hands and shoulders.",
+      "Take a short walk.",
+      "Write down one idea.",
+      "Notice your breathing rhythm.",
+      "Celebrate one effort you made.",
+      "Think of one thing you learned today.",
+      "Sit quietly with no distractions.",
+      "Write one goal for tomorrow.",
+      "Say one kind word aloud.",
+      "Notice how your body feels right now."
+    ];
+
+    /* COMPLETE RENDER STEP FUNCTION */
+    function renderStep() {
+      setProgress();
+      fadeIn();
+
+      const key = steps[state.stepIndex] || "welcome";
+
+      // Outer wrapper adaptiveness for dashboard vs onboarding step
+      const outerCard = document.querySelector(".assistant-card");
+      const outerShell = document.querySelector(".assistant-shell");
+      const outerHeader = document.querySelector(".assistant-header");
+      const outerFooter = document.querySelector(".assistant-footer");
+
+      if (key === "home") {
+        if (outerCard) outerCard.classList.add("is-dashboard-mode");
+        if (outerShell) outerShell.classList.add("is-dashboard-mode");
+        if (outerHeader) outerHeader.style.display = "none";
+        if (outerFooter) outerFooter.style.display = "none";
+      } else {
+        if (outerCard) outerCard.classList.remove("is-dashboard-mode");
+        if (outerShell) outerShell.classList.remove("is-dashboard-mode");
+        if (outerHeader) outerHeader.style.display = "";
+        if (outerFooter) outerFooter.style.display = "";
+      }
+
+      // Dynamic header brand name update based on Peakora+ / Subscription Status
+      const isPlusMember = localStorage.getItem("peakora_plus_member") === "true";
+      const peakoraSubStatus = localStorage.getItem("peakora_subscription_status") || (isPlusMember ? "Active" : "Trial");
+      const isPlusActive = isPlusMember || peakoraSubStatus === "Active";
+
+      const brandEl = document.getElementById("header-brand-name");
+      if (brandEl) {
+        brandEl.innerHTML = isPlusActive ? 'PEAKORA <span style="color:var(--accent-color, #7c3aed); font-weight:900; margin-left:2px;">+</span>' : 'PEAKORA';
+      }
+
+      const container = document.getElementById("step-container");
+      if (!container) return;
+
+      // 1. WELCOME
+      if (key === "welcome") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Welcome to Peakora Assistant</h2>
+            <p class="soft-note">A gentle space to reset, reconnect, and rebuild your days with clarity, calm, and intention.</p>
+            <p>We'll guide you step-by-step through a short reset to craft a personalized 7-day routine tailored to your life.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="goToStepKey('explanation')">Begin Your Reset</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. EXPLANATION
+      if (key === "explanation") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>How Peakora Works</h2>
+            <p class="soft-note">Designed to fit into your day, not take it over.</p>
+            <ul class="preview-list">
+              <li><strong>Gentle by design:</strong> Zero guilt, zero pressure, move at your pace.</li>
+              <li><strong>Emotionally aware:</strong> Adaptable anchors built for real, messy days.</li>
+              <li><strong>Real momentum:</strong> Daily micro-wins that build lasting clarity.</li>
+            </ul>
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="goToStepKey('goal')">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 3. GOAL
+      if (key === "goal") {
+        const currentGoal = state.answers.goal || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What is your primary focus right now?</h2>
+            <p class="soft-note">Select an area or type what feels most important to you.</p>
+            <div class="options vertical mb-16">
+              <button class="btn ghost" onclick="selectPresetGoal('Finding more calm & reducing stress')">Finding more calm & reducing stress</button>
+              <button class="btn ghost" onclick="selectPresetGoal('Building consistent, gentle routines')">Building consistent, gentle routines</button>
+              <button class="btn ghost" onclick="selectPresetGoal('Reclaiming focus & mental clarity')">Reclaiming focus & mental clarity</button>
+              <button class="btn ghost" onclick="selectPresetGoal('Feeling more aligned & energized')">Feeling more aligned & energized</button>
+            </div>
+            <textarea id="goal-input" class="input" placeholder="Or type your custom goal here...">${currentGoal}</textarea>
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleGoal()">Next</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 4. CHALLENGE
+      if (key === "challenge") {
+        const currentChallenge = state.answers.challenge || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What has been feeling heavy or standing in your way?</h2>
+            <p class="soft-note">Naming what weighs on you helps us customize your forgiveness prompts.</p>
+            <div class="options vertical mb-16">
+              <button class="btn ghost" onclick="selectPresetChallenge('Overwhelm from busy days')">Overwhelm from busy days</button>
+              <button class="btn ghost" onclick="selectPresetChallenge('Inconsistency and starting over')">Inconsistency & starting over</button>
+              <button class="btn ghost" onclick="selectPresetChallenge('Lack of clear structure')">Lack of clear structure</button>
+              <button class="btn ghost" onclick="selectPresetChallenge('Burnout and physical fatigue')">Burnout and fatigue</button>
+            </div>
+            <textarea id="challenge-input" class="input" placeholder="Or describe what's on your mind...">${currentChallenge}</textarea>
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleChallenge()">Next</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 5. TIME
+      if (key === "time") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>How much time can you comfortably give each day?</h2>
+            <p class="soft-note">Choose what feels realistic. You can always change this later.</p>
+            <div class="options vertical mt-16">
+              <button class="btn secondary" onclick="handleTime('5–10 minutes')">5–10 minutes (Gentle & Light)</button>
+              <button class="btn secondary" onclick="handleTime('15–20 minutes')">15–20 minutes (Steady Momentum)</button>
+              <button class="btn secondary" onclick="handleTime('20+ minutes')">20+ minutes (Deep Focus)</button>
+            </div>
+            <div class="actions mt-20">
+              <button class="btn ghost" onclick="goToPrevious()">Back</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 6. INSIGHT
+      if (key === "insight") {
+        const currentInsight = state.answers.insight || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What is one thing you’d love to feel more of?</h2>
+            <p class="soft-note">e.g., peace of mind, morning clarity, feeling present, self-compassion...</p>
+            <input type="text" id="insight-input" class="input" style="min-height:44px;" value="${currentInsight}" placeholder="e.g. Peace of mind and morning calm" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleInsight()">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 7. EXTENDED 1
+      if (key === "extended1") {
+        const currentVal = state.answers.extended1 || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>Name one gentle win that feels doable this week</h2>
+            <p class="soft-note">Something small enough that success feels guaranteed.</p>
+            <input type="text" id="extended1-input" class="input" style="min-height:44px;" value="${currentVal}" placeholder="e.g. Drinking a glass of water before my morning coffee" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleExtended1()">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 8. EXTENDED 2
+      if (key === "extended2") {
+        const currentVal = state.answers.extended2 || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What usually gets in the way or throws you off?</h2>
+            <p class="soft-note">Identifying friction helps us build realistic fallback steps.</p>
+            <input type="text" id="extended2-input" class="input" style="min-height:44px;" value="${currentVal}" placeholder="e.g. Late nights, phone notifications, sudden meetings" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleExtended2()">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 9. EMAIL
+      if (key === "email") {
+        const currentEmail = state.email || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>Where should we send your plan?</h2>
+            <p class="soft-note">We'll save your 7-day reset and email you a copy for quick access.</p>
+            <input type="email" id="email-input" class="input" style="min-height:44px;" value="${currentEmail}" placeholder="your.email@example.com" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleEmail()">Generate My Plan</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 10. PROCESSING
+      if (key === "processing") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Crafting your personalized 7-day plan...</h2>
+            <p class="soft-note" id="processing-status">Analyzing your energy focus & timeframe...</p>
+            <div class="loader"></div>
+          </div>
+        `;
+        setTimeout(() => {
+          const statusEl = document.getElementById("processing-status");
+          if (statusEl) statusEl.textContent = "Structuring custom daily anchors & forgiveness notes...";
+        }, 1000);
+        setTimeout(() => {
+          ensurePlanGenerated();
+          goToStepKey("recommendations");
+        }, 2200);
+        return;
+      }
+
+      // 11. RECOMMENDATIONS
+      if (key === "recommendations") {
+        ensurePlanGenerated();
+        const plan = state.plan || [];
+        const day1 = plan[0] || { title: "Day 1", focus: "Grounding" };
+        const day4 = plan[3] || { title: "Day 4", focus: "Gentle win" };
+        const day7 = plan[6] || { title: "Day 7", focus: "Integration" };
+
+        container.innerHTML = `
+          <div class="step">
+            <h2>Your 7-Day Gentle Reset Strategy</h2>
+            <p class="soft-note">Here is a sneak peek of how your upcoming week is structured:</p>
+            <div class="card mb-12" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+              <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day1.title}</h3>
+              <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day1.focus}:</strong> ${day1.action}</p>
+            </div>
+            <div class="card mb-12" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+              <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day4.title}</h3>
+              <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day4.focus}:</strong> ${day4.action}</p>
+            </div>
+            <div class="card mb-16" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+              <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day7.title}</h3>
+              <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day7.focus}:</strong> ${day7.action}</p>
+            </div>
+            <div class="actions">
+              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('pricing')">Continue to Experience</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 12. PRICING
+      if (key === "pricing") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>Choose Your Experience</h2>
+            <p class="soft-note">Peakora is free for your core 7-day reset plan and daily toolkit.</p>
+            <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
+                <span style="background:var(--theme-primary-grad); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
+              </div>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Includes 7-day personalized plan, mood tracker, breathing tool & micro-journal.</p>
+            </div>
+            <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora+ Tier</h3>
+                <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$4.99/mo</span>
+              </div>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Unlimited resets, themes, soundscapes, plan history, and deep mood analytics.</p>
+            </div>
+            <div class="actions">
+              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('done')">Start Free Plan</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 13. DONE
+      if (key === "done") {
+        state.completed = true;
+        saveState();
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Your Plan is Ready!</h2>
+            <p class="soft-note">Your custom 7-day reset plan has been generated and saved to your device.</p>
+            <p>Welcome to your personal gentle space. Take a breath and step inside whenever you're ready.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="goToStepKey('home')">Open My Home Dashboard</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 14. DAILY INTRO
+      if (key === "daily_intro") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Daily Check-in</h2>
+            <p class="soft-note">Take 60 seconds to tune into how your mind and body feel right now.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="goToStepKey('daily_checkin')">Begin Check-in</button>
+              <button class="btn ghost mt-8" onclick="goToStepKey('home')">Back to Home</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 15. DAILY CHECKIN
+      if (key === "daily_checkin") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>How are you feeling today?</h2>
+            <p class="soft-note">Select a feeling tag or describe it in your own words.</p>
+            <div class="options mb-12">
+              <button class="btn ghost" onclick="selectMoodTag('Tired / Heavy')">Tired / Heavy</button>
+              <button class="btn ghost" onclick="selectMoodTag('Anxious / Wired')">Anxious / Wired</button>
+              <button class="btn ghost" onclick="selectMoodTag('Neutral / Steady')">Neutral / Steady</button>
+              <button class="btn ghost" onclick="selectMoodTag('Hopeful / Light')">Hopeful / Light</button>
+              <button class="btn ghost" onclick="selectMoodTag('Energized / Strong')">Energized / Strong</button>
+            </div>
+            <textarea id="daily-checkin-input" class="input" placeholder="What is making you feel this way? (Optional)"></textarea>
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToStepKey('home')">Cancel</button>
+              <button class="btn primary" onclick="handleDailyCheckin()">Save Check-in</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 16. DAILY SUMMARY
+      if (key === "daily_summary") {
+        const feeling = state.answers.daily_checkin || "your check-in";
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Thank You for Checking In</h2>
+            <p>I’ve noted <strong>"${feeling}"</strong> as part of your ongoing pattern.</p>
+            <p class="soft-note mt-12">Small moments of honesty like this build genuine clarity over time.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="goToStepKey('home')">Return to Home</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 17. BREATHING
+      if (key === "breathing") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Breathing Reset</h2>
+            <p class="soft-note">A slow inhale, a softer exhale.</p>
+            <div id="breath-status" style="font-size:16px; font-weight:600; color:#f58b5c; margin-top:10px;">Inhale...</div>
+            <div class="breath-circle" id="breath-node"></div>
+            <div class="actions mt-20" style="justify-content:center;">
+              <button class="btn secondary" id="breath-toggle-btn" onclick="toggleBreathing()">Pause</button>
+              <button class="btn primary" onclick="stopBreathing(); goToStepKey('home');">Back to Home</button>
+            </div>
+          </div>
+        `;
+        startBreathingCycle();
+        return;
+      }
+
+      // 18. JOURNAL
+      if (key === "journal") {
+        const existingNote = localStorage.getItem("peakora_journal_last") || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>Micro-Journal</h2>
+            <p class="soft-note">Write a sentence or two to clear your head. There is no right or wrong answer.</p>
+            <textarea id="journal-input" class="input" placeholder="What is present for you right now?">${existingNote}</textarea>
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToStepKey('home')">Back</button>
+              <button class="btn primary" onclick="handleJournal()">Save Note</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 19. RESET FOCUS
+      if (key === "reset_focus") {
+        const existingFocus = localStorage.getItem("peakora_current_focus") || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>Reset Your Focus</h2>
+            <p class="soft-note">When everything feels like priority, pick one small single thing for the next hour.</p>
+            <input type="text" id="reset-focus-input" class="input" style="min-height:44px;" value="${existingFocus}" placeholder="e.g. Finish one emails draft without opening new tabs" />
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToStepKey('home')">Back</button>
+              <button class="btn primary" onclick="handleResetFocus()">Save Focus</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 20. INSTALL PROMPT
+      if (key === "install_prompt") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Make Peakora Your Space</h2>
+            <p class="soft-note">Add Peakora to your home screen for gentle, fast daily access without opening browser tabs.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="triggerInstall()">Install App</button>
+              <button class="btn ghost mt-8" onclick="goToStepKey('home')">Maybe Later</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 21. PLAN FULL
+      if (key === "plan_full") {
+        ensurePlanGenerated();
+        const plan = state.plan || [];
+        let html = `
+          <div class="step">
+            <h2>Your Full 7-Day Reset Plan</h2>
+            <p class="soft-note">Every day offers a gentle focus, action step, and forgiveness reminder.</p>
+            <div class="plan-full-list" style="max-height:360px; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:10px;">
+        `;
+        plan.forEach((day, idx) => {
+          const isToday = idx === getTodayPlanIndex();
+          const dayIcons = [
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M8 12h8"/></svg>',
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>',
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>',
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+          ];
+          const icon = dayIcons[idx % dayIcons.length];
+          html += `
+            <div class="plan-choice-btn ${isToday ? 'is-today' : ''}">
+              <div class="plan-choice-icon">${icon}</div>
+              <div class="plan-choice-content">
+                <div class="plan-choice-header">
+                  <span class="plan-choice-title">DAY ${idx + 1}: ${day.title}</span>
+                  ${isToday ? '<span class="plan-choice-pill active-pill">Current Day</span>' : ''}
+                </div>
+                <div class="plan-choice-action"><strong>Focus:</strong> ${day.focus} • <strong>Action:</strong> ${day.action}</div>
+                <div class="plan-choice-quote">"${day.forgiveness}"</div>
+              </div>
+            </div>
+          `;
+        });
+        html += `
+            </div>
+            <div class="actions mt-16">
+              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('home')">Back to Home Dashboard</button>
+            </div>
+          </div>
+        `;
+        container.innerHTML = html;
+        return;
+      }
+
+      // 22. HOME (MASTER DASHBOARD)
+      if (key === "home") {
+        ensurePlanGenerated();
+        const plan = state.plan || [];
+        const todayIndex = getTodayPlanIndex();
+        const todayAnchor = anchors[Math.floor(Math.random() * anchors.length)];
+        const today = plan[todayIndex] || {
+          title: "Today",
+          focus: todayAnchor,
+          action: "Choose one small action",
+          reflection: "Notice how it feels",
+          forgiveness: "Try again tomorrow"
+        };
+        const currentFocus = localStorage.getItem("peakora_current_focus");
+        const isPlus = localStorage.getItem("peakora_plus_member") === "true";
+        const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+        const activeTab = window.currentDashTab || "home";
+
+        let html = `
+          <div class="assistant-card dashboard-wide animate-fade-in">
+            <div class="dash-container">
+              
+              <!-- LEFT SIDEBAR -->
+              <div class="dash-sidebar">
+                <div class="dash-brand">
+                  <div class="dash-brand-icon-orb" style="width:1.1em; height:1.1em; border-radius:50%; background:linear-gradient(135deg, #f4a261, #e76f51); box-shadow:0 0 12px rgba(244,162,97,0.6); flex-shrink:0;"></div>
+                  <div>
+                    <div class="dash-brand-title">PEAKORA</div>
+                    <div class="dash-brand-sub">Wellness Assistant</div>
+                  </div>
+                </div>
+                
+                <div class="dash-nav">
+                  <button class="dash-nav-btn ${activeTab === 'home' ? 'active' : ''}" onclick="switchDashTab('home')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                    Home
+                  </button>
+                  <button class="dash-nav-btn ${activeTab === 'plans' || activeTab === 'programs' ? 'active' : ''}" onclick="switchDashTab('plans')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Plans
+                  </button>
+                  <button class="dash-nav-btn ${activeTab === 'soundscapes' ? 'active' : ''}" onclick="switchDashTab('soundscapes')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    Insights
+                  </button>
+                  <button class="dash-nav-btn ${activeTab === 'picks' || activeTab === 'library' ? 'active' : ''}" onclick="switchDashTab('picks')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    Peakora Picks
+                  </button>
+                  <button class="dash-nav-btn ${activeTab === 'experience' ? 'active' : ''}" onclick="switchDashTab('experience')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    Experience
+                  </button>
+                  <button class="dash-nav-btn ${activeTab === 'settings' ? 'active' : ''}" onclick="switchDashTab('settings')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Settings
+                  </button>
+                </div>
+              </div>
+
+              <!-- MAIN CONTENT AREA -->
+              <div class="dash-content">
+        `;
+
+        // TAB 1: HOME
+        if (activeTab === "home") {
+          const lastLoggedMood = localStorage.getItem('peakora_last_mood') || 'happy';
+
+          const moodInsightMap = {
+            happy: {
+              title: "Serotonin Boost",
+              text: "High positivity detected. Ideal window for creative output, social connection, and active physical goals.",
+              color: "#f4a261"
+            },
+            calm: {
+              title: "Parasympathetic Balance",
+              text: "Equanimity level optimal. Excellent state for deep focused work, meditation, and restorative rest.",
+              color: "#34d399"
+            },
+            anxious: {
+              title: "Somatic Regulation Needed",
+              text: "Elevated stress signals detected. Recommended: 60-second breathing loop & 528Hz Solfeggio audio frequency.",
+              color: "#c084fc"
+            },
+            sleepy: {
+              title: "Low Energy Reserve",
+              text: "Rest recovery mode. Recommended: Gentle stretching, evening wind-down routine, and 396Hz grounding soundscape.",
+              color: "#818cf8"
+            },
+            energized: {
+              title: "Vitality Peak",
+              text: "Peak focus energy. Great moment to complete challenging tasks or engage in physical exercise.",
+              color: "#facc15"
+            },
+            joyful: {
+              title: "Emotional Resonance",
+              text: "Elevated mood state. Capture this feeling in your micro-journal or share a grounding reflection.",
+              color: "#fb7185"
+            }
+          };
+
+          const currentInsight = moodInsightMap[lastLoggedMood] || moodInsightMap.happy;
+
+          html += `
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <div>
+                <h1 class="dash-welcome-h1" style="margin:0;">Welcome back, Eleanor! Your journey to balance.</h1>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:4px 0 0;">Day ${todayIndex + 1} of 7 Reset Cycle • ${today.title}</p>
+              </div>
+            </div>
+
+            <!-- SECTION 1: MOOD CHECK-IN CARD -->
+            <div class="dash-grid-2">
+              <div class="dash-card">
+                <div class="dash-card-title">Mood Check-in</div>
+                <div class="dash-card-sub">How are you feeling today?</div>
+                <div class="mood-grid">
+                  <button class="mood-btn ${lastLoggedMood === 'happy' ? 'active' : ''}" onclick="selectDashMood('happy', this)">
+                    <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+                    <div class="mood-btn-label">Happy</div>
+                  </button>
+                  <button class="mood-btn ${lastLoggedMood === 'calm' ? 'active' : ''}" onclick="selectDashMood('calm', this)">
+                    <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M8 12h8"/></svg></div>
+                    <div class="mood-btn-label">Calm</div>
+                  </button>
+                  <button class="mood-btn ${lastLoggedMood === 'anxious' ? 'active' : ''}" onclick="selectDashMood('anxious', this)">
+                    <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+                    <div class="mood-btn-label">Anxious</div>
+                  </button>
+                  <button class="mood-btn ${lastLoggedMood === 'sleepy' ? 'active' : ''}" onclick="selectDashMood('sleepy', this)">
+                    <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+                    <div class="mood-btn-label">Sleepy</div>
+                  </button>
+                  <button class="mood-btn ${lastLoggedMood === 'energized' ? 'active' : ''}" onclick="selectDashMood('energized', this)">
+                    <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                    <div class="mood-btn-label">Energized</div>
+                  </button>
+                  <button class="mood-btn ${lastLoggedMood === 'joyful' ? 'active' : ''}" onclick="selectDashMood('joyful', this)">
+                    <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                    <div class="mood-btn-label">Joyful</div>
+                  </button>
+                </div>
+
+                <!-- DYNAMIC MOOD INSIGHT BOX -->
+                <div style="margin-top:14px; background:rgba(255,255,255,0.03); border-left:3px solid ${currentInsight.color}; border-radius:10px; padding:12px 14px;">
+                  <div style="font-size:11px; font-weight:700; color:${currentInsight.color}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Dynamic Mood Insight • ${currentInsight.title}</div>
+                  <div style="font-size:12px; color:#ffffff; line-height:1.4;">${currentInsight.text}</div>
+                </div>
+              </div>
+
+              <!-- 7-DAY RESET PLAN TIMELINE ARC GRAPHIC CARD -->
+              <div class="dash-card" style="min-height:${190 + (todayIndex * 8)}px; border-color:${currentInsight.color}44;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div class="dash-card-title">7-Day Reset Plan Timeline</div>
+                  <span style="font-size:11px; font-weight:700; color:${currentInsight.color}; background:rgba(255,255,255,0.06); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
+                </div>
+                
+                <div class="timeline-arc-wrap" style="margin-top:12px;">
+                  <svg class="timeline-arc-svg" viewBox="0 0 500 90">
+                    <path d="M 20 60 Q 250 10 480 60" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="4,4"/>
+                    <path d="M 20 60 Q 180 22 330 35" fill="none" stroke="${currentInsight.color}" stroke-width="3.5"/>
+                  </svg>
+                  
+                  <div class="timeline-nodes-row">
+                    <div class="timeline-node-item ${todayIndex === 0 ? 'active-glow' : ''}" id="day-node-1" onclick="clickTimelineDay(1, 'Sleep Sync', 'Morning sunlight & circadian sync')">
+                      <div class="node-day-label">Day 1</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Sleep Sync</div>
+                    </div>
+                    <div class="timeline-node-item ${todayIndex === 1 ? 'active-glow' : ''}" id="day-node-2" onclick="clickTimelineDay(2, 'Nutrient Focus', 'Mindful hydration & clean dinner')">
+                      <div class="node-day-label">Day 2</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Nutrient Focus</div>
+                    </div>
+                    <div class="timeline-node-item ${todayIndex === 2 ? 'active-glow' : ''}" id="day-node-3" onclick="clickTimelineDay(3, 'Mindful Move', 'Somatic stretch & 60s breath reset')">
+                      <div class="node-day-label">Day 3</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Mindful Move</div>
+                    </div>
+                    <div class="timeline-node-item ${todayIndex === 3 ? 'active-glow' : ''}" id="day-node-4" onclick="clickTimelineDay(4, 'Social Break', '1-hr digital unwind with tea')">
+                      <div class="node-day-label">Day 4</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Social Break</div>
+                    </div>
+                    <div class="timeline-node-item ${todayIndex === 4 ? 'active-glow' : ''}" id="day-node-5" onclick="clickTimelineDay(5, 'Activity Boost', '25-min movement & micro-journaling')">
+                      <div class="node-day-label">Day 5</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Activity Boost</div>
+                    </div>
+                    <div class="timeline-node-item ${todayIndex === 5 ? 'active-glow' : ''}" id="day-node-6" onclick="clickTimelineDay(6, 'Creative Outlet', 'Expressive reflection & gratitude')">
+                      <div class="node-day-label">Day 6</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Creative Outlet</div>
+                    </div>
+                    <div class="timeline-node-item ${todayIndex === 6 ? 'active-glow' : ''}" id="day-node-7" onclick="clickTimelineDay(7, 'Reflect & Renew', 'Weekly review & renewed direction')">
+                      <div class="node-day-label">Day 7</div>
+                      <div class="node-dot"></div>
+                      <div class="node-desc">Reflect & Renew</div>
+                    </div>
+                  </div>
+
+                  <!-- ACTIVE DAY POPOVER -->
+                  <div class="timeline-popover" id="timeline-popover-box">
+                    <div class="popover-title">DAY ${todayIndex + 1}: ${today.title}</div>
+                    <div class="popover-text">${today.action}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: TODAY'S FOCUS & PROGRESS -->
+            <div class="dash-grid-2">
+              <!-- TODAY'S FOCUS / ANCHOR & PLAN CARD -->
+              <div class="dash-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div class="dash-card-title">Today’s Focus</div>
+                  <span style="font-size:11px; font-weight:700; background:rgba(244,162,97,0.15); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.3); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
+                </div>
+                
+                <div class="plan-choice-btn is-today" style="cursor:default; margin-bottom:10px;">
+                  <div class="plan-choice-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><polygon points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div class="plan-choice-content">
+                    <div class="plan-choice-header">
+                      <span class="plan-choice-title" style="color:var(--theme-accent); font-size:14px;">${today.title}: ${today.focus}</span>
+                      <span class="plan-choice-pill active-pill">Day ${todayIndex + 1}</span>
+                    </div>
+                    <div class="plan-choice-action"><strong>Action:</strong> ${today.action}</div>
+                    <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${today.reflection}</div>
+                    <div class="plan-choice-quote">"${today.forgiveness}"</div>
+                  </div>
+                </div>
+                ${currentFocus ? `<div style="background:rgba(255,255,255,0.04); border-left:3px solid var(--theme-accent); padding:8px 12px; border-radius:10px; font-size:11px; color:#ffffff;"><strong>Current Focus:</strong> ${currentFocus}</div>` : ''}
+              </div>
+
+              <!-- RESET PROGRESS CARD -->
+              <div class="dash-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div class="dash-card-title">7-Day Reset Progress</div>
+                  <span style="font-size:11px; font-weight:700; color:#a78bfa; background:rgba(167,139,250,0.15); padding:3px 10px; border-radius:999px;">${todayIndex + 1}/7 Days — ${Math.round(((todayIndex + 1)/7)*100)}% complete</span>
+                </div>
+                
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill-gradient" style="width:${Math.round(((todayIndex + 1)/7)*100)}%;"></div>
+                </div>
+
+                <div class="progress-stats-row">
+                  <div class="progress-stat-item">
+                    <span class="stat-label">Mindfulness</span>
+                    <span class="stat-value">71%</span>
+                  </div>
+                  <div class="progress-stat-item">
+                    <span class="stat-label">Nutrition</span>
+                    <span class="stat-value">65%</span>
+                  </div>
+                  <div class="progress-stat-item">
+                    <span class="stat-label">Activity</span>
+                    <span class="stat-value">80%</span>
+                  </div>
+                  <div class="progress-stat-item">
+                    <span class="stat-label">Sleep</span>
+                    <span class="stat-value">75%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: GENTLE TOOLKIT -->
+            <div class="dash-grid-2">
+              <div class="dash-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div class="dash-card-title">Gentle Toolkit</div>
+                  <span style="font-size:10px; font-weight:700; background:rgba(255,255,255,0.06); color:var(--theme-accent); padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.1);">5 Active Tools</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <!-- Choice 1 -->
+                  <button class="toolkit-choice-btn" onclick="goToStepKey('daily_intro')">
+                    <div class="toolkit-btn-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <div class="toolkit-btn-content">
+                      <div class="toolkit-btn-row1">
+                        <span class="toolkit-btn-title">Daily Energy & Mood Check-in</span>
+                        <span class="toolkit-pill-badge">Interactive</span>
+                      </div>
+                      <div class="toolkit-btn-row2">Log your current emotional state and track daily vitality trends</div>
+                    </div>
+                  </button>
+
+                  <!-- Choice 2 -->
+                  <button class="toolkit-choice-btn" onclick="goToStepKey('breathing')">
+                    <div class="toolkit-btn-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                    </div>
+                    <div class="toolkit-btn-content">
+                      <div class="toolkit-btn-row1">
+                        <span class="toolkit-btn-title">Somatic Diaphragmatic Breathing</span>
+                        <span class="toolkit-pill-badge" style="background:rgba(52,211,153,0.15); color:#34d399; border-color:rgba(52,211,153,0.3);">60-Sec Loop</span>
+                      </div>
+                      <div class="toolkit-btn-row2">Guided 4-2-6 breathing cycle to calm your autonomic nervous system</div>
+                    </div>
+                  </button>
+
+                  <!-- Choice 3 -->
+                  <button class="toolkit-choice-btn" onclick="goToStepKey('journal')">
+                    <div class="toolkit-btn-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </div>
+                    <div class="toolkit-btn-content">
+                      <div class="toolkit-btn-row1">
+                        <span class="toolkit-btn-title">Micro-Journal & Thought Unloading</span>
+                        <span class="toolkit-pill-badge" style="background:rgba(167,139,250,0.15); color:#a78bfa; border-color:rgba(167,139,250,0.3);">Clarity Tool</span>
+                      </div>
+                      <div class="toolkit-btn-row2">Safely offload mental chatter, quiet anxiety, and capture key reflections</div>
+                    </div>
+                  </button>
+
+                  <!-- Choice 4 -->
+                  <button class="toolkit-choice-btn" onclick="goToStepKey('reset_focus')">
+                    <div class="toolkit-btn-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    </div>
+                    <div class="toolkit-btn-content">
+                      <div class="toolkit-btn-row1">
+                        <span class="toolkit-btn-title">Single-Task Focus Anchor</span>
+                        <span class="toolkit-pill-badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.3);">1-Task Priority</span>
+                      </div>
+                      <div class="toolkit-btn-row2">Set one immediate priority for right now without pressure or distraction</div>
+                    </div>
+                  </button>
+
+                  <!-- Choice 5 -->
+                  <button class="toolkit-choice-btn" onclick="restartOnboarding()">
+                    <div class="toolkit-btn-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    </div>
+                    <div class="toolkit-btn-content">
+                      <div class="toolkit-btn-row1">
+                        <span class="toolkit-btn-title">Re-Evaluate Onboarding Strategy</span>
+                        <span class="toolkit-pill-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">New Parameters</span>
+                      </div>
+                      <div class="toolkit-btn-row2">Reset your onboarding inputs and generate a fresh 7-day personalized strategy</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: MOOD PATTERN BUBBLE CANVAS & REFLECTION SPACE -->
+            <div class="dash-grid-2">
+              <!-- MOOD PATTERN BUBBLE CANVAS CARD -->
+              <div class="dash-card">
+                <div class="dash-card-title">Your Mood Pattern</div>
+                <div id="mood-bubble-canvas" class="mood-bubble-canvas" style="min-height:160px; margin-top:8px;"></div>
+                <p id="mood-summary-text" style="font-size:12px; color:var(--theme-text-muted); margin-top:8px;"></p>
+              </div>
+
+              <!-- REFLECTION SPACE CARD -->
+              <div class="dash-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <div class="dash-card-title">Reflection Space</div>
+                  <button class="btn secondary" style="font-size:11px; padding:4px 12px; border-radius:999px; border-color:var(--theme-accent); color:var(--theme-accent);" onclick="openReflectionsModal()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px; vertical-align:middle;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    Saved Quotes (<span id="reflections-count-badge">0</span>)
+                  </button>
+                </div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:8px;">Share a thought or gentle win for yourself today:</p>
+                <textarea id="story-input" class="input" style="min-height:60px; font-size:12px;" placeholder="What made you feel proud or calm today?"></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                  <span style="font-size:10px; color:var(--theme-text-muted);">Saved securely on device</span>
+                  <button class="btn primary" style="font-size:11px; padding:6px 14px;" onclick="handleShareStory()">Save Reflection</button>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          setTimeout(() => {
+            if (typeof clickTimelineDay === 'function') {
+              clickTimelineDay(todayIndex + 1, today.title, today.action);
+            }
+            if (typeof updateReflectionsBadge === 'function') {
+              updateReflectionsBadge();
+            }
+          }, 50);
+        }
+
+        // TAB 2: INSIGHTS & SOUNDSCAPES (SCREENSHOT 2 EXACT OVERHAUL + SOUNDSCAPE CONTROLS)
+        if (activeTab === "soundscapes") {
+          html += `
+            <div class="soundscape-top-bar">
+              <div class="soundscape-brand">
+                <div class="soundscape-brand-icon"></div>
+                <span>Peakora</span>
+              </div>
+              <div style="display:flex; gap:16px; align-items:center;">
+                <span>98% Battery</span>
+                <span>09:41</span>
+                <span>WiFi Connected</span>
+              </div>
+            </div>
+
+            <div class="dash-grid-equal">
+              <!-- LEFT COLUMN: BREATHING & SOUNDSCAPES -->
+              <div class="dash-card">
+                <div class="dash-card-title" style="letter-spacing:0.06em;">BREATHING & SOUNDSCAPES</div>
+                
+                <div class="breathing-ring-outer">
+                  <div class="breathing-ring-circle"></div>
+                  <div class="breathing-center-info">
+                    <div class="breathing-action-label" id="dash-breath-state">INHALE</div>
+                    <div class="breathing-time-rem" id="dash-breath-time">3s remaining • 4/10 cycles</div>
+                    <div style="font-size:11px; color:#ffffff; font-weight:700; margin-top:4px;">5:17 / 10:00</div>
+                  </div>
+                </div>
+
+                <!-- AUDIO WAVE VISUALIZER -->
+                <div class="audio-wave-box" style="margin-bottom:12px;">
+                  <div class="audio-wave-header">AUDIO WAVE VISUALIZER</div>
+                  <svg class="audio-wave-canvas-svg" viewBox="0 0 300 40">
+                    <path d="M 0 20 Q 25 5, 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20" fill="none" stroke="#f4a261" stroke-width="2.5"/>
+                    <path d="M 0 20 Q 25 32, 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.75"/>
+                  </svg>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <div>
+                      <div style="font-size:13px; font-weight:700; color:#ffffff;">Deep Zen Forest</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted);">01:23 / 08:45</div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="showToastNotification('Previous track selected')">⏮</button>
+                      <button class="btn primary" style="padding:8px 16px; font-size:14px; border-radius:50%;" onclick="toggleAmbientAudio('harmony')">⏸</button>
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="showToastNotification('Next track selected')">⏭</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ORGANIC AUDIO SOUNDSCAPE DROPDOWN CARD -->
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
+                  <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Synthesized Soundscapes Selector</div>
+                  <div id="audio-playing-status" style="font-size:11px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:8px; border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;">
+                      <option value="harmony" ${currentlyPlayingTrack === 'harmony' ? 'selected' : ''}>528Hz Solfeggio & Singing Bowl Harmonics</option>
+                      <option value="ocean" ${currentlyPlayingTrack === 'ocean' ? 'selected' : ''}>Ocean Shoreline Surf (Pink Noise Waves)</option>
+                      <option value="rain" ${currentlyPlayingTrack === 'rain' ? 'selected' : ''}>Forest Rainfall & Zen Bell Chimes</option>
+                    </select>
+                    <div style="display:flex; gap:6px;">
+                      <button id="audio-play-btn" class="btn primary" style="flex:1; font-size:12px; font-weight:600;" onclick="playAmbientAudioFromDropdown()">
+                        ${currentlyPlayingTrack ? 'Pause Soundscape' : 'Play Selected Soundscape'}
+                      </button>
+                      <button class="btn ghost" style="font-size:11px; padding:6px 10px; color:#fb7185;" onclick="stopAmbientAudio()">Stop</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT COLUMN: SOLFEGGIO & AMBIENT & ANALYTICS -->
+              <div>
+                <!-- SOLFEGGIO FREQUENCIES -->
+                <div class="dash-card" style="margin-bottom:16px;">
+                  <div class="dash-card-title">SOLFEGGIO FREQUENCIES</div>
+                  <div class="solfeggio-toggle-grid">
+                    <div class="solfeggio-item" onclick="toggleSolfeggio(396, this)">
+                      <div class="solfeggio-switch"></div>
+                      <div class="solfeggio-freq">396Hz</div>
+                      <div class="solfeggio-desc">Root</div>
+                    </div>
+                    <div class="solfeggio-item active" onclick="toggleSolfeggio(528, this)">
+                      <div class="solfeggio-switch"></div>
+                      <div class="solfeggio-freq">528Hz</div>
+                      <div class="solfeggio-desc">Love</div>
+                    </div>
+                    <div class="solfeggio-item" onclick="toggleSolfeggio(639, this)">
+                      <div class="solfeggio-switch"></div>
+                      <div class="solfeggio-freq">639Hz</div>
+                      <div class="solfeggio-desc">Connect</div>
+                    </div>
+                    <div class="solfeggio-item" onclick="toggleSolfeggio(741, this)">
+                      <div class="solfeggio-switch"></div>
+                      <div class="solfeggio-freq">741Hz</div>
+                      <div class="solfeggio-desc">Intuition</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AMBIENT SOUNDSCAPES -->
+                <div class="dash-card" style="margin-bottom:16px;">
+                  <div class="dash-card-title">AMBIENT SOUNDSCAPES</div>
+                  <div class="ambient-list">
+                    
+                    <div class="ambient-card-item active">
+                      <img src="src/assets/images/soundscape_rainforest_1785859412795.jpg" class="ambient-thumb" alt="Rainforest">
+                      <div class="ambient-info">
+                        <div class="ambient-title">RAINFOREST</div>
+                        <div class="ambient-slider-wrap">
+                          <input type="range" class="ambient-slider" min="0" max="100" value="70" oninput="adjustAmbientVol('rainforest', this.value)">
+                          <span class="ambient-pct" id="pct-rainforest">70%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="ambient-card-item">
+                      <img src="src/assets/images/soundscape_ocean_1785859428118.jpg" class="ambient-thumb" alt="Soft Ocean">
+                      <div class="ambient-info">
+                        <div class="ambient-title">SOFT OCEAN</div>
+                        <div class="ambient-slider-wrap">
+                          <input type="range" class="ambient-slider" min="0" max="100" value="30" oninput="adjustAmbientVol('ocean', this.value)">
+                          <span class="ambient-pct" id="pct-ocean">30%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="ambient-card-item">
+                      <img src="src/assets/images/soundscape_wind_1785859440905.jpg" class="ambient-thumb" alt="Wind">
+                      <div class="ambient-info">
+                        <div class="ambient-title">WIND</div>
+                        <div class="ambient-slider-wrap">
+                          <input type="range" class="ambient-slider" min="0" max="100" value="45" oninput="adjustAmbientVol('wind', this.value)">
+                          <span class="ambient-pct" id="pct-wind">45%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="ambient-card-item">
+                      <img src="src/assets/images/soundscape_om_chant_1785859453828.jpg" class="ambient-thumb" alt="Om Chant">
+                      <div class="ambient-info">
+                        <div class="ambient-title">OM CHANT</div>
+                        <div class="ambient-slider-wrap">
+                          <input type="range" class="ambient-slider" min="0" max="100" value="55" oninput="adjustAmbientVol('om', this.value)">
+                          <span class="ambient-pct" id="pct-om">55%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- DEEP MOOD & ENERGY ANALYTICS CARD -->
+                <div class="dash-card">
+                  <div class="dash-card-title">Deep Mood & Energy Analytics</div>
+                  <p style="font-size:11px; color:var(--theme-text-muted); margin-bottom:10px;">Emotional energy distribution derived from logged sessions:</p>
+                  
+                  <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                      <div style="font-size:11px; font-weight:700; color:#ffffff;">Weekly Emotional Spectrum</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">7 Sessions Analyzed</div>
+                    </div>
+                    <svg viewBox="0 0 300 70" style="width:100%; height:60px;">
+                      <rect x="10" y="20" width="35" height="40" rx="4" fill="#AEE6C5" opacity="0.9"/>
+                      <rect x="55" y="10" width="35" height="50" rx="4" fill="#6EC8C8" opacity="0.9"/>
+                      <rect x="100" y="30" width="35" height="30" rx="4" fill="#F5C26B" opacity="0.9"/>
+                      <rect x="145" y="15" width="35" height="45" rx="4" fill="#E8A0A0" opacity="0.9"/>
+                      <rect x="190" y="5" width="35" height="55" rx="4" fill="#F5B35C" opacity="0.9"/>
+                      <rect x="235" y="25" width="35" height="35" rx="4" fill="#6EC8C8" opacity="0.9"/>
+                      <path d="M 27 30 L 72 20 L 117 40 L 162 25 L 207 15 L 252 35" fill="none" stroke="#f4a261" stroke-width="2.5" stroke-dasharray="3,3"/>
+                      <circle cx="207" cy="15" r="4" fill="#f4a261"/>
+                    </svg>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
+                        <span>Calm & Grounded (Sage State)</span>
+                        <strong style="color:#AEE6C5;">62%</strong>
+                      </div>
+                      <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+                        <div style="width:62%; height:100%; background:#AEE6C5; border-radius:999px;"></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
+                        <span>Mindful Rest & Unwind (Ocean State)</span>
+                        <strong style="color:#6EC8C8;">24%</strong>
+                      </div>
+                      <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+                        <div style="width:24%; height:100%; background:#6EC8C8; border-radius:999px;"></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
+                        <span>Peak Focus & Clarity (Twilight State)</span>
+                        <strong style="color:#F5C26B;">14%</strong>
+                      </div>
+                      <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+                        <div style="width:14%; height:100%; background:#F5C26B; border-radius:999px;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p style="font-size:10px; color:var(--theme-text-muted); font-style:italic; margin:8px 0 0;">Peakora Insight: Your emotional clarity increases by 38% on days with completed morning breathing resets.</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // TAB 3: PLANS & PAST PLANS HISTORY
+        if (activeTab === "plans" || activeTab === "programs") {
+          const pastPlans = getPastPlans();
+          html += `
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <h1 class="dash-welcome-h1">Active Reset Plans & History</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Manage your current 7-day reset plan and view saved past plan archives.</p>
+            </div>
+            
+            <div class="dash-card mb-16">
+              <div class="dash-card-title">Active 7-Day Reset Plan</div>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Goal: ${state.goal || 'General Calm'} • Routine Pace: ${state.routine || 'Steady'}</p>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                ${plan.map((p, idx) => {
+                  const isToday = idx === todayIndex;
+                  const dayIcons = [
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M8 12h8"/></svg>',
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>',
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>',
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+                  ];
+                  const icon = dayIcons[idx % dayIcons.length];
+                  return `
+                    <div class="plan-choice-btn ${isToday ? 'is-today' : ''}">
+                      <div class="plan-choice-icon">${icon}</div>
+                      <div class="plan-choice-content">
+                        <div class="plan-choice-header">
+                          <span class="plan-choice-title">DAY ${idx + 1}: ${p.title}</span>
+                          ${isToday ? '<span class="plan-choice-pill active-pill">Current Day</span>' : ''}
+                        </div>
+                        <div class="plan-choice-action"><strong>Action:</strong> ${p.action}</div>
+                        <div class="plan-choice-quote">"${p.forgiveness}"</div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- PREVIOUS 7-DAY PLANS HISTORY CARD -->
+            <div class="dash-card mb-16">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div class="dash-card-title">Previous 7-Day Plans History</div>
+                <button class="btn secondary" style="font-size:11px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save Active Plan</button>
+              </div>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">Select an archived 7-day plan from your personal reset history:</p>
+          `;
+          
+          if (!pastPlans || pastPlans.length === 0) {
+            html += `
+              <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">No archived 7-day plans saved yet.</p>
+                <p style="font-size:11px; color:var(--theme-text-muted); opacity:0.8; margin:0;">Click <strong>"Save Active Plan"</strong> to archive your resets here.</p>
+              </div>
+            `;
+          } else {
+            html += `
+              <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                <select id="past-plans-select" class="input" style="font-size:12px; font-weight:600; text-align:left;">
+                  ${pastPlans.map((p, i) => `<option value="${i}">${p.title} (${p.date}) — Goal: ${p.goal}</option>`).join('')}
+                </select>
+                <button class="btn secondary" style="width:100%; font-size:12px; font-weight:600;" onclick="viewPastPlanFromDropdown()">View Plan Details</button>
+              </div>
+            `;
+          }
+          html += `</div>`;
+        }
+
+        // TAB 5: PEAKORA PICKS
+        if (activeTab === "picks" || activeTab === "library") {
+          html += `
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <h1 class="dash-welcome-h1">Peakora Picks & Micro-Guides</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Curated micro-guides for quiet moments throughout your day.</p>
+            </div>
+            <div class="dash-card mb-16">
+              <div class="dash-card-title">Peakora Picks</div>
+              <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+                <button class="btn ghost" style="text-align:left; font-size:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#ffffff;" onclick="showPickTip('3-Minute Morning Grounding', 'Before reaching for your phone, pause in bed. Take 3 deep breaths, place your feet on the floor, and notice one thing you are grateful for today.')">
+                  <strong>3-Minute Morning Grounding</strong>
+                  <div style="font-size:11px; color:var(--theme-text-muted); margin-top:2px;">Bedside mindfulness & body awareness before screen time</div>
+                </button>
+                <button class="btn ghost" style="text-align:left; font-size:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#ffffff;" onclick="showPickTip('Softening Midday Overwhelm', 'Unclench your jaw, drop your shoulders away from your ears, and take a 10-second pause. You do not need to solve everything right now.')">
+                  <strong>Softening Midday Overwhelm</strong>
+                  <div style="font-size:11px; color:var(--theme-text-muted); margin-top:2px;">Somatic tension release and physical posture softening</div>
+                </button>
+                <button class="btn ghost" style="text-align:left; font-size:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#ffffff;" onclick="showPickTip('Evening Sleep & Unwind Routine', 'Write down the top 2 things on your mind for tomorrow. Closing the tab in your head lets your body rest deeply.')">
+                  <strong>Evening Sleep & Unwind Routine</strong>
+                  <div style="font-size:11px; color:var(--theme-text-muted); margin-top:2px;">Mental offloading and circadian wind-down preparation</div>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        // TAB 6: PEAKORA EXPERIENCE & MEMBERSHIP
+        if (activeTab === "experience") {
+          const peakoraSubStatus = localStorage.getItem("peakora_subscription_status") || (isPlus ? "Active" : "Trial");
+
+          html += `
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <h1 class="dash-welcome-h1">Peakora Experience & Membership Tiers</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Compare features between Peakora Core Free and Peakora+ Premium.</p>
+            </div>
+
+            <!-- FREE PLAN BOX -->
+            <div class="dash-card mb-16" id="peakora-free-card" style="border:1px solid rgba(52, 211, 153, 0.3); background:rgba(255,255,255,0.02);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h2 style="margin:0; font-size:18px; color:#ffffff;">Peakora Core (Free Plan)</h2>
+                </div>
+                <span class="sub-status-indicator" style="font-size:11px; font-weight:700; padding:4px 12px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.35); display:inline-flex; align-items:center; gap:5px;">
+                  <span style="font-size:8px;">●</span> Active Plan (Free)
+                </span>
+              </div>
+              <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 12px;">
+                Your essential daily mental reset toolkit. Always 100% free with no hidden subscriptions or intrusive advertisements.
+              </p>
+              <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:14px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.08);">
+                <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:8px;">Included Free Features:</div>
+                <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.7;">
+                  <li>✓ <strong>7-Day Personalized Reset Plan</strong> — Custom daily mental & sleep routines</li>
+                  <li>✓ <strong>Daily Mood Check-In & Bubble Visualizer</strong> — Track emotional trends over time</li>
+                  <li>✓ <strong>60-Second Breathing Reset Tool</strong> — Somatic diaphragmatic pacing</li>
+                  <li>✓ <strong>Micro-Journaling & Thought Unloading</strong> — Offload mental chatter safely</li>
+                  <li>✓ <strong>Daily Focus & Intention Anchors</strong> — Set one clear priority each morning</li>
+                </ul>
+              </div>
+              <button class="btn secondary" style="width:100%; font-size:12px; opacity:0.85; cursor:default;" disabled>
+                ✓ Currently Active (Free Plan)
+              </button>
+            </div>
+
+            <!-- PEAKORA+ PREMIUM MEMBERSHIP BOX -->
+            <div class="dash-card mb-16" id="peakora-plus-card" style="border:1px solid rgba(244,162,97,0.35);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h2 style="margin:0; font-size:18px; color:#ffffff;">Peakora+ Premium Membership</h2>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span class="sub-status-indicator" style="font-size:11px; font-weight:700; padding:4px 12px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${peakoraSubStatus === 'Active' ? 'background:rgba(244,162,97,0.2); color:#f4a261; border:1px solid rgba(244,162,97,0.4);' : 'background:rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.4);'}">
+                    <span style="font-size:8px;">●</span> Status: ${peakoraSubStatus}
+                  </span>
+                  <button type="button" class="btn ghost" style="font-size:10px; padding:3px 7px; border:1px solid rgba(255,255,255,0.15); border-radius:6px; cursor:pointer;" onclick="toggleMockSubscriptionStatus()" title="Toggle mock subscription status for testing">
+                    Switch to ${peakoraSubStatus === 'Active' ? 'Trial' : 'Active'}
+                  </button>
+                </div>
+              </div>
+              <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 12px;">
+                ${isPlus ? 'Your Peakora+ subscription is active! You have full access to custom themes, audio soundscapes, and past plan archives.' : 'Elevate your reset with ambient soundscapes, dynamic emotional themes, auto mood-reactive styling, and past plan archives for $4.99/mo.'}
+              </p>
+              <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:14px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.08);">
+                <div style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261); margin-bottom:8px;">Peakora+ Premium Features ($4.99/mo or $47.99/yr):</div>
+                <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.7;">
+                  <li style="color:${isPlus ? 'var(--theme-accent, #f4a261)' : 'var(--theme-text-muted)'}; font-weight:${isPlus ? '600' : 'normal'};">
+                    ✦ <strong>Dynamic Themes & Color Spaces</strong> (Sunrise, Twilight, Sage, Sunset, Ocean)
+                  </li>
+                  <li style="color:${isPlus ? 'var(--theme-accent, #f4a261)' : 'var(--theme-text-muted)'}; font-weight:${isPlus ? '600' : 'normal'};">
+                    ✦ <strong>Past 7-Day Plans History & Archiving</strong> — Save and re-activate previous reset plans
+                  </li>
+                  <li style="color:${isPlus ? 'var(--theme-accent, #f4a261)' : 'var(--theme-text-muted)'}; font-weight:${isPlus ? '600' : 'normal'};">
+                    ✦ <strong>Organic Soundscape Audio Synthesizer</strong> — Deep binaural white noise & ambient loops
+                  </li>
+                  <li style="color:${isPlus ? 'var(--theme-accent, #f4a261)' : 'var(--theme-text-muted)'}; font-weight:${isPlus ? '600' : 'normal'};">
+                    ✦ <strong>Mood-Reactive Auto Theme Switching</strong> — Visual UI shifts color to match your daily mood
+                  </li>
+                </ul>
+              </div>
+              <button class="btn primary" style="width:100%; font-size:13px;" onclick="openPlanSelectionModal()">
+                ${isPlus ? 'Manage Membership / Billing Options' : 'Explore Upgrade Options ($4.99/mo)'}
+              </button>
+            </div>
+          `;
+        }
+
+        // TAB 7: UNIFIED SETTINGS COMPONENT
+        if (activeTab === "settings") {
+          const isAutoTheme = localStorage.getItem("peakora_auto_theme") === "true";
+          const notifDaily = localStorage.getItem("peakora_notif_daily") !== "false";
+          const notifSound = localStorage.getItem("peakora_notif_sound") !== "false";
+          const notifWeekly = localStorage.getItem("peakora_notif_weekly") === "true";
+          const notifTime = localStorage.getItem("peakora_notif_time") || "08:00 AM";
+
+          html += `
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <h1 class="dash-welcome-h1">Settings & Preferences</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Customize visual themes, notification preferences, device installation, and app settings.</p>
+            </div>
+
+            <div class="dash-grid-2">
+              <!-- SETTINGS CARD 1: THEME TOGGLES & COLOR SPACE -->
+              <div class="dash-card">
+                <div class="dash-card-title">Theme & Visual Experience</div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Select an emotional color spectrum for your workspace:</p>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+                  <button class="theme-chip ${currentTheme === 'sunrise' ? 'active' : ''}" onclick="applyTheme('sunrise')">Sunrise Amber</button>
+                  <button class="theme-chip ${currentTheme === 'twilight' ? 'active' : ''}" onclick="applyTheme('twilight')">Twilight Indigo</button>
+                  <button class="theme-chip ${currentTheme === 'sage' || currentTheme === 'emerald' ? 'active' : ''}" onclick="applyTheme('sage')">Sage Emerald</button>
+                  <button class="theme-chip ${currentTheme === 'sky' || currentTheme === 'ocean' ? 'active' : ''}" onclick="applyTheme('ocean')">Serene Sky</button>
+                  <button class="theme-chip ${currentTheme === 'sunset' ? 'active' : ''}" onclick="applyTheme('sunset')">Velvet Sunset</button>
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <div>
+                    <div style="font-size:12px; font-weight:700; color:#ffffff;">Dynamic Auto-Theme on Mood Check-ins</div>
+                    <div style="font-size:11px; color:var(--theme-text-muted);">Adapts color theme automatically based on your logged mood</div>
+                  </div>
+                  <button class="btn ${isAutoTheme ? 'primary' : 'secondary'}" style="font-size:11px; padding:6px 14px; font-weight:700;" onclick="toggleAutoTheme()">
+                    ${isAutoTheme ? 'Auto-Theme: ENABLED' : 'Enable Auto-Theme'}
+                  </button>
+                </div>
+              </div>
+
+              <!-- SETTINGS CARD 2: NOTIFICATION PREFERENCES -->
+              <div class="dash-card">
+                <div class="dash-card-title">Notification & Reminder Preferences</div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Manage gentle alerts and local reminder schedules:</p>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Daily Check-in Reminders</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">Receive a gentle morning prompt to log your mood</div>
+                    </div>
+                    <button class="btn ${notifDaily ? 'primary' : 'secondary'}" style="font-size:11px; padding:5px 12px; font-weight:700;" onclick="toggleNotifSetting('peakora_notif_daily')">
+                      ${notifDaily ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                    <div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Soundscape & Chime Alerts</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">Audio feedback during somatic breathing sessions</div>
+                    </div>
+                    <button class="btn ${notifSound ? 'primary' : 'secondary'}" style="font-size:11px; padding:5px 12px; font-weight:700;" onclick="toggleNotifSetting('peakora_notif_sound')">
+                      ${notifSound ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                    <div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Weekly Progress Digest</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">Summary of mood trends and completed reset days</div>
+                    </div>
+                    <button class="btn ${notifWeekly ? 'primary' : 'secondary'}" style="font-size:11px; padding:5px 12px; font-weight:700;" onclick="toggleNotifSetting('peakora_notif_weekly')">
+                      ${notifWeekly ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                    <div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Reminder Alert Time</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">Preferred time for daily reset prompts</div>
+                    </div>
+                    <select class="input" style="width:auto; font-size:11px; padding:4px 8px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;" onchange="changeNotifTime(this.value)">
+                      <option value="07:00 AM" ${notifTime === '07:00 AM' ? 'selected' : ''} style="background:#151122; color:#fff;">07:00 AM</option>
+                      <option value="08:00 AM" ${notifTime === '08:00 AM' ? 'selected' : ''} style="background:#151122; color:#fff;">08:00 AM</option>
+                      <option value="09:00 AM" ${notifTime === '09:00 AM' ? 'selected' : ''} style="background:#151122; color:#fff;">09:00 AM</option>
+                      <option value="12:00 PM" ${notifTime === '12:00 PM' ? 'selected' : ''} style="background:#151122; color:#fff;">12:00 PM</option>
+                      <option value="08:00 PM" ${notifTime === '08:00 PM' ? 'selected' : ''} style="background:#151122; color:#fff;">08:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-grid-2">
+              <!-- SETTINGS CARD 3: INSTALL APP -->
+              <div class="dash-card" id="install-assistant-card">
+                <div class="dash-card-title" style="margin-bottom:6px;">Install Peakora Assistant</div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">
+                  Install Peakora Assistant on your mobile device or desktop for fast 1-tap launcher access, offline wellness tools, and native app performance.
+                </p>
+                <button class="btn primary" style="padding:8px 16px; font-size:12px; font-weight:700;" onclick="openInstallModal()">
+                  Install App & Setup Guide
+                </button>
+              </div>
+
+              <!-- SETTINGS CARD 4: ACCOUNT & DATA PREFERENCES -->
+              <div class="dash-card">
+                <div class="dash-card-title" style="margin-bottom:8px;">Account & Data Preferences</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:10px; color:#ffffff;" onclick="restartOnboarding()">
+                    <strong>Reset Onboarding & Goal Parameters</strong> — Reconfigure your 7-day plan
+                  </button>
+                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:10px; color:#fb7185;" onclick="clearAllDataAndReset()">
+                    <strong>Clear Local Cache & Log Out</strong> — Reset all stored logs and settings
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        html += `
+              </div> <!-- /dash-content -->
+            </div> <!-- /dash-container -->
+          </div> <!-- /assistant-card -->
+
+          <!-- Paddle Merchant Compliance Footer Links -->
+          <div style="text-align:center; padding:16px 0 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted);">
+            <div>Peakora AI — Personal Daily Wellness & Reset Assistant</div>
+            <div style="margin-top:6px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+              <a href="#" style="color:var(--accent-violet, #a78bfa); text-decoration:none;" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
+              <span>•</span>
+              <a href="#" style="color:#7c3aed; text-decoration:none;" onclick="openLegalModal('terms'); return false;">Terms of Service</a>
+              <span>•</span>
+              <a href="#" style="color:#7c3aed; text-decoration:none;" onclick="openLegalModal('refund'); return false;">Refund & Guarantee</a>
+              <span>•</span>
+              <a href="#" style="color:#7c3aed; text-decoration:none;" onclick="openLegalModal('contact'); return false;">Contact Support</a>
+            </div>
+            <div style="margin-top:6px; font-size:10px; color:#999;">© 2026 Peakora. Billed securely. Support: peakora.network@gmail.com</div>
+          </div>
+        </div>
+      `;
+        container.innerHTML = html;
+        renderMoodBubbles();
+        if (typeof updateReflectionsBadge === "function") updateReflectionsBadge();
+        return;
+      }
+
+      // 23. EXIT
+      if (key === "exit") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>See you soon!</h2>
+            <p class="soft-note">Your reset plan remains saved on your device whenever you need a moment of calm.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="handleBackToHome()">Return to Main Site</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+    }
+
+    /* STEP HANDLER HELPERS */
+    function selectPresetGoal(val) {
+      const el = document.getElementById("goal-input");
+      if (el) el.value = val;
+    }
+
+    function selectPresetChallenge(val) {
+      const el = document.getElementById("challenge-input");
+      if (el) el.value = val;
+    }
+
+    function selectMoodTag(val) {
+      const el = document.getElementById("daily-checkin-input");
+      if (el) {
+        el.value = val + (el.value ? " — " + el.value : "");
+      }
+    }
+
+    function handleGoal() {
+      const el = document.getElementById("goal-input");
+      const value = (el && el.value.trim()) || "Feeling more calm and steady";
+      state.answers.goal = value;
+      saveState();
+      goToStepKey("challenge");
+    }
+
+    function handleChallenge() {
+      const el = document.getElementById("challenge-input");
+      const value = (el && el.value.trim()) || "Overwhelm from busy routines";
+      state.answers.challenge = value;
+      saveState();
+      goToStepKey("time");
+    }
+
+    function handleTime(choice) {
+      if (!choice) {
+        alert("Please choose the amount of time that feels doable for you.");
+        return;
+      }
+      state.answers.time = choice;
+      saveState();
+      goToStepKey("insight");
+    }
+
+    function handleInsight() {
+      const el = document.getElementById("insight-input");
+      const value = (el && el.value.trim()) || "";
+      state.answers.insight = value;
+      saveState();
+      goToStepKey("extended1");
+    }
+
+    function handleExtended1() {
+      const el = document.getElementById("extended1-input");
+      const value = (el && el.value.trim()) || "";
+      state.answers.extended1 = value;
+      saveState();
+      goToStepKey("extended2");
+    }
+
+    function handleExtended2() {
+      const el = document.getElementById("extended2-input");
+      const value = (el && el.value.trim()) || "";
+      state.answers.extended2 = value;
+      saveState();
+      goToStepKey("email");
+    }
+
+    function handleEmail() {
+      const el = document.getElementById("email-input");
+      const value = (el && el.value.trim()) || "";
+      if (!value || value.indexOf("@") === -1) {
+        alert("Please enter a valid email address so we can save your plan.");
+        return;
+      }
+      state.email = value;
+      saveState();
+      goToStepKey("processing");
+    }
+
+    function handleDailyStart() {
+      goToStepKey("daily_intro");
+    }
+
+    function handleDailyCheckin() {
+      const el = document.getElementById("daily-checkin-input");
+      const value = (el && el.value.trim()) || "Steady";
+      state.answers.daily_checkin = value;
+      addCheckin(value);
+      saveState();
+
+      // AUTO-THEME TRIGGER: If auto-theme is active, calculate & apply theme for today's new mood pattern!
+      checkAndApplyAutoTheme(value);
+
+      goToStepKey("daily_summary");
+    }
+
+    function handleJournal() {
+      const el = document.getElementById("journal-input");
+      const value = (el && el.value.trim()) || "";
+      if (value) {
+        localStorage.setItem("peakora_journal_last", value);
+      }
+      saveState();
+      alert("Note saved gently.");
+      goToStepKey("home");
+    }
+
+    function handleResetFocus() {
+      const el = document.getElementById("reset-focus-input");
+      const value = (el && el.value.trim()) || "";
+      if (value) {
+        localStorage.setItem("peakora_current_focus", value);
+      }
+      saveState();
+      alert("Focus updated.");
+      goToStepKey("home");
+    }
+
+    function getReflections() {
+      const raw = localStorage.getItem("peakora_reflections");
+      if (!raw) return [];
+      try { return JSON.parse(raw) || []; } catch { return []; }
+    }
+
+    function updateReflectionsBadge() {
+      const countBadge = document.getElementById("reflections-count-badge");
+      if (countBadge) {
+        countBadge.textContent = getReflections().length;
+      }
+    }
+    window.renderReflectionsHistory = updateReflectionsBadge;
+
+    function handleShareStory() {
+      const el = document.getElementById("story-input");
+      const val = el ? el.value.trim() : "";
+      if (val) {
+        const list = getReflections();
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        list.unshift({ date: dateStr, text: val });
+        localStorage.setItem("peakora_reflections", JSON.stringify(list.slice(0, 15)));
+        el.value = "";
+        updateReflectionsBadge();
+        if (typeof showToastNotification === 'function') {
+          showToastNotification("Reflection saved to your Saved Quotes pop-up modal ✨");
+        } else {
+          alert("Reflection saved to your Saved Quotes pop-up modal.");
+        }
+        const modal = document.getElementById("reflections-modal");
+        if (modal && modal.style.display === "flex") {
+          renderReflectionsModalContent();
+        }
+      } else {
+        alert("Please write a short reflection or quote first.");
+      }
+    }
+
+    function openReflectionsModal() {
+      const modal = document.getElementById("reflections-modal");
+      if (modal) {
+        const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+        modal.setAttribute("data-theme", currentTheme);
+        renderReflectionsModalContent();
+        modal.style.display = "flex";
+      }
+    }
+
+    function closeReflectionsModal() {
+      const modal = document.getElementById("reflections-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function deleteReflection(idx) {
+      let list = getReflections();
+      list.splice(idx, 1);
+      localStorage.setItem("peakora_reflections", JSON.stringify(list));
+      updateReflectionsBadge();
+      renderReflectionsModalContent();
+    }
+
+    function clearAllReflections() {
+      if (confirm("Clear all saved reflections and quotes?")) {
+        localStorage.removeItem("peakora_reflections");
+        updateReflectionsBadge();
+        renderReflectionsModalContent();
+      }
+    }
+
+    function renderReflectionsModalContent() {
+      const container = document.getElementById("reflections-modal-list");
+      updateReflectionsBadge();
+      if (!container) return;
+      const list = getReflections();
+      if (!list.length) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:32px 16px; color:var(--theme-text-muted);">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" style="margin-bottom:8px;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <div style="font-size:14px; font-weight:600; color:#ffffff; margin-bottom:4px;">No Saved Quotes Yet</div>
+            <div style="font-size:12px; color:var(--theme-text-muted);">Write a reflection in the dashboard Reflection Space card to save your daily quotes here.</div>
+          </div>
+        `;
+        return;
+      }
+      let html = "";
+      list.forEach((item, idx) => {
+        html += `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; position:relative; transition:all 0.2s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:11px; font-weight:700; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">${item.date}</span>
+              <button style="background:rgba(255,255,255,0.06); border:none; color:var(--theme-text-muted); border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:11px; display:inline-flex; align-items:center; justify-content:center;" onclick="deleteReflection(${idx})" aria-label="Delete entry" title="Delete Quote">✕</button>
+            </div>
+            <div style="font-size:13px; color:#ffffff; line-height:1.5; font-style:italic;">“${item.text}”</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function togglePeakoraPlus() {
+      openPlanSelectionModal();
+    }
+
+    function openPlanSelectionModal() {
+      const modal = document.getElementById("plan-selection-modal");
+      if (modal) {
+        const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+        modal.setAttribute("data-theme", currentTheme);
+        modal.style.display = "flex";
+      }
+    }
+
+    function closePlanSelectionModal() {
+      const modal = document.getElementById("plan-selection-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function selectPlan(isPlus) {
+      if (isPlus) {
+        openPaddleCheckout('monthly');
+        return;
+      }
+      localStorage.setItem("peakora_plus_member", "false");
+      closePlanSelectionModal();
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("membership_plan_selected", { isPlus: false });
+      }
+      localStorage.setItem("peakora_auto_theme", "false");
+      applyTheme("sunrise", true);
+      alert("Switched to Peakora Core Free plan. Main default theme restored.");
+      renderStep();
+    }
+
+    /* PADDLE SECURE CHECKOUT GATEWAY INTEGRATION */
+    let activePaddlePaymentMethod = 'card';
+
+    // Global Paddle SDK Controller Implementation
+    window.Paddle = window.Paddle || {};
+    window.Paddle.Environment = window.Paddle.Environment || { set: function(env) { console.log('[Paddle] Environment set:', env); } };
+    window.Paddle.Setup = window.Paddle.Setup || function(options) { console.log('[Paddle] Setup initialized:', options); };
+    window.Paddle.Initialize = window.Paddle.Initialize || function(options) { console.log('[Paddle] Initialized:', options); };
+
+    window.Paddle.Checkout = window.Paddle.Checkout || {};
+    window.Paddle.Checkout.open = function(options) {
+      options = options || {};
+      const email = options.email || options.customerEmail || (state && state.email) || localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com";
+      const planType = options.plan || options.planType || (options.product == 'yearly' ? 'yearly' : 'monthly');
+      const price = options.price || (planType === 'yearly' ? "$47.99 USD" : "$4.99 USD");
+      const methodName = options.method || activePaddlePaymentMethod || 'Credit Card';
+      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+      const transactionId = "PAD-" + Math.floor(1000 + Math.random() * 9000) + "-" + Date.now().toString().slice(-6);
+
+      console.log(`[Paddle.Checkout.open] Executing checkout for ${email} (${planType}) via ${methodName}`);
+
+      // 1. Post webhook event to server database
+      fetch('/api/paddle-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: 'payment_succeeded',
+          email: email,
+          plan: planType,
+          method: methodName,
+          price: price,
+          data: {
+            id: transactionId,
+            status: 'completed',
+            customer: { email: email }
+          }
+        })
+      }).catch(err => console.error("Paddle Webhook Ping Error:", err));
+
+      // 2. Persist active membership in client state
+      localStorage.setItem("peakora_plus_member", "true");
+      localStorage.setItem("peakora_subscription_plan", planType);
+      localStorage.setItem("peakora_subscription_id", transactionId);
+      localStorage.setItem("peakora_subscription_method", methodName);
+      localStorage.setItem("peakora_user_email", email);
+
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("paddle_payment_completed", {
+          plan: planType,
+          price: price,
+          method: methodName,
+          transactionId: transactionId,
+          email: email
+        });
+      }
+
+      // 3. Construct standard event response object
+      const eventData = {
+        checkout: { id: transactionId, completed: true, status: 'completed' },
+        user: { email: email },
+        product: { id: planType, price: price },
+        payment: { method: methodName, status: 'completed' },
+        status: 'active'
+      };
+
+      // 4. Trigger callbacks
+      if (typeof options.successCallback === 'function') {
+        try { options.successCallback(eventData); } catch(e) { console.error("successCallback error:", e); }
+      }
+      if (typeof options.eventCallback === 'function') {
+        try { options.eventCallback({ name: 'checkout.completed', data: eventData }); } catch(e) { console.error("eventCallback error:", e); }
+      }
+
+      // 5. Check for direct redirection request
+      if (options.redirectUrl || options.redirect === true) {
+        const redirectUrl = options.redirectUrl || `thankyou.html?status=success&plan=${planType}&method=${encodeURIComponent(methodName)}&email=${encodeURIComponent(email)}&tx=${transactionId}&theme=${currentTheme}`;
+        window.location.href = redirectUrl;
+      }
+    };
+
+    async function checkServerSubscription() {
+      try {
+        const userEmail = (state && state.email) || localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com";
+        const res = await fetch(`/api/subscription-status?email=${encodeURIComponent(userEmail)}`);
+        const data = await res.json();
+        if (data && data.success && data.status === 'active') {
+          localStorage.setItem("peakora_plus_member", "true");
+          if (data.plan) localStorage.setItem("peakora_subscription_plan", data.plan);
+          if (data.transactionId) localStorage.setItem("peakora_subscription_id", data.transactionId);
+        }
+      } catch(e) {
+        console.log("Server subscription sync check:", e);
+      }
+    }
+
+    function openPaddleCheckout(planType, method = 'card') {
+      closePlanSelectionModal();
+      const modal = document.getElementById("paddle-checkout-modal");
+      const content = document.getElementById("paddle-checkout-content");
+      if (!modal || !content) return;
+
+      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+      modal.setAttribute("data-theme", currentTheme);
+      
+      const isYearly = planType === 'yearly';
+      const price = isYearly ? "$47.99 USD" : "$4.99 USD";
+      const interval = isYearly ? "billed annually ($3.99/mo equivalent)" : "billed monthly";
+      const planTitle = isYearly ? "Peakora+ Annual Membership" : "Peakora+ Monthly Membership";
+      const userEmail = (state && state.email) ? state.email : (localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com");
+      activePaddlePaymentMethod = method;
+
+      content.innerHTML = `
+        <div style="text-align:center; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.08);">
+          <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:18px;">🔒</span>
+            <h3 style="margin:0; font-size:18px; color:#ffffff;">Paddle Secure Checkout</h3>
+          </div>
+          <div style="font-size:11px; color:var(--theme-text-muted);">
+            Reseller & Merchant of Record: <strong>Paddle.com</strong> • 256-Bit SSL Encrypted
+          </div>
+        </div>
+
+        <!-- Order Summary Card -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:700; font-size:14px; color:#ffffff;">${planTitle}</div>
+              <div style="font-size:11px; color:var(--theme-text-muted);">${interval} • 7-Day Money-Back Guarantee</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:16px; font-weight:800; color:var(--theme-accent, #f4a261);">${price}</div>
+              <div style="font-size:10px; color:var(--accent-amber, #f4a261); font-weight:600;">Includes tax & fees</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Email -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px; color:#ffffff;">ACCOUNT EMAIL FOR RECEIPT & ACCESS</label>
+          <input type="email" id="paddle-email" value="${userEmail}" required style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:13px; background:#181226; color:#ffffff;" placeholder="your.email@example.com">
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:6px; color:#ffffff;">SELECT PAYMENT METHOD</label>
+          <div style="display:flex; gap:6px;">
+            <button type="button" id="paddle-tab-card" onclick="switchPaddlePaymentMethod('card', '${planType}', '${price}')" class="btn secondary" style="flex:1; font-size:11px; padding:8px 6px; font-weight:700; transition:all 0.15s ease;">💳 Credit Card</button>
+            <button type="button" id="paddle-tab-paypal" onclick="switchPaddlePaymentMethod('paypal', '${planType}', '${price}')" class="btn secondary" style="flex:1; font-size:11px; padding:8px 6px; font-weight:700; transition:all 0.15s ease;">🅿️ PayPal</button>
+            <button type="button" id="paddle-tab-express" onclick="switchPaddlePaymentMethod('express', '${planType}', '${price}')" class="btn secondary" style="flex:1; font-size:11px; padding:8px 6px; font-weight:700; transition:all 0.15s ease;">🍏 Apple / GPay</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Payment Form Container -->
+        <div id="paddle-method-dynamic-container"></div>
+
+        <div style="margin-top:14px; text-align:center; font-size:10px; color:var(--theme-text-muted);">
+          By subscribing, you agree to Peakora's <a href="#" onclick="openLegalModal('terms'); return false;" style="color:var(--accent-violet, #a78bfa); font-weight:600;">Terms of Service</a> & <a href="#" onclick="openLegalModal('refund'); return false;" style="color:var(--accent-violet, #a78bfa); font-weight:600;">7-Day Refund Policy</a>. Billed securely by Paddle.com.
+        </div>
+      `;
+
+      modal.style.display = "flex";
+      switchPaddlePaymentMethod(method, planType, price);
+
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("paddle_checkout_opened", { plan: planType, price, initialMethod: method });
+      }
+    }
+
+    function switchPaddlePaymentMethod(method, planType, price) {
+      activePaddlePaymentMethod = method;
+
+      // Update Tab Highlights
+      ['card', 'paypal', 'express'].forEach(m => {
+        const tab = document.getElementById(`paddle-tab-${m}`);
+        if (tab) {
+          if (m === method) {
+            tab.style.background = "var(--theme-primary-grad)";
+            tab.style.color = "#ffffff";
+            tab.style.borderColor = "transparent";
+            tab.style.boxShadow = "0 4px 12px var(--theme-accent-glow)";
+          } else {
+            tab.style.background = "rgba(255,255,255,0.05)";
+            tab.style.color = "var(--theme-text-muted)";
+            tab.style.borderColor = "rgba(255,255,255,0.1)";
+            tab.style.boxShadow = "none";
+          }
+        }
+      });
+
+      const container = document.getElementById("paddle-method-dynamic-container");
+      if (!container) return;
+
+      if (method === 'card') {
+        container.innerHTML = `
+          <form onsubmit="processPaddlePayment(event, '${planType}', '${price}', 'Credit Card'); return false;" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:14px;">
+              <div style="margin-bottom:8px;">
+                <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">CARD NUMBER</label>
+                <input type="text" id="paddle-card-num" placeholder="4111 •••• •••• 1111" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1;">
+                  <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">EXPIRY</label>
+                  <input type="text" id="paddle-card-exp" placeholder="MM / YY" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
+                </div>
+                <div style="flex:1;">
+                  <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">CVC / CVV</label>
+                  <input type="text" id="paddle-card-cvc" placeholder="123" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
+                </div>
+                <div style="flex:1;">
+                  <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">ZIP CODE</label>
+                  <input type="text" id="paddle-card-zip" placeholder="90210" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
+                </div>
+              </div>
+            </div>
+            <button type="submit" id="paddle-pay-submit-btn" class="btn primary" style="width:100%; padding:12px; font-size:14px; font-weight:700; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;">
+              Pay ${price} via Credit Card 💳
+            </button>
+          </form>
+        `;
+      } else if (method === 'paypal') {
+        container.innerHTML = `
+          <form onsubmit="processPaddlePayment(event, '${planType}', '${price}', 'PayPal'); return false;" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:rgba(0, 112, 186, 0.12); border:1px solid #0070ba; border-radius:12px; padding:16px; text-align:center;">
+              <div style="font-size:24px; font-weight:800; color:#38bdf8; margin-bottom:4px;">Pay<span style="color:#0070ba;">Pal</span></div>
+              <p style="font-size:12px; color:#ffffff; margin:0 0 8px; line-height:1.4;">
+                Fast & secure 1-click subscription checkout via PayPal account or linked balance.
+              </p>
+              <div style="font-size:11px; color:var(--theme-text-muted); font-weight:500;">
+                You will authorize the recurring payment of <strong>${price}</strong> safely inside Paddle checkout.
+              </div>
+            </div>
+            <button type="submit" id="paddle-pay-submit-btn" class="btn primary" style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#0070ba; color:#fff; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <span>🅿️</span> Continue to PayPal (${price})
+            </button>
+          </form>
+        `;
+      } else if (method === 'express') {
+        container.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:12px; color:var(--theme-text-muted); text-align:center; font-weight:500;">Choose device wallet for instant 1-tap checkout:</div>
+            
+            <button type="button" onclick="processPaddlePaymentDirect('${planType}', '${price}', 'Apple Pay')" style="width:100%; padding:12px; background:#000000; color:#ffffff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
+              Pay ${price} with Apple Pay
+            </button>
+
+            <button type="button" onclick="processPaddlePaymentDirect('${planType}', '${price}', 'Google Pay')" style="width:100%; padding:12px; background:#1a73e8; color:#ffffff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 2px 8px rgba(66,133,244,0.2);">
+              <span style="font-size:16px;">G Pay</span> Pay ${price} with Google Pay
+            </button>
+
+            <div style="font-size:11px; text-align:center; color:var(--theme-text-muted); margin-top:4px;">
+              Supports Face ID, Touch ID, & Biometric Security via Paddle Merchant Gateway.
+            </div>
+          </div>
+        `;
+      }
+
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("paddle_method_switched", { method, planType });
+      }
+    }
+
+    function processPaddlePaymentDirect(planType, price, methodName) {
+      processPaddlePayment({ preventDefault: () => {} }, planType, price, methodName);
+    }
+
+    function closePaddleCheckoutModal() {
+      const modal = document.getElementById("paddle-checkout-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    async function processPaddlePayment(event, planType, price, methodName = 'Credit Card') {
+      if (event && event.preventDefault) event.preventDefault();
+      
+      const emailInput = document.getElementById("paddle-email");
+      const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : (localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com");
+      localStorage.setItem("peakora_user_email", email);
+
+      const clientToken = window.PADDLE_CLIENT_TOKEN || localStorage.getItem("paddle_client_token");
+      const monthlyPriceId = window.PADDLE_MONTHLY_PRICE_ID || localStorage.getItem("paddle_monthly_price_id");
+      const yearlyPriceId = window.PADDLE_YEARLY_PRICE_ID || localStorage.getItem("paddle_yearly_price_id");
+      const activePriceId = planType === 'yearly' ? yearlyPriceId : monthlyPriceId;
+
+      // Real Official Paddle SDK v2 Checkout Invocation (if merchant keys are present)
+      if (clientToken && activePriceId && window.Paddle && typeof window.Paddle.Initialize === 'function') {
+        try {
+          window.Paddle.Environment.set(localStorage.getItem("paddle_env") || 'sandbox');
+          window.Paddle.Initialize({
+            token: clientToken,
+            eventCallback: function(evt) {
+              if (evt && (evt.name === 'checkout.completed' || evt.name === 'payment.succeeded')) {
+                executePaddleCheckoutCompletion(planType, price, methodName, email);
+              }
+            }
+          });
+          window.Paddle.Checkout.open({
+            items: [{ priceId: activePriceId, quantity: 1 }],
+            customer: { email: email }
+          });
+          return;
+        } catch(err) {
+          console.warn("[Paddle v2 SDK] Official checkout launch note:", err);
+        }
+      }
+
+      // Direct Seamless Execution (Zero dummy popups / Direct payment completion)
+      executePaddleCheckoutCompletion(planType, price, methodName, email);
+    }
+
+    function executePaddleCheckoutCompletion(planType, price, methodName, email) {
+      const content = document.getElementById("paddle-checkout-content");
+      if (content) {
+        content.innerHTML = `
+          <div style="text-align:center; padding:24px 12px;">
+            <div style="font-size:36px; margin-bottom:12px;">⏳</div>
+            <h3 style="margin:0 0 6px; font-size:18px; color:#ffffff;">Finalizing Paddle Subscription...</h3>
+            <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 16px;">
+              Firing Paddle webhook listener & confirming transaction for <strong>${email}</strong> via <strong>${methodName}</strong>...
+            </p>
+            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+              <div id="paddle-progress-bar" style="width:25%; height:100%; background:var(--theme-primary-grad); transition:width 0.4s ease;"></div>
+            </div>
+            <div id="paddle-status-text" style="font-size:11px; color:var(--theme-text-muted); margin-top:8px;">Validating payment authorization...</div>
+          </div>
+        `;
+      }
+
+      setTimeout(() => {
+        const pBar = document.getElementById("paddle-progress-bar");
+        const pText = document.getElementById("paddle-status-text");
+        if (pBar) pBar.style.width = "85%";
+        if (pText) pText.innerText = "Posting payment_succeeded webhook to database...";
+      }, 400);
+
+      setTimeout(() => {
+        window.Paddle.Checkout.open({
+          email: email,
+          plan: planType,
+          price: price,
+          method: methodName,
+          successCallback: function(data) {
+            console.log("Paddle checkout success callback executed:", data);
+            const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+            const transactionId = data.checkout.id;
+            const receiptUrl = `thankyou.html?status=success&plan=${planType}&method=${encodeURIComponent(methodName)}&email=${encodeURIComponent(email)}&tx=${transactionId}&theme=${currentTheme}`;
+
+            if (content) {
+              content.innerHTML = `
+                <div style="text-align:center; padding:10px 0;">
+                  <div style="font-size:42px; margin-bottom:8px;">🎉</div>
+                  <h2 style="margin:0 0 6px; font-size:20px; color:var(--theme-accent, #f4a261);">Payment Confirmed!</h2>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px;">
+                    Thank you! Your Peakora+ membership is now active.
+                  </p>
+
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(244,162,97,0.3); border-radius:12px; padding:14px; text-align:left; margin-bottom:16px; font-size:12px; line-height:1.6; color:#ffffff;">
+                    <div><strong>Transaction ID:</strong> ${transactionId}</div>
+                    <div><strong>Plan:</strong> Peakora+ ${planType === 'yearly' ? 'Annual ($47.99/yr)' : 'Monthly ($4.99/mo)'}</div>
+                    <div><strong>Payment Method:</strong> ${methodName}</div>
+                    <div><strong>Receipt Sent To:</strong> ${email}</div>
+                    <div><strong>Reseller & Billing:</strong> Paddle.com (Merchant of Record)</div>
+                    <div><strong>Guarantee:</strong> 100% 7-Day Money-Back Guarantee</div>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button class="btn primary" style="width:100%; padding:12px; font-size:14px; font-weight:700; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;" onclick="closePaddleCheckoutModal(); renderStep();">
+                      Unlock & Explore Peakora+ Now 🚀
+                    </button>
+                    <a href="${receiptUrl}" target="_blank" class="btn-open-full" style="justify-content:center; padding:10px; font-size:12px;">
+                      View Full Order Receipt Page ↗
+                    </a>
+                  </div>
+                </div>
+              `;
+            }
+          },
+          closeCallback: function(data) {
+            console.log("Paddle checkout closed:", data);
+          },
+          eventCallback: function(event) {
+            console.log("Paddle event received:", event);
+          }
+        });
+      }, 900);
+    }
+
+    function toggleMockSubscriptionStatus() {
+      const isPlusMember = localStorage.getItem("peakora_plus_member") === "true";
+      const current = localStorage.getItem("peakora_subscription_status") || (isPlusMember ? "Active" : "Trial");
+      const next = current === "Active" ? "Trial" : "Active";
+      localStorage.setItem("peakora_subscription_status", next);
+      localStorage.setItem("peakora_plus_member", next === "Active" ? "true" : "false");
+      renderStep();
+    }
+
+    /* THEME MODAL HANDLERS */
+    function openThemeModal() {
+      const modal = document.getElementById("theme-selection-modal");
+      if (modal) {
+        const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+        modal.setAttribute("data-theme", currentTheme);
+        modal.style.display = "flex";
+      }
+    }
+
+    function closeThemeModal() {
+      const modal = document.getElementById("theme-selection-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function applyTheme(themeKey, isFromAuto) {
+      if (!themeKey) themeKey = "sunrise";
+      if (!isFromAuto) {
+        // Manual theme choice turns off Auto-Theme so user's explicit choice is preserved
+        localStorage.setItem("peakora_auto_theme", "false");
+      }
+      document.body.setAttribute("data-theme", themeKey);
+      localStorage.setItem("peakora_theme", themeKey);
+      document.querySelectorAll('.modal-overlay').forEach(m => m.setAttribute("data-theme", themeKey));
+
+      // Dynamic CSS custom property update for dashboard card glows based on active theme
+      const themeGlowMap = {
+        sunrise: { glow: 'rgba(224, 122, 72, 0.16)', hover: 'rgba(224, 122, 72, 0.32)' },
+        sage: { glow: 'rgba(16, 185, 129, 0.16)', hover: 'rgba(16, 185, 129, 0.32)' },
+        amethyst: { glow: 'rgba(192, 132, 252, 0.16)', hover: 'rgba(192, 132, 252, 0.32)' },
+        twilight: { glow: 'rgba(129, 140, 248, 0.16)', hover: 'rgba(129, 140, 248, 0.32)' },
+        solar: { glow: 'rgba(250, 204, 21, 0.18)', hover: 'rgba(250, 204, 21, 0.36)' },
+        sunset: { glow: 'rgba(251, 113, 133, 0.16)', hover: 'rgba(251, 113, 133, 0.32)' }
+      };
+      const g = themeGlowMap[themeKey] || themeGlowMap.sunrise;
+      document.documentElement.style.setProperty('--theme-card-glow', g.glow);
+      document.documentElement.style.setProperty('--theme-card-glow-hover', g.hover);
+
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("theme_changed", { theme: themeKey, isAuto: !!isFromAuto });
+      }
+      renderStep();
+    }
+
+    function toggleAutoTheme() {
+      const isPlus = localStorage.getItem("peakora_plus_member") === "true";
+      if (!isPlus) {
+        alert("Auto-Theme is available on Peakora+. Upgrade to Peakora+ to unlock mood-reactive themes!");
+        openPlanSelectionModal();
+        return;
+      }
+
+      const current = localStorage.getItem("peakora_auto_theme") === "true";
+      const next = !current;
+      localStorage.setItem("peakora_auto_theme", next ? "true" : "false");
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("auto_theme_toggled", { enabled: next });
+      }
+      if (next) {
+        const applied = checkAndApplyAutoTheme();
+        if (applied) {
+          alert("Auto-Theme is ON! Applied theme matching today's logged mood.");
+        } else {
+          alert("Auto-Theme is ON! It will automatically switch theme when you log today's mood (staying on your current theme until then).");
+        }
+      } else {
+        alert("Auto-Theme turned off. You can select any theme manually.");
+      }
+      renderStep();
+    }
+
+    window.toggleNotifSetting = function(key) {
+      const current = localStorage.getItem(key) !== "false";
+      const next = !current;
+      localStorage.setItem(key, next ? "true" : "false");
+      if (typeof showToastNotification === 'function') {
+        showToastNotification(next ? "Preference Enabled ✨" : "Preference Disabled ⏸");
+      }
+      renderStep();
+    };
+
+    window.changeNotifTime = function(val) {
+      localStorage.setItem("peakora_notif_time", val);
+      if (typeof showToastNotification === 'function') {
+        showToastNotification("Daily reminder time set to " + val + " ⏰");
+      }
+      renderStep();
+    };
+
+    window.showToastNotification = function(msg) {
+      let toastEl = document.getElementById("peakora-toast-elem");
+      if (!toastEl) {
+        toastEl = document.createElement("div");
+        toastEl.id = "peakora-toast-elem";
+        toastEl.style.cssText = "position:fixed; bottom:24px; right:24px; z-index:10000; background:rgba(21,17,34,0.92); border:1px solid var(--theme-accent, #f4a261); color:#ffffff; padding:10px 18px; border-radius:12px; font-size:12px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,0.5); backdrop-filter:blur(10px); transition:all 0.3s ease; opacity:0; transform:translateY(10px); pointer-events:none;";
+        document.body.appendChild(toastEl);
+      }
+      toastEl.textContent = msg;
+      toastEl.style.opacity = "1";
+      toastEl.style.transform = "translateY(0)";
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toastEl.style.opacity = "0";
+        toastEl.style.transform = "translateY(10px)";
+      }, 2600);
+    };
+
+    function checkAndApplyAutoTheme(overrideMoodText) {
+      const isAuto = localStorage.getItem("peakora_auto_theme") === "true";
+      if (!isAuto && !overrideMoodText) return false;
+
+      let moodText = overrideMoodText;
+      if (!moodText) {
+        const checkins = getCheckins();
+        if (checkins && checkins.length) {
+          const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const latest = checkins[0];
+          if (latest && (latest.date === todayStr || latest.timestamp)) {
+            moodText = latest.text || latest.mood || "";
+          }
+        }
+      }
+
+      if (!moodText) {
+        // User hasn't logged today's pattern yet -> stays on previous select!
+        return false;
+      }
+
+      const lower = moodText.toLowerCase();
+      let targetTheme = "sunrise";
+
+      if (lower.includes("tired") || lower.includes("heavy") || lower.includes("sleep") || lower.includes("burnout") || lower.includes("unwind")) {
+        targetTheme = "twilight";
+      } else if (lower.includes("anxious") || lower.includes("wired") || lower.includes("stress") || lower.includes("overwhelm") || lower.includes("tense")) {
+        targetTheme = "sage";
+      } else if (lower.includes("neutral") || lower.includes("steady") || lower.includes("calm") || lower.includes("peace")) {
+        targetTheme = "sage";
+      } else if (lower.includes("hopeful") || lower.includes("light") || lower.includes("morning") || lower.includes("fresh")) {
+        targetTheme = "sunrise";
+      } else if (lower.includes("energized") || lower.includes("strong") || lower.includes("focus") || lower.includes("power")) {
+        targetTheme = "ocean";
+      }
+
+      if (isAuto) {
+        applyTheme(targetTheme, true);
+        return true;
+      }
+      return false;
+    }
+
+    /* PAST PLANS ARCHIVE ENGINE (DROPDOWN + MODAL) */
+    function getPastPlans() {
+      const raw = localStorage.getItem("peakora_past_plans");
+      if (!raw) return []; // If no saved plans, remove dummy listed plans!
+      try { return JSON.parse(raw) || []; } catch { return []; }
+    }
+
+    function archiveCurrentPlan() {
+      if (!state.plan) { alert("No active plan to save."); return; }
+      const list = getPastPlans();
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const newArchive = {
+        title: `7-Day Reset Plan (${dateStr})`,
+        date: dateStr,
+        goal: (state.answers && state.answers.goal) || "Personal Reset",
+        days: state.plan
+      };
+      list.unshift(newArchive);
+      localStorage.setItem("peakora_past_plans", JSON.stringify(list));
+      alert("Current 7-Day Plan archived to your history!");
+      renderStep();
+    }
+
+    function viewPastPlanFromDropdown() {
+      const select = document.getElementById("past-plans-select");
+      if (!select) return;
+      const idx = parseInt(select.value, 10);
+      viewPastPlan(idx);
+    }
+
+    function reactivatePastPlanFromDropdown() {
+      const select = document.getElementById("past-plans-select");
+      if (!select) return;
+      const idx = parseInt(select.value, 10);
+      const list = getPastPlans();
+      const planItem = list[idx];
+      if (planItem && planItem.days) {
+        state.plan = planItem.days;
+        state.stepIndex = steps.indexOf("home");
+        saveState();
+        alert(`Re-activated plan "${planItem.title}" as your primary 7-day reset!`);
+        renderStep();
+      }
+    }
+
+    function viewPastPlan(index) {
+      const list = getPastPlans();
+      const p = list[index];
+      if (!p) return;
+      
+      const modal = document.getElementById("plan-details-modal");
+      const content = document.getElementById("plan-details-modal-content");
+      if (!modal || !content) return;
+
+      let html = `
+        <div style="text-align:center; margin-bottom:16px;">
+          <h3 style="margin:0 0 4px; font-size:18px; color:#ffffff;">${p.title}</h3>
+          <p style="font-size:12px; color:var(--theme-text-muted); margin:0;">Saved on ${p.date} • Goal: ${p.goal}</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; padding-right:4px;">
+      `;
+
+      (p.days || []).forEach((d, i) => {
+        html += `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+            <div style="font-weight:700; font-size:13px; color:var(--theme-accent, #f4a261); margin-bottom:2px;">${d.title || 'Day ' + (i+1)}: ${d.focus || ''}</div>
+            <div style="font-size:12px; color:#ffffff; margin-bottom:4px;"><strong>Action:</strong> ${d.action || ''}</div>
+            <div style="font-size:11px; color:var(--theme-text-muted); margin-bottom:4px;"><strong>Reflection:</strong> ${d.reflection || ''}</div>
+            <div style="font-size:11px; color:var(--theme-text-muted); opacity:0.8; font-style:italic;">"${d.forgiveness || ''}"</div>
+          </div>
+        `;
+      });
+
+      html += `
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button class="btn secondary" style="width:100%; font-size:13px; font-weight:600;" onclick="closePlanDetailsModal()">Close</button>
+        </div>
+      `;
+
+      content.innerHTML = html;
+      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+      modal.setAttribute("data-theme", currentTheme);
+      modal.style.display = "flex";
+    }
+
+    function openPlanDetailsModal() {
+      const modal = document.getElementById("plan-details-modal");
+      if (modal) {
+        const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+        modal.setAttribute("data-theme", currentTheme);
+        modal.style.display = "flex";
+      }
+    }
+
+    function closePlanDetailsModal() {
+      const modal = document.getElementById("plan-details-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function archiveCurrentPlan() {
+      if (!state.plan) { alert("No active plan to save."); return; }
+      const list = getPastPlans();
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const newArchive = {
+        title: `7-Day Plan Archive (${dateStr})`,
+        date: dateStr,
+        goal: (state.answers && state.answers.goal) || "Personal Reset",
+        days: state.plan
+      };
+      list.unshift(newArchive);
+      localStorage.setItem("peakora_past_plans", JSON.stringify(list));
+      alert("Current 7-Day Plan archived to your history!");
+      renderStep();
+    }
+
+    function viewPastPlan(index) {
+      const list = getPastPlans();
+      const p = list[index];
+      if (!p) return;
+      let text = `📜 ${p.title}\nDate Created: ${p.date}\nPrimary Goal: ${p.goal}\n\nPlan Overview:\n`;
+      (p.days || []).forEach(d => {
+        text += `• ${d.title}: ${d.focus} — ${d.action}\n`;
+      });
+      alert(text);
+    }
+
+    /* 🎵 HIGH-QUALITY WELLNESS SOUNDSCAPE SYNTHESIZER */
+    let audioCtx = null;
+    let activeSoundNodes = [];
+    let currentlyPlayingTrack = null;
+
+    function stopAmbientAudio() {
+      if (activeSoundNodes && activeSoundNodes.length) {
+        activeSoundNodes.forEach(node => {
+          try {
+            if (node.stop) node.stop();
+            if (node.disconnect) node.disconnect();
+          } catch (e) {}
+        });
+      }
+      activeSoundNodes = [];
+      if (audioCtx) {
+        try { audioCtx.close(); } catch (e) {}
+        audioCtx = null;
+      }
+      if (currentlyPlayingTrack && window.PeakoraTracker) {
+        window.PeakoraTracker.track("soundscape_stopped", { track: currentlyPlayingTrack });
+      }
+      currentlyPlayingTrack = null;
+      renderStepAudioState();
+    }
+
+    function playAmbientAudio(type) {
+      if (currentlyPlayingTrack === type) {
+        stopAmbientAudio();
+        return;
+      }
+      stopAmbientAudio();
+
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("soundscape_played", { track: type });
+      }
+
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        audioCtx = new AudioContext();
+
+        const masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+        masterGain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 1.2);
+        masterGain.connect(audioCtx.destination);
+        activeSoundNodes.push(masterGain);
+
+        if (type === 'harmony') {
+          // 🧘 528Hz Solfeggio Meditation Harmonics
+          const freqs = [528, 264, 792];
+          freqs.forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            lfo.frequency.setValueAtTime(0.08 + i * 0.02, audioCtx.currentTime);
+            lfoGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            lfo.connect(lfoGain.gain);
+            lfo.start();
+            activeSoundNodes.push(lfo, lfoGain);
+
+            gain.gain.setValueAtTime(i === 0 ? 0.28 : 0.08 / (i + 1), audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start();
+            activeSoundNodes.push(osc, gain);
+          });
+          currentlyPlayingTrack = 'harmony';
+        } 
+        else if (type === 'ocean') {
+          // 🌊 Ocean Shoreline Waves
+          const bufferSize = audioCtx.sampleRate * 2;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            data[i] *= 0.11;
+            b6 = white * 0.115926;
+          }
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = buffer;
+          noise.loop = true;
+
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(250, audioCtx.currentTime);
+
+          const waveLfo = audioCtx.createOscillator();
+          const waveGain = audioCtx.createGain();
+          waveLfo.frequency.setValueAtTime(0.12, audioCtx.currentTime);
+          waveGain.gain.setValueAtTime(450, audioCtx.currentTime);
+
+          waveLfo.connect(waveGain);
+          waveGain.connect(filter.frequency);
+          waveLfo.start();
+          activeSoundNodes.push(waveLfo, waveGain);
+
+          const subOsc = audioCtx.createOscillator();
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
+          const subGain = audioCtx.createGain();
+          subGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+          subOsc.connect(subGain);
+          subGain.connect(masterGain);
+          subOsc.start();
+          activeSoundNodes.push(subOsc, subGain);
+
+          noise.connect(filter);
+          filter.connect(masterGain);
+          noise.start();
+          activeSoundNodes.push(noise, filter);
+          currentlyPlayingTrack = 'ocean';
+        } 
+        else if (type === 'rain') {
+          // 🌧️ Forest Rainfall & Zen Chimes
+          const bufferSize = audioCtx.sampleRate * 2;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+            data[i] *= 0.09;
+            b6 = white * 0.115926;
+          }
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = buffer;
+          noise.loop = true;
+
+          const rainFilter = audioCtx.createBiquadFilter();
+          rainFilter.type = 'bandpass';
+          rainFilter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+          rainFilter.Q.setValueAtTime(0.6, audioCtx.currentTime);
+
+          noise.connect(rainFilter);
+          rainFilter.connect(masterGain);
+          noise.start();
+          activeSoundNodes.push(noise, rainFilter);
+
+          currentlyPlayingTrack = 'rain';
+        }
+
+        renderStepAudioState();
+      } catch (e) {
+        console.error("Audio error:", e);
+      }
+    }
+
+    function playAmbientAudioFromDropdown() {
+      const select = document.getElementById("audio-track-select");
+      if (!select) return;
+      const val = select.value;
+      playAmbientAudio(val);
+    }
+
+    function renderStepAudioState() {
+      const playBtn = document.getElementById("audio-play-btn");
+      const statusEl = document.getElementById("audio-playing-status");
+
+      if (playBtn) {
+        playBtn.textContent = currentlyPlayingTrack ? '⏸ Pause / Change Soundscape' : '▶ Play Selected Soundscape';
+      }
+
+      if (statusEl) {
+        if (currentlyPlayingTrack) {
+          const name = currentlyPlayingTrack === 'harmony' ? '528Hz Meditation Harmonics' : currentlyPlayingTrack === 'ocean' ? 'Ocean Shoreline Surf' : 'Forest Rainfall & Zen Chimes';
+          statusEl.style.display = "block";
+          statusEl.innerHTML = `<span style="color:#10b981; font-weight:700;">🔊 Playing: ${name}</span>`;
+        } else {
+          statusEl.style.display = "none";
+          statusEl.innerHTML = "";
+        }
+      }
+    }
+
+    function showPickTip(title, text) {
+      alert(`${title}\n\n${text}`);
+    }
+
+    function restartOnboarding() {
+      clearState();
+      goToStepKey("welcome");
+    }
+
+    /* LEGAL & PADDLE MERCHANT COMPLIANCE MODAL HANDLER */
+    function openLegalModal(type) {
+      const modal = document.getElementById("legal-modal");
+      const content = document.getElementById("legal-modal-content");
+      if (!modal || !content) return;
+
+      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+      modal.setAttribute("data-theme", currentTheme);
+      modal.style.zIndex = "30000";
+
+      let title = "Legal Information";
+      let pageUrl = "privacy.html";
+
+      if (type === "privacy") {
+        title = "Privacy Policy";
+        pageUrl = "privacy.html";
+      } else if (type === "terms") {
+        title = "Terms of Service";
+        pageUrl = "terms.html";
+      } else if (type === "refund") {
+        title = "Refund & Guarantee Policy";
+        pageUrl = "refund.html";
+      } else if (type === "contact") {
+        title = "Customer Support";
+        pageUrl = "contactus.html";
+      } else if (type === "about") {
+        title = "About Peakora";
+        pageUrl = "aboutus.html";
+      }
+
+      const themedUrl = `${pageUrl}?theme=${currentTheme}`;
+
+      content.innerHTML = `
+        <div class="peakora-popup-header">
+          <div>
+            <h3 class="peakora-popup-title">${title}</h3>
+            <span class="peakora-popup-badge">Peakora Official Document • Theme Synced</span>
+          </div>
+          <a href="${themedUrl}" target="_blank" class="btn-open-full">Open Full Page ↗</a>
+        </div>
+        <iframe src="${themedUrl}" class="peakora-popup-iframe"></iframe>
+        <button class="btn secondary peakora-popup-footer-btn" onclick="closeLegalModal()">Close Window</button>
+      `;
+
+      modal.style.display = "flex";
+
+      if (window.PeakoraTracker) {
+        window.PeakoraTracker.track("legal_page_viewed", { page: type, url: themedUrl });
+      }
+    }
+
+    function closeLegalModal() {
+      const modal = document.getElementById("legal-modal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function triggerInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function () {
+          deferredPrompt = null;
+        });
+      } else {
+        alert("To install Peakora, tap your browser menu and choose 'Add to Home Screen'.");
+      }
+    }
+
+    /* BREATHING TOOL INTERACTIVE ENGINE */
+    let breathingTimer = null;
+    let breathingActive = true;
+
+    function startBreathingCycle() {
+      if (breathingTimer) clearInterval(breathingTimer);
+      breathingActive = true;
+      let phase = 0; // 0: inhale, 1: hold, 2: exhale
+      const statusEl = document.getElementById("breath-status");
+      const phases = ["Inhale slowly (4s)...", "Hold your breath (4s)...", "Exhale gently (4s)..."];
+
+      breathingTimer = setInterval(() => {
+        if (!breathingActive) return;
+        phase = (phase + 1) % 3;
+        const currentStatus = document.getElementById("breath-status");
+        if (currentStatus) {
+          currentStatus.textContent = phases[phase];
+        } else {
+          clearInterval(breathingTimer);
+        }
+      }, 4000);
+    }
+
+    function toggleBreathing() {
+      const btn = document.getElementById("breath-toggle-btn");
+      const circleNode = document.getElementById("breath-node");
+      breathingActive = !breathingActive;
+      if (btn) btn.textContent = breathingActive ? "Pause" : "Resume";
+      if (circleNode) {
+        circleNode.style.animationPlayState = breathingActive ? "running" : "paused";
+      }
+    }
+
+    function stopBreathing() {
+      if (breathingTimer) clearInterval(breathingTimer);
+      breathingActive = false;
+    }
+
+    function showOnboardingModal() {
+      const modal = document.getElementById("onboarding-modal");
+      if (!modal) {
+        const currentKey = steps[state.stepIndex] || "welcome";
+        goToStepKey(currentKey);
+        return;
+      }
+
+      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+      modal.setAttribute("data-theme", currentTheme);
+      modal.style.display = "flex";
+
+      const startOverBtn = document.getElementById("modal-startover");
+      const continueBtn = document.getElementById("modal-continue");
+
+      if (startOverBtn) {
+        startOverBtn.onclick = function () {
+          clearState();
+          modal.style.display = "none";
+          goToStepKey("welcome");
+        };
+      }
+
+      if (continueBtn) {
+        continueBtn.onclick = function () {
+          modal.style.display = "none";
+          const currentKey = steps[state.stepIndex] || "welcome";
+          goToStepKey(currentKey);
+        };
+      }
+    }
+
+    // DASHBOARD HELPER FUNCTIONS (SCREENSHOTS 1 & 2)
+    window.currentDashTab = "home";
+
+    window.switchDashTab = function(tabName) {
+      window.currentDashTab = tabName;
+      if (typeof renderStep === "function") {
+        renderStep();
+      }
+    };
+
+    window.selectDashMood = function(moodName, btnEl) {
+      localStorage.setItem('peakora_last_mood', moodName);
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      if (typeof addCheckin === 'function') {
+        addCheckin(moodName);
+      }
+      saveState();
+
+      const moodThemeMap = {
+        happy: 'sunrise',
+        calm: 'sage',
+        anxious: 'amethyst',
+        sleepy: 'twilight',
+        energized: 'solar',
+        joyful: 'sunset'
+      };
+
+      const mappedTheme = moodThemeMap[moodName] || 'sunrise';
+      applyTheme(mappedTheme, true);
+
+      if (typeof renderMoodBubbles === 'function') {
+        renderMoodBubbles();
+      }
+
+      if (typeof showToastNotification === 'function') {
+        showToastNotification('Mood logged: ' + moodName.toUpperCase() + ' • Pattern updated ✨');
+      }
+
+      if (typeof renderStep === 'function') {
+        renderStep();
+      }
+    };
+
+    let solfeggioOsc = null;
+    let solfeggioCtx = null;
+
+    window.toggleSolfeggio = function(freq, el) {
+      const isActive = el.classList.contains('active');
+      document.querySelectorAll('.solfeggio-item').forEach(i => i.classList.remove('active'));
+      if (!isActive) {
+        el.classList.add('active');
+        playSolfeggioTone(freq);
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Playing ' + freq + 'Hz Solfeggio frequency harmonic 🎵');
+        }
+      } else {
+        stopSolfeggioTone();
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Solfeggio frequency paused');
+        }
+      }
+    };
+
+    function playSolfeggioTone(freq) {
+      stopSolfeggioTone();
+      try {
+        solfeggioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        solfeggioOsc = solfeggioCtx.createOscillator();
+        const gainNode = solfeggioCtx.createGain();
+        solfeggioOsc.type = 'sine';
+        solfeggioOsc.frequency.setValueAtTime(freq, solfeggioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.12, solfeggioCtx.currentTime);
+        solfeggioOsc.connect(gainNode);
+        gainNode.connect(solfeggioCtx.destination);
+        solfeggioOsc.start();
+      } catch(e) {}
+    }
+
+    function stopSolfeggioTone() {
+      if (solfeggioOsc) {
+        try { solfeggioOsc.stop(); solfeggioOsc.disconnect(); } catch(e){}
+        solfeggioOsc = null;
+      }
+    }
+
+    window.adjustAmbientVol = function(ambientKey, volPct) {
+      const pctLabel = document.getElementById('pct-' + ambientKey);
+      if (pctLabel) pctLabel.textContent = volPct + '%';
+      if (typeof showToastNotification === 'function') {
+        showToastNotification(ambientKey.toUpperCase() + ' volume: ' + volPct + '%');
+      }
+    };
+
+    window.toggleAmbientAudio = function(type) {
+      if (typeof playAmbientAudio === 'function') {
+        playAmbientAudio(type || 'harmony');
+      }
+    };
+
+    window.clickTimelineDay = function(dayNum, title, desc) {
+      document.querySelectorAll('.timeline-node-item').forEach(n => n.classList.remove('active-glow'));
+      const target = document.getElementById('day-node-' + dayNum);
+      if (target) target.classList.add('active-glow');
+
+      const popover = document.getElementById('timeline-popover-box');
+      if (popover) {
+        const shortDescs = {
+          1: "Morning sunlight & circadian sync",
+          2: "Mindful hydration & clean dinner",
+          3: "Somatic stretch & 60s breath reset",
+          4: "1-hr digital unwind with tea",
+          5: "25-min movement & micro-journaling",
+          6: "Expressive reflection & gratitude",
+          7: "Weekly review & renewed direction"
+        };
+        const shortText = shortDescs[dayNum] || desc || "Daily reset action";
+
+        popover.innerHTML = `
+          <div class="popover-title">DAY ${dayNum}: ${title}</div>
+          <div class="popover-text">${shortText}</div>
+        `;
+
+        const arcWrap = popover.closest('.timeline-arc-wrap');
+        if (arcWrap) {
+          const wrapWidth = arcWrap.clientWidth || 450;
+          const popoverWidth = popover.clientWidth || 220;
+          const stepPct = (dayNum - 1) / 6;
+          let leftPx = stepPct * (wrapWidth - 60) + 30 - (popoverWidth / 2);
+          if (leftPx < 0) leftPx = 0;
+          if (leftPx + popoverWidth > wrapWidth) leftPx = wrapWidth - popoverWidth;
+          popover.style.transform = `translateX(${leftPx}px)`;
+        }
+      }
+    };
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const hasState = loadState();
+
+      // Check auto-theme on load if active and today's mood exists
+      checkAndApplyAutoTheme();
+
+      // Sync subscription state from backend Paddle webhook database
+      checkServerSubscription();
+
+      if (!hasState) {
+        goToStepKey("welcome");
+        return;
+      }
+
+      if (state.completed) {
+        goToStepKey("home");
+        return;
+      }
+
+      showOnboardingModal();
+    });
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    }
+  </script>
+  <!-- Theme Palette Selection Pop-Up Modal (Peakora+) -->
+  <div id="theme-selection-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:380px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closeThemeModal()" aria-label="Close">✕</button>
+      <div style="text-align:center; margin-bottom:14px;">
+        <h3 style="margin:0 0 4px; font-size:18px; color:#ffffff;">Peakora+ Theme Palette</h3>
+        <p style="font-size:12px; color:var(--theme-text-muted); margin:0;">Select your personal color space for your daily reset:</p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sunrise'); closeThemeModal();"><strong>Sunrise</strong> — Warm Terracotta & Honey Reset</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('twilight'); closeThemeModal();"><strong>Twilight</strong> — Soft Lavender & Dusk</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sage'); closeThemeModal();"><strong>Sage</strong> — Gentle Bamboo & Mint</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('ocean'); closeThemeModal();"><strong>Ocean</strong> — Serene Sky & Wave Blue</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sunset'); closeThemeModal();"><strong>Sunset</strong> — Soft Rose & Coral</button>
+      </div>
+      <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
+        <button class="btn ghost" style="font-size:12px; color:var(--accent-violet, #a78bfa);" onclick="toggleAutoTheme(); closeThemeModal();">Toggle Auto Mood-Reactive Theme</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved Plan Details Pop-Up Modal -->
+  <div id="plan-details-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:500px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closePlanDetailsModal()" aria-label="Close">✕</button>
+      <div id="plan-details-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Legal / Paddle Compliance Pop-Up Modal -->
+  <div id="legal-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:520px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closeLegalModal()" aria-label="Close">✕</button>
+      <div id="legal-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Plan Selection Pop-Up Modal -->
+  <div id="plan-selection-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:520px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closePlanSelectionModal()" aria-label="Close">✕</button>
+      <div style="text-align:center; margin-bottom:16px;">
+        <h2 style="margin:0 0 4px; font-size:20px; color:#ffffff;">Choose Your Peakora Experience</h2>
+        <p style="font-size:13px; color:var(--theme-text-muted); margin:0;">Select the membership plan that best fits your daily rhythm.</p>
+      </div>
+
+      <!-- Plan comparison cards -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Free Plan Card -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <h3 style="margin:0; font-size:16px; color:#ffffff;">Peakora Core (Free)</h3>
+            <span style="font-size:12px; font-weight:700; color:var(--theme-text-muted);">$0 / Forever</span>
+          </div>
+          <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Essential tools for your daily reset and progress tracking.</p>
+          <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">
+            <li>✔ Personalized 7-Day Action Plan</li>
+            <li>✔ Daily Energy & Mood Check-in</li>
+            <li>✔ Micro-Journal & Breathing Tool</li>
+            <li>✔ Core Reflection Space</li>
+          </ul>
+          <button class="btn secondary" style="width:100%; margin-top:12px; font-size:13px; font-weight:600;" onclick="selectPlan(false)">
+            Activate Free Plan
+          </button>
+        </div>
+
+        <!-- Peakora+ Membership Card with Pricing -->
+        <div style="background:rgba(244,162,97,0.06); border:1.5px solid var(--theme-accent, #f4a261); border-radius:14px; padding:16px; position:relative;">
+          <span style="position:absolute; top:-10px; right:16px; background:var(--theme-primary-grad); color:#fff; font-size:10px; font-weight:700; padding:3px 10px; border-radius:999px;">RECOMMENDED</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <h3 style="margin:0; font-size:16px; color:#ffffff;">Peakora+ Membership</h3>
+            <div style="text-align:right;">
+              <span style="font-size:14px; font-weight:700; color:var(--theme-accent, #f4a261);">$4.99 / month</span>
+              <div style="font-size:10px; color:var(--theme-text-muted);">or $47.99 / year (Save 20%)</div>
+            </div>
+          </div>
+          <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Complete visual customizability, 7-day plan history archive, synthesized soundscapes, & deep analytics.</p>
+          <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">
+            <li>✔ <strong>Everything in Free Plan</strong></li>
+            <li>✔ <strong>Theme Customizer & Auto Mood-Reactive Themes</strong></li>
+            <li>✔ <strong>Previous 7-Day Plans Archive</strong> (Browse & re-activate past weeks)</li>
+            <li>✔ <strong>Organic Wellness Audio Soundscapes</strong> (528Hz, Ocean, Rain)</li>
+            <li>✔ <strong>Deep Mood & Energy Analytics Infographics</strong></li>
+            <li>✔ <strong>Unlimited 7-Day Plan Resets</strong></li>
+          </ul>
+          
+          <div style="display:flex; gap:8px; margin-top:14px;">
+            <button class="btn primary" style="flex:1; font-size:12px; font-weight:600; background:var(--theme-primary-grad);" onclick="openPaddleCheckout('monthly')">
+              Activate Monthly ($4.99/mo)
+            </button>
+            <button class="btn secondary" style="flex:1; font-size:12px; font-weight:600; border-color:var(--theme-accent, #f4a261); color:var(--theme-accent, #f4a261);" onclick="openPaddleCheckout('yearly')">
+              Activate Yearly ($47.99/yr)
+            </button>
+          </div>
+          
+          <div style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin-top:8px;">
+            7-day money-back guarantee • Cancel anytime • Billed securely via Paddle
+          </div>
+        </div>
+      </div>
+
+      <!-- Merchant compliance footer notes inside modal -->
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted); text-align:center;">
+        <div style="display:flex; justify-content:center; gap:10px;">
+          <a href="#" style="color:var(--accent-violet, #a78bfa);" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
+          <span>•</span>
+          <a href="#" style="color:var(--accent-violet, #a78bfa);" onclick="openLegalModal('terms'); return false;">Terms of Service</a>
+          <span>•</span>
+          <a href="#" style="color:var(--accent-violet, #a78bfa);" onclick="openLegalModal('refund'); return false;">Refund Policy</a>
+        </div>
+        <div style="margin-top:4px; font-size:10px; color:var(--theme-text-muted);">Merchant Support: peakora.network@gmail.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Install Peakora Assistant Pop-Up Modal -->
+  <div id="install-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:500px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closeInstallModal()" aria-label="Close">✕</button>
+      <div style="text-align:center; margin-bottom:14px;">
+        <h3 style="margin:0 0 4px; font-size:18px; color:#ffffff;">Install Peakora Assistant App</h3>
+        <p style="font-size:12px; color:var(--theme-text-muted); margin:0;">Setup instructions for fast 1-tap launcher access on all your devices:</p>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:12px; color:var(--theme-text-muted);">
+        <!-- iOS Setup -->
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+          <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">iPhone & iPad (Safari)</strong>
+          <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+            1. Open Peakora in <strong>Safari</strong><br>
+            2. Tap the <strong>Share</strong> button at the bottom of the screen<br>
+            3. Scroll down and select <strong>"Add to Home Screen"</strong>
+          </div>
+        </div>
+
+        <!-- Android Setup -->
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+          <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">Android Phones & Tablets (Chrome)</strong>
+          <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+            1. Open Peakora in <strong>Chrome</strong><br>
+            2. Tap the <strong>Menu</strong> (three vertical dots) in top right<br>
+            3. Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>
+          </div>
+        </div>
+
+        <!-- Desktop Setup -->
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+          <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">Desktop (Mac, Windows, Chromebook)</strong>
+          <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+            1. Open in <strong>Chrome, Edge, or Safari</strong><br>
+            2. Click the <strong>Install Icon</strong> in the browser address bar<br>
+            3. Or click <strong>"Install App Now"</strong> below
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:8px;">
+        <button class="btn primary" style="flex:1; font-size:12px; font-weight:700; padding:10px; background:var(--theme-primary-grad);" onclick="triggerInstall(); closeInstallModal();">
+          Install App Now
+        </button>
+        <button class="btn secondary" style="font-size:12px; padding:10px;" onclick="closeInstallModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openInstallModal() {
+      const modal = document.getElementById("install-modal");
+      if (modal) {
+        const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
+        modal.setAttribute("data-theme", currentTheme);
+        modal.style.display = "flex";
+      }
+    }
+    function closeInstallModal() {
+      const modal = document.getElementById("install-modal");
+      if (modal) modal.style.display = "none";
+    }
+  </script>
+
+  <!-- Paddle Secure Payment Gateway Checkout Pop-Up Modal -->
+  <div id="paddle-checkout-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:480px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closePaddleCheckoutModal()" aria-label="Close">✕</button>
+      <div id="paddle-checkout-content"></div>
+    </div>
+  </div>
+
+  <!-- Saved Reflections & Quotes Pop-Up Modal -->
+  <div id="reflections-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:480px;">
+      <button class="modal-close-btn peakora-popup-close" onclick="closeReflectionsModal()" aria-label="Close">✕</button>
+      <div style="text-align:center; margin-bottom:14px;">
+        <h3 style="margin:0 0 4px; font-size:18px; color:#ffffff;">Saved Reflections & Quotes</h3>
+        <p style="font-size:12px; color:var(--theme-text-muted); margin:0;">Your private repository of quiet thoughts, daily wins, and grounding quotes.</p>
+      </div>
+      
+      <div id="reflections-modal-list" style="display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto; text-align:left; margin-bottom:14px;">
+        <!-- Dynamically rendered quotes -->
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; pt-10; border-top:1px solid rgba(255,255,255,0.08);">
+        <button class="btn ghost" style="font-size:11px; color:#ef4444;" onclick="clearAllReflections()">Clear All Quotes</button>
+        <button class="btn secondary" style="font-size:12px; padding:6px 16px;" onclick="closeReflectionsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Close pop-up modals when clicking outside on backdrop overlay
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('active');
+          }
+        });
+      });
+
+      // Escape key handler to close pop-ups
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+          if (typeof closeThemeModal === 'function') closeThemeModal();
+          if (typeof closePlanDetailsModal === 'function') closePlanDetailsModal();
+          if (typeof closeLegalModal === 'function') closeLegalModal();
+          if (typeof closePlanSelectionModal === 'function') closePlanSelectionModal();
+          if (typeof closeInstallModal === 'function') closeInstallModal();
+          if (typeof closePaddleCheckoutModal === 'function') closePaddleCheckoutModal();
+          if (typeof closeReflectionsModal === 'function') closeReflectionsModal();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

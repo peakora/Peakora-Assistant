@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful — Peakora+</title>
+  <link rel="stylesheet" href="privacy.css">
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let theme = urlParams.get('theme');
+      if (!theme) {
+        try { theme = localStorage.getItem('peakora_theme'); } catch(e){}
+      }
+      if (!theme) theme = 'sunrise';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (document.body) document.body.setAttribute('data-theme', theme);
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.setAttribute('data-theme', theme);
+        
+        // Handle Paddle Payment Callback
+        const status = urlParams.get('status');
+        const plan = urlParams.get('plan') || 'monthly';
+        const method = urlParams.get('method') || 'Paddle Payment';
+        const email = urlParams.get('email') || 'peakora.network@gmail.com';
+        const tx = urlParams.get('tx') || ('PAD-' + Math.floor(1000 + Math.random()*9000) + '-' + Date.now().toString().slice(-6));
+
+        if (status === 'success' || urlParams.has('tx')) {
+          localStorage.setItem('peakora_plus_member', 'true');
+          localStorage.setItem('peakora_subscription_plan', plan);
+          localStorage.setItem('peakora_subscription_id', tx);
+          localStorage.setItem('peakora_subscription_method', method);
+
+          // Ping server webhook
+          fetch('/api/paddle-webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event_type: 'payment_succeeded',
+              email: email,
+              plan: plan,
+              method: method,
+              data: { id: tx, customer: { email: email } }
+            })
+          }).catch(err => console.error(err));
+
+          const receiptContainer = document.getElementById('paddle-receipt-details');
+          if (receiptContainer) {
+            receiptContainer.innerHTML = `
+              <div style="background:var(--box-bg, #f4fbf6); border:1px solid var(--border-color, #d4ebd9); border-radius:14px; padding:20px; margin:20px 0; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.03);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:700; color:var(--accent-color, #10b981); font-size:16px;">
+                  <span>🔒</span> Paddle Order Confirmation Receipt
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:13px; color:var(--text-main, #2c2c2c);">
+                  <div><strong>Transaction ID:</strong> <br><span style="font-family:monospace; color:#555;">${tx}</span></div>
+                  <div><strong>Plan Selected:</strong> <br><span>Peakora+ ${plan === 'yearly' ? 'Annual ($47.99/yr)' : 'Monthly ($4.99/mo)'}</span></div>
+                  <div><strong>Payment Method:</strong> <br><span>${method}</span></div>
+                  <div><strong>Billing Email:</strong> <br><span>${email}</span></div>
+                  <div><strong>Merchant of Record:</strong> <br><span>Paddle.com Market Ltd</span></div>
+                  <div><strong>Satisfaction:</strong> <br><span style="color:#10b981; font-weight:600;">100% 7-Day Money-Back Guarantee</span></div>
+                </div>
+              </div>
+            `;
+          }
+        }
+      });
+    })();
+  </script>
+</head>
+
+<body>
+
+  <section class="page-section" style="max-width:680px; margin:40px auto; text-align:center;">
+    <div style="font-size:48px; margin-bottom:12px;">🎉</div>
+    <h1 class="page-title" style="color:var(--heading-color, #2c2c2c);">Welcome to Peakora+</h1>
+    <p class="page-subtitle" style="color:var(--text-muted, #666);">Your payment was processed successfully via Paddle</p>
+    <div class="divider"></div>
+
+    <div id="paddle-receipt-details"></div>
+
+    <p class="page-text" style="text-align:center;">
+      Thank you for subscribing! All Peakora+ features — including custom Theme Palettes, Past Plans Archive, Audio Soundscapes, and Deep Analytics — are now unlocked.
+    </p>
+
+    <div class="button-row" style="margin-top:24px;">
+      <a href="assistant.html" class="btn" style="background:var(--accent-gradient); padding:12px 28px; font-size:15px; font-weight:700; border-radius:10px;">Return to Peakora Assistant App 🚀</a>
+    </div>
+
+  </section>
+
+</body>
+</html>
+
