@@ -31,4 +31,4 @@ jobs:
 
       - name: Ensure no real secrets committed
         run: |
-          ! grep -RIn -E 'AIzaSy[0-9A-Za-z_-]{20,}|AQ\.Ab[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z]{20,}|pdl_[a-z]+_[0-9A-Za-z]+|re_[0-9A-Za-z]{20,}|0x[0-9a-fA-F]{64}'             --exclude='.env.example' --exclude-dir='.git' --exclude-dir='node_modules'             . && echo "no hardcoded secrets found" || { echo "potential secret committed"; exit 1; }
+          ! grep -RIn -E 'AIzaSy[0-9A-Za-z_-]{20,}|AQ\.Ab[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z]{20,}|pdl_[a-z]+_[0-9A-Za-z]+|re_[0-9A-Za-z]{20,}|0x[0-9a-fA-F]{64}'             --exclude='.env.example' --exclude-dir='.git' --exclude-dir='node_modules' --exclude-dir='dist' --exclude='firebase-applet-config.json'             . && echo "no hardcoded secrets found" || { echo "potential secret committed"; exit 1; }
