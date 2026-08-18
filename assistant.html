@@ -459,106 +459,181 @@
     }
 
     function generatePlanFromAnswers(answers) {
-      const goal = (answers.goal || "feeling a bit more steady").toLowerCase();
-      const challenge = (answers.challenge || "what’s been weighing on you").toLowerCase();
+      const goalRaw = (answers.goal || "feeling a little more steady").trim();
+      const goal = goalRaw.toLowerCase();
+      const challengeRaw = (answers.challenge || "the things that have been weighing on you").trim();
+      const challenge = challengeRaw.toLowerCase();
       const time = answers.time || "5–10 minutes";
-      const gentleWin = answers.extended1 || "one small thing that feels kind";
-      const obstacles = answers.extended2 || "the usual things that get in the way";
-      const insight = answers.insight || "";
+      const gentleWin = (answers.extended1 || "one small thing that feels kind").trim();
+      const obstacles = (answers.extended2 || "the usual things that get in the way").trim();
+      const insight = (answers.insight || "").trim();
 
       const timePhrase =
         time.indexOf("5") !== -1 ? "just a few minutes" :
         time.indexOf("15") !== -1 ? "about a quarter of an hour" :
-        "a bit more focused time";
+        "a proper pocket of focused time";
+      const timeShort =
+        time.indexOf("5") !== -1 ? "5–10 min" :
+        time.indexOf("15") !== -1 ? "15–20 min" : "20+ min";
+
+      // Match the plan's tone to what the person is actually reaching for
+      let profile = "balance";
+      if (/calm|stress|anxi|peace|relax|overwhelm/.test(goal)) profile = "calm";
+      else if (/routine|habit|consist|structure|disciplin/.test(goal)) profile = "rhythm";
+      else if (/focus|clarity|concentrat|mind|productiv/.test(goal)) profile = "clarity";
+      else if (/energy|align|motivat|strong|vitality/.test(goal)) profile = "energy";
+
+      const profiles = {
+        calm: {
+          opening: "Before anything else, give your nervous system a reason to feel safe. Sit somewhere comfortable, drop your shoulders, and breathe out longer than you breathe in.",
+          day2: "Yesterday you simply arrived. Today, add one gentle layer: after your breathing, spend " + timePhrase + " on something that usually calms you — a warm drink, a slow stretch, a quiet corner.",
+          whyCalm: "Because you told us you want " + goalRaw + ", every day this week starts small on purpose — calm grows from safety, not effort.",
+          win: "Your gentle win — “" + gentleWin + "” — is your anchor today. Do it slowly, and let it count fully.",
+          sound: "harmony"
+        },
+        rhythm: {
+          opening: "Routines stick when they’re attached to something you already do. Pick one everyday moment — morning coffee, brushing your teeth — and pair it with one slow breath.",
+          day2: "Same anchor moment as yesterday, same breath. Then spend " + timePhrase + " writing down what your ideal simple morning actually looks like.",
+          whyCalm: "Because you’re working toward " + goalRaw + ", this week repeats the same tiny anchor daily — rhythm comes from repetition, not willpower.",
+          win: "Your gentle win — “" + gentleWin + "” — becomes part of the routine today. Do it right after your anchor moment.",
+          sound: "rain"
+        },
+        clarity: {
+          opening: "A cluttered mind clears fastest when it can empty out. Before anything else today, write down everything circling in your head — no organizing, just emptying.",
+          day2: "Repeat yesterday’s brain-dump, then circle the one thing that actually matters today. Give it " + timePhrase + " of your honest attention, nothing else.",
+          whyCalm: "Because you told us you want " + goalRaw + ", every day this week protects one small pocket of single-tasked attention.",
+          win: "Your gentle win — “" + gentleWin + "” — is today’s one thing. Close every other tab, literal and mental, while you do it.",
+          sound: "binaural"
+        },
+        energy: {
+          opening: "Energy follows movement, even tiny movement. Stand up, roll your shoulders back, and take five slow breaths with your feet flat on the floor.",
+          day2: "Repeat yesterday’s wake-up breaths, then add " + timePhrase + " of light movement — a walk around the block, stretching, whatever your body asks for.",
+          whyCalm: "Because you’re reaching for " + goalRaw + ", this week builds energy through small physical wins instead of waiting for motivation.",
+          win: "Your gentle win — “" + gentleWin + "” — is today’s spark. Notice how your body feels right after you do it.",
+          sound: "ocean"
+        },
+        balance: {
+          opening: "Start where you are, not where you think you should be. Take " + timePhrase + " today to do one tiny thing that points toward " + goalRaw + " — so small it almost feels too easy.",
+          day2: "Repeat yesterday’s tiny action, then add one more small step that supports it. Think of it as stacking kindness, not effort.",
+          whyCalm: "Because you told us you want " + goalRaw + ", every day this week is built to be finishable — momentum loves small wins.",
+          win: "Your gentle win — “" + gentleWin + "” — is today’s focus. Do the smallest version of it, even if it’s imperfect.",
+          sound: "harmony"
+        }
+      };
+      const P = profiles[profile] || profiles.balance;
 
       const baseForgiveness =
         "If today feels heavier than you expected, do the smallest version of this and call it a win.";
 
-      const days = [];
-
-      days.push({
-        title: "Day 1 — Grounding",
-        focus: "Start gently, not perfectly.",
-        action:
-          "Take " + timePhrase + " to do one tiny action toward your goal around " + goal + ". " +
-          "Keep it so small it almost feels too easy.",
-        reflection:
-          "At the end of the day, notice one moment where you chose care over pressure.",
-        forgiveness: baseForgiveness
-      });
-
-      days.push({
-        title: "Day 2 — Light momentum",
-        focus: "Build a little movement without forcing it.",
-        action:
-          "Repeat yesterday’s tiny action, then add one more small step that supports it. " +
-          "Think of it as stacking kindness, not effort.",
-        reflection:
-          "Ask yourself: “What made this feel easier or harder today?”",
-        forgiveness:
-          "If you didn’t get to it, imagine how you’d speak to a friend in your exact situation—and offer yourself the same tone."
-      });
-
-      days.push({
-        title: "Day 3 — Reset and soften",
-        focus: "Make space for how you actually feel.",
-        action:
-          "Take a short pause—one slow breath in, one softer breath out, repeated a few times. " +
-          "Then name, in a sentence, how " + challenge + " has been showing up.",
-        reflection:
-          "You can jot down one sentence about what you’re carrying. That’s enough.",
-        forgiveness:
-          "If this feels like too much today, just do the breathing part and skip the rest."
-      });
-
-      days.push({
-        title: "Day 4 — Gentle win",
-        focus: "Give yourself a clear, kind win.",
-        action:
-          "Choose the gentle win you named earlier: “" + gentleWin + "”. " +
-          "Do the smallest version of it today, even if it’s imperfect.",
-        reflection:
-          "Notice how it feels in your body to follow through on something small you chose for yourself.",
-        forgiveness:
-          "If you don’t get to it, that doesn’t erase your progress. You’re still in the week, not out of it."
-      });
-
-      days.push({
-        title: "Day 5 — Navigating obstacles",
-        focus: "Work with your patterns, not against them.",
-        action:
-          "Look at what usually throws you off: “" + obstacles + "”. " +
-          "Pick one tiny way to soften or sidestep that pattern just for today.",
-        reflection:
-          "Ask: “What would make this 10% easier next time?” and capture one idea.",
-        forgiveness:
-          "If the pattern wins today, that’s data, not failure. You’re learning how your life actually works."
-      });
-
-      days.push({
-        title: "Day 6 — Check-in and adjust",
-        focus: "Listen to your energy honestly.",
-        action:
-          "Do a quick check-in: how does your energy feel today in one sentence? " +
-          (insight ? "You mentioned before: “" + insight + "”. See if that still feels true." : "Just name it without judging it."),
-        reflection:
-          "Based on how you feel, decide whether tomorrow should be lighter, similar, or a bit more active.",
-        forgiveness:
-          "If you skip today, tomorrow can still be a reset. You’re allowed to restart inside the same week."
-      });
-
-      days.push({
-        title: "Day 7 — Integration",
-        focus: "Gather what worked, gently.",
-        action:
-          "Look back over the week and choose one thing you’d like to keep for next week—no more than that.",
-        reflection:
-          "Finish the sentence: “This week reminded me that I can…”",
-        forgiveness:
-          "If this week felt messy, that’s still a week of paying attention. That matters more than a perfect streak."
-      });
-
-      return days;
+      return [
+        {
+          title: "Day 1 — Arrive",
+          focus: "Start gently, not perfectly.",
+          why: P.whyCalm,
+          action: P.opening + " That’s the whole task — let it be enough.",
+          steps: [
+            "Find a quiet spot and set a timer for " + timeShort + ".",
+            "Follow the breathing or grounding step above, slowly.",
+            "When the timer ends, say out loud: “Day one, done.”"
+          ],
+          reflection: "Tonight, notice one moment where you chose care over pressure.",
+          forgiveness: baseForgiveness,
+          duration: timeShort,
+          sound: P.sound
+        },
+        {
+          title: "Day 2 — First threads",
+          focus: "Build a little movement without forcing it.",
+          why: "Repeating yesterday’s step on purpose tells your brain: this is safe, we can keep it.",
+          action: P.day2,
+          steps: [
+            "Redo yesterday’s small action first — same time if you can.",
+            "Add the one new layer described above.",
+            "Keep the total under " + timeShort + "; stop while it still feels easy."
+          ],
+          reflection: "Ask yourself: “What made this feel easier or harder today?”",
+          forgiveness: "If you didn’t get to it, imagine how you’d speak to a friend in your exact situation — then offer yourself the same tone.",
+          duration: timeShort,
+          sound: P.sound
+        },
+        {
+          title: "Day 3 — Soften the weight",
+          focus: "Make space for how you actually feel.",
+          why: "You named “" + challengeRaw + "” as what’s been heavy. Today we don’t fix it — we just give it some air.",
+          action: "Take a short pause — one slow breath in, one softer breath out, a few times. Then say or write one honest sentence about how “" + challengeRaw + "” has been showing up for you lately.",
+          steps: [
+            "Do one slow 4-2-6 breathing cycle (inhale 4s, hold 2s, exhale 6s).",
+            "Write or say your one honest sentence about the heaviness.",
+            "Close with a hand on your chest and three normal breaths."
+          ],
+          reflection: "One sentence about what you’re carrying is enough. You don’t have to solve it today.",
+          forgiveness: "If this feels like too much today, just do the breathing part and skip the rest.",
+          duration: timeShort,
+          sound: "om"
+        },
+        {
+          title: "Day 4 — Your gentle win",
+          focus: "Give yourself a clear, kind win.",
+          why: "You picked this win yourself on a hard-weather day in your life — today it gets to happen.",
+          action: P.win,
+          steps: [
+            "Name the smallest possible version of “" + gentleWin + "”.",
+            "Do that version now — imperfect is perfect.",
+            "Mark it done somewhere you’ll see it."
+          ],
+          reflection: "Notice how it feels in your body to follow through on something small you chose for yourself.",
+          forgiveness: "If you don’t get to it, that doesn’t erase your progress. You’re still in the week, not out of it.",
+          duration: timeShort,
+          sound: "bowl"
+        },
+        {
+          title: "Day 5 — Sidestep the pattern",
+          focus: "Work with your patterns, not against them.",
+          why: "You told us “" + obstacles + "” usually throws you off. Today is about designing around it, not fighting it.",
+          action: "Look honestly at “" + obstacles + "”. Pick one tiny way to soften or sidestep it just for today — move the charger to another room, tell someone your plan, set one gentle boundary.",
+          steps: [
+            "Name the exact moment the pattern usually kicks in.",
+            "Choose one small environmental tweak for that moment.",
+            "Put the tweak in place now, before you need it."
+          ],
+          reflection: "Ask: “What would make this 10% easier next time?” and capture one idea.",
+          forgiveness: "If the pattern wins today, that’s data, not failure. You’re learning how your life actually works.",
+          duration: timeShort,
+          sound: "night"
+        },
+        {
+          title: "Day 6 — Listen and adjust",
+          focus: "Let your real energy set the pace.",
+          why: "Halfway through, honest information beats forced consistency — today the plan bends to fit you.",
+          action: "Check in with yourself: in one sentence, how’s your energy today? " +
+            (insight ? "Earlier you said you wanted more “" + insight + "” — does that still feel true? " : "") +
+            "Then choose: repeat your favorite day so far, or take the full day as rest. Both count.",
+          steps: [
+            "Rate your energy out loud from 1 to 10.",
+            "Low (1–4): rest day, breathing only. High (5–10): repeat your favorite day.",
+            "Log a mood check-in so your weekly pattern stays honest."
+          ],
+          reflection: "Based on how you feel, decide whether tomorrow should be lighter, similar, or a bit more active.",
+          forgiveness: "If you skip today, tomorrow can still be a reset. You’re allowed to restart inside the same week.",
+          duration: timeShort,
+          sound: "fire"
+        },
+        {
+          title: "Day 7 — Gather and carry forward",
+          focus: "Keep one thing. Just one.",
+          why: "Integration beats intensity — one habit kept for a month changes more than seven habits kept for a week.",
+          action: "Look back over your week. Choose the single day that felt most doable or most nourishing — that one thing is what you carry into next week. No more than that.",
+          steps: [
+            "Skim your week and pick your one keeper.",
+            "Decide exactly when it will happen next week (day + rough time).",
+            "If you’d like a fresh week, start a new plan from the Plans tab."
+          ],
+          reflection: "Finish the sentence: “This week reminded me that I can…”",
+          forgiveness: "If this week felt messy, that’s still a week of paying attention. That matters more than a perfect streak.",
+          duration: timeShort,
+          sound: P.sound
+        }
+      ];
     }
 
     function ensurePlanGenerated() {
@@ -644,11 +719,11 @@
       if (key === "welcome") {
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Welcome to Peakora Assistant</h2>
-            <p class="soft-note">A gentle space to reset, reconnect, and rebuild your days with clarity, calm, and intention.</p>
-            <p>We'll guide you step-by-step through a short reset to craft a personalized 7-day routine tailored to your life.</p>
+            <h2>Welcome to Peakora</h2>
+            <p class="soft-note">A gentle corner of your day to breathe, reset, and get back to yourself.</p>
+            <p>In a few short questions, we'll shape a 7-day plan that actually fits your life — no pressure, no perfection.</p>
             <div class="actions vertical mt-20">
-              <button class="btn primary" onclick="goToStepKey('explanation')">Begin Your Reset</button>
+              <button class="btn primary" onclick="goToStepKey('explanation')">Let's begin</button>
             </div>
           </div>
         `;
@@ -659,12 +734,12 @@
       if (key === "explanation") {
         container.innerHTML = `
           <div class="step">
-            <h2>How Peakora Works</h2>
-            <p class="soft-note">Designed to fit into your day, not take it over.</p>
+            <h2>How Peakora works</h2>
+            <p class="soft-note">Made to fit into your day, not take it over.</p>
             <ul class="preview-list">
-              <li><strong>Gentle by design:</strong> Zero guilt, zero pressure, move at your pace.</li>
-              <li><strong>Emotionally aware:</strong> Adaptable anchors built for real, messy days.</li>
-              <li><strong>Real momentum:</strong> Daily micro-wins that build lasting clarity.</li>
+              <li><strong>Gentle by design:</strong> No guilt, no pressure — you set the pace.</li>
+              <li><strong>Made for real life:</strong> Your plan flexes with messy days, not against them.</li>
+              <li><strong>Small steps, real change:</strong> Tiny daily wins that quietly add up.</li>
             </ul>
             <div class="actions mt-20">
               <button class="btn secondary" onclick="goToPrevious()">Back</button>
@@ -680,8 +755,8 @@
         const currentGoal = state.answers.goal || "";
         container.innerHTML = `
           <div class="step">
-            <h2>What is your primary focus right now?</h2>
-            <p class="soft-note">Select an area or type what feels most important to you.</p>
+            <h2>What would you like more of right now?</h2>
+            <p class="soft-note">Pick the closest fit, or say it in your own words.</p>
             <div class="options vertical mb-16">
               <button class="btn ghost" onclick="selectPresetGoal('Finding more calm & reducing stress')">Finding more calm & reducing stress</button>
               <button class="btn ghost" onclick="selectPresetGoal('Building consistent, gentle routines')">Building consistent, gentle routines</button>
@@ -703,8 +778,8 @@
         const currentChallenge = state.answers.challenge || "";
         container.innerHTML = `
           <div class="step">
-            <h2>What has been feeling heavy or standing in your way?</h2>
-            <p class="soft-note">Naming what weighs on you helps us customize your forgiveness prompts.</p>
+            <h2>What's been feeling heavy lately?</h2>
+            <p class="soft-note">Naming it helps your plan be kinder on the hard days.</p>
             <div class="options vertical mb-16">
               <button class="btn ghost" onclick="selectPresetChallenge('Overwhelm from busy days')">Overwhelm from busy days</button>
               <button class="btn ghost" onclick="selectPresetChallenge('Inconsistency and starting over')">Inconsistency & starting over</button>
@@ -725,8 +800,8 @@
       if (key === "time") {
         container.innerHTML = `
           <div class="step">
-            <h2>How much time can you comfortably give each day?</h2>
-            <p class="soft-note">Choose what feels realistic. You can always change this later.</p>
+            <h2>How much time can you honestly give each day?</h2>
+            <p class="soft-note">Go with what feels realistic — a few honest minutes beats a heroic plan you can't keep.</p>
             <div class="options vertical mt-16">
               <button class="btn secondary" onclick="handleTime('5–10 minutes')">5–10 minutes (Gentle & Light)</button>
               <button class="btn secondary" onclick="handleTime('15–20 minutes')">15–20 minutes (Steady Momentum)</button>
@@ -745,8 +820,8 @@
         const currentInsight = state.answers.insight || "";
         container.innerHTML = `
           <div class="step">
-            <h2>What is one thing you’d love to feel more of?</h2>
-            <p class="soft-note">e.g., peace of mind, morning clarity, feeling present, self-compassion...</p>
+            <h2>What's one thing you'd love to feel more of?</h2>
+            <p class="soft-note">Peace of mind, morning clarity, feeling present, a little self-kindness...</p>
             <input type="text" id="insight-input" class="input" style="min-height:44px;" value="${currentInsight}" placeholder="e.g. Peace of mind and morning calm" />
             <div class="actions mt-20">
               <button class="btn secondary" onclick="goToPrevious()">Back</button>
@@ -762,8 +837,8 @@
         const currentVal = state.answers.extended1 || "";
         container.innerHTML = `
           <div class="step">
-            <h2>Name one gentle win that feels doable this week</h2>
-            <p class="soft-note">Something small enough that success feels guaranteed.</p>
+            <h2>Name one gentle win for this week</h2>
+            <p class="soft-note">Something so small that success is basically guaranteed.</p>
             <input type="text" id="extended1-input" class="input" style="min-height:44px;" value="${currentVal}" placeholder="e.g. Drinking a glass of water before my morning coffee" />
             <div class="actions mt-20">
               <button class="btn secondary" onclick="goToPrevious()">Back</button>
@@ -779,8 +854,8 @@
         const currentVal = state.answers.extended2 || "";
         container.innerHTML = `
           <div class="step">
-            <h2>What usually gets in the way or throws you off?</h2>
-            <p class="soft-note">Identifying friction helps us build realistic fallback steps.</p>
+            <h2>What usually gets in the way?</h2>
+            <p class="soft-note">If we know where it snags, we can plan around it together.</p>
             <input type="text" id="extended2-input" class="input" style="min-height:44px;" value="${currentVal}" placeholder="e.g. Late nights, phone notifications, sudden meetings" />
             <div class="actions mt-20">
               <button class="btn secondary" onclick="goToPrevious()">Back</button>
@@ -796,8 +871,8 @@
         const currentEmail = state.email || "";
         container.innerHTML = `
           <div class="step">
-            <h2>Where should we send your plan?</h2>
-            <p class="soft-note">We'll save your 7-day reset and email you a copy for quick access.</p>
+            <h2>Where should your plan live?</h2>
+            <p class="soft-note">We'll email you a copy and keep one right here on your device too.</p>
             <input type="email" id="email-input" class="input" style="min-height:44px;" value="${currentEmail}" placeholder="your.email@example.com" />
             <div class="actions mt-20">
               <button class="btn secondary" onclick="goToPrevious()">Back</button>
@@ -812,14 +887,14 @@
       if (key === "processing") {
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Crafting your personalized 7-day plan...</h2>
-            <p class="soft-note" id="processing-status">Analyzing your energy focus & timeframe...</p>
+            <h2>Putting your week together...</h2>
+            <p class="soft-note" id="processing-status">Listening to what you told us...</p>
             <div class="loader"></div>
           </div>
         `;
         setTimeout(() => {
           const statusEl = document.getElementById("processing-status");
-          if (statusEl) statusEl.textContent = "Structuring custom daily anchors & forgiveness notes...";
+          if (statusEl) statusEl.textContent = "Weaving in your gentle wins & kind reminders...";
         }, 1000);
         setTimeout(() => {
           ensurePlanGenerated();
@@ -838,8 +913,8 @@
 
         container.innerHTML = `
           <div class="step">
-            <h2>Your 7-Day Gentle Reset Strategy</h2>
-            <p class="soft-note">Here is a sneak peek of how your upcoming week is structured:</p>
+            <h2>Here's your week, gently mapped</h2>
+            <p class="soft-note">A quick peek at how your next seven days will feel:</p>
             <div class="card mb-12" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
               <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day1.title}</h3>
               <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day1.focus}:</strong> ${day1.action}</p>
@@ -864,24 +939,24 @@
       if (key === "pricing") {
         container.innerHTML = `
           <div class="step">
-            <h2>Choose Your Experience</h2>
-            <p class="soft-note">Peakora is free for your core 7-day reset plan and daily toolkit.</p>
+            <h2>Pick how deep you want to go</h2>
+            <p class="soft-note">The core stuff — your full 7-day plan and daily toolkit — is free. Always.</p>
             <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:14px; padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
                 <span style="background:var(--theme-primary-grad); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
               </div>
-              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Includes 7-day personalized plan, mood tracker, breathing tool & micro-journal.</p>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood tracker, breathing tool & micro-journal — the essentials, on us.</p>
             </div>
             <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora+ Tier</h3>
                 <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$4.99/mo</span>
               </div>
-              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Unlimited resets, themes, soundscapes, plan history, and deep mood analytics.</p>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Unlimited resets, themes, soundscapes, saved weeks, and deep mood analytics.</p>
             </div>
             <div class="actions">
-              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('done')">Start Free Plan</button>
+              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('done')">Start with the Free Plan</button>
             </div>
           </div>
         `;
@@ -894,11 +969,11 @@
         saveState();
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Your Plan is Ready!</h2>
-            <p class="soft-note">Your custom 7-day reset plan has been generated and saved to your device.</p>
-            <p>Welcome to your personal gentle space. Take a breath and step inside whenever you're ready.</p>
+            <h2>Your week is ready</h2>
+            <p class="soft-note">Your 7-day plan is saved right here on your device, and a copy is on its way to your inbox.</p>
+            <p>Welcome to your own quiet corner. Whenever you're ready, step inside.</p>
             <div class="actions vertical mt-20">
-              <button class="btn primary" onclick="goToStepKey('home')">Open My Home Dashboard</button>
+              <button class="btn primary" onclick="goToStepKey('home')">Take me home</button>
             </div>
           </div>
         `;
@@ -909,10 +984,10 @@
       if (key === "daily_intro") {
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Daily Check-in</h2>
-            <p class="soft-note">Take 60 seconds to tune into how your mind and body feel right now.</p>
+            <h2>A moment for yourself</h2>
+            <p class="soft-note">Sixty seconds to check how you're actually doing — mind and body.</p>
             <div class="actions vertical mt-20">
-              <button class="btn primary" onclick="goToStepKey('daily_checkin')">Begin Check-in</button>
+              <button class="btn primary" onclick="goToStepKey('daily_checkin')">Let's check in</button>
               <button class="btn ghost mt-8" onclick="goToStepKey('home')">Back to Home</button>
             </div>
           </div>
@@ -925,7 +1000,7 @@
         container.innerHTML = `
           <div class="step">
             <h2>How are you feeling today?</h2>
-            <p class="soft-note">Select a feeling tag or describe it in your own words.</p>
+            <p class="soft-note">Pick the closest word, or say it your way.</p>
             <div class="options mb-12">
               <button class="btn ghost" onclick="selectMoodTag('Tired / Heavy')">Tired / Heavy</button>
               <button class="btn ghost" onclick="selectMoodTag('Anxious / Wired')">Anxious / Wired</button>
@@ -933,10 +1008,10 @@
               <button class="btn ghost" onclick="selectMoodTag('Hopeful / Light')">Hopeful / Light</button>
               <button class="btn ghost" onclick="selectMoodTag('Energized / Strong')">Energized / Strong</button>
             </div>
-            <textarea id="daily-checkin-input" class="input" placeholder="What is making you feel this way? (Optional)"></textarea>
+            <textarea id="daily-checkin-input" class="input" placeholder="What's behind that feeling? (Optional — no pressure)"></textarea>
             <div class="actions mt-16">
-              <button class="btn secondary" onclick="goToStepKey('home')">Cancel</button>
-              <button class="btn primary" onclick="handleDailyCheckin()">Save Check-in</button>
+              <button class="btn secondary" onclick="goToStepKey('home')">Not now</button>
+              <button class="btn primary" onclick="handleDailyCheckin()">Save my check-in</button>
             </div>
           </div>
         `;
@@ -948,9 +1023,9 @@
         const feeling = state.answers.daily_checkin || "your check-in";
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Thank You for Checking In</h2>
-            <p>I’ve noted <strong>"${feeling}"</strong> as part of your ongoing pattern.</p>
-            <p class="soft-note mt-12">Small moments of honesty like this build genuine clarity over time.</p>
+            <h2>Thanks for checking in</h2>
+            <p>I’ve noted <strong>"${feeling}"</strong> — little by little, this builds a real picture of your days.</p>
+            <p class="soft-note mt-12">Honesty in small moments is how clarity grows.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="goToStepKey('home')">Return to Home</button>
             </div>
@@ -983,7 +1058,7 @@
         container.innerHTML = `
           <div class="step">
             <h2>Micro-Journal</h2>
-            <p class="soft-note">Write a sentence or two to clear your head. There is no right or wrong answer.</p>
+            <p class="soft-note">A sentence or two to empty your head. There are no wrong answers here.</p>
             <textarea id="journal-input" class="input" placeholder="What is present for you right now?">${existingNote}</textarea>
             <div class="actions mt-16">
               <button class="btn secondary" onclick="goToStepKey('home')">Back</button>
@@ -1000,7 +1075,7 @@
         container.innerHTML = `
           <div class="step">
             <h2>Reset Your Focus</h2>
-            <p class="soft-note">When everything feels like priority, pick one small single thing for the next hour.</p>
+            <p class="soft-note">When everything shouts at once, pick one small thing for the next hour.</p>
             <input type="text" id="reset-focus-input" class="input" style="min-height:44px;" value="${existingFocus}" placeholder="e.g. Finish one emails draft without opening new tabs" />
             <div class="actions mt-16">
               <button class="btn secondary" onclick="goToStepKey('home')">Back</button>
@@ -1015,8 +1090,8 @@
       if (key === "install_prompt") {
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Make Peakora Your Space</h2>
-            <p class="soft-note">Add Peakora to your home screen for gentle, fast daily access without opening browser tabs.</p>
+            <h2>Keep Peakora close</h2>
+            <p class="soft-note">Add it to your home screen — one tap and you're in your calm place.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="triggerInstall()">Install App</button>
               <button class="btn ghost mt-8" onclick="goToStepKey('home')">Maybe Later</button>
@@ -1032,9 +1107,9 @@
         const plan = state.plan || [];
         let html = `
           <div class="step">
-            <h2>Your Full 7-Day Reset Plan</h2>
-            <p class="soft-note">Every day offers a gentle focus, action step, and forgiveness reminder.</p>
-            <div class="plan-full-list" style="max-height:360px; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:10px;">
+            <h2>Your week, laid out gently</h2>
+            <p class="soft-note">Seven days, each with a small focus, a simple way to do it, and a kind word for when life gets in the way.</p>
+            <div class="plan-full-list" style="max-height:400px; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:10px;">
         `;
         plan.forEach((day, idx) => {
           const isToday = idx === getTodayPlanIndex();
@@ -1048,15 +1123,20 @@
             '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
           ];
           const icon = dayIcons[idx % dayIcons.length];
+          const stepsList = (day.steps || []).map(s => `<div style="font-size:11px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('');
           html += `
             <div class="plan-choice-btn ${isToday ? 'is-today' : ''}">
               <div class="plan-choice-icon">${icon}</div>
               <div class="plan-choice-content">
                 <div class="plan-choice-header">
-                  <span class="plan-choice-title">DAY ${idx + 1}: ${day.title}</span>
-                  ${isToday ? '<span class="plan-choice-pill active-pill">Current Day</span>' : ''}
+                  <span class="plan-choice-title">${day.title}</span>
+                  ${isToday ? '<span class="plan-choice-pill active-pill">Today</span>' : ''}
+                  ${day.duration ? `<span class="plan-choice-pill" style="font-size:9px;">${day.duration}</span>` : ''}
                 </div>
-                <div class="plan-choice-action"><strong>Focus:</strong> ${day.focus} • <strong>Action:</strong> ${day.action}</div>
+                <div class="plan-choice-action"><strong>Focus:</strong> ${day.focus}</div>
+                <div class="plan-choice-action"><strong>How:</strong> ${day.action}</div>
+                ${stepsList ? `<div style="margin-top:4px;">${stepsList}</div>` : ''}
+                <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${day.reflection || ''}</div>
                 <div class="plan-choice-quote">"${day.forgiveness}"</div>
               </div>
             </div>
@@ -1064,7 +1144,8 @@
         });
         html += `
             </div>
-            <div class="actions mt-16">
+            <div class="actions vertical mt-16">
+              <button class="btn secondary" style="width:100%; font-weight:700;" onclick="startNewPlan()">Start a New Plan</button>
               <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('home')">Back to Home Dashboard</button>
             </div>
           </div>
@@ -1143,44 +1224,52 @@
 
           const moodInsightMap = {
             happy: {
-              title: "Serotonin Boost",
-              text: "High positivity detected. Ideal window for creative output, social connection, and active physical goals.",
+              title: "You're in a good place",
+              text: "Lovely — days like this are made for the things you enjoy. A great moment to create something, call a friend, or simply soak it in.",
               color: "#f4a261"
             },
             calm: {
-              title: "Parasympathetic Balance",
-              text: "Equanimity level optimal. Excellent state for deep focused work, meditation, and restorative rest.",
+              title: "Steady and settled",
+              text: "That quiet, even feeling is worth protecting. It's a beautiful state for focused work, meditation, or an early, restful night.",
               color: "#34d399"
             },
             anxious: {
-              title: "Somatic Regulation Needed",
-              text: "Elevated stress signals detected. Recommended: 60-second breathing loop & 528Hz Solfeggio audio frequency.",
+              title: "A little wired right now",
+              text: "That's okay — it happens. Try the 60-second breathing ring in Insights, and let the 528Hz tone take the edge off.",
               color: "#c084fc"
             },
             sleepy: {
-              title: "Low Energy Reserve",
-              text: "Rest recovery mode. Recommended: Gentle stretching, evening wind-down routine, and 396Hz grounding soundscape.",
+              title: "Running on low",
+              text: "Be extra gentle with yourself today. A slow stretch, an early wind-down, and some grounding rain sounds will go a long way.",
               color: "#818cf8"
             },
             energized: {
-              title: "Vitality Peak",
-              text: "Peak focus energy. Great moment to complete challenging tasks or engage in physical exercise.",
+              title: "Full of spark",
+              text: "You've got real energy today — channel it into that one thing you've been putting off, or move your body while it lasts.",
               color: "#facc15"
             },
             joyful: {
-              title: "Emotional Resonance",
-              text: "Elevated mood state. Capture this feeling in your micro-journal or share a grounding reflection.",
+              title: "Glowing today",
+              text: "Wonderful. Jot a line in your micro-journal so future-you can remember what this felt like.",
               color: "#fb7185"
             }
           };
 
           const currentInsight = moodInsightMap[lastLoggedMood] || moodInsightMap.happy;
 
+          const firstName = (() => {
+            if (state.email) {
+              const pre = state.email.split('@')[0].replace(/[._\-0-9]+/g, ' ').trim();
+              if (pre) return pre.split(' ')[0].charAt(0).toUpperCase() + pre.split(' ')[0].slice(1);
+            }
+            return '';
+          })();
+
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
               <div>
-                <h1 class="dash-welcome-h1" style="margin:0;">Welcome back, Eleanor! Your journey to balance.</h1>
-                <p style="font-size:12px; color:var(--theme-text-muted); margin:4px 0 0;">Day ${todayIndex + 1} of 7 Reset Cycle • ${today.title}</p>
+                <h1 class="dash-welcome-h1" style="margin:0;">Welcome back${firstName ? ', ' + firstName : ''}. Good to see you.</h1>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:4px 0 0;">Day ${todayIndex + 1} of your 7-day reset • ${today.title}</p>
               </div>
             </div>
 
@@ -1188,7 +1277,7 @@
             <div class="dash-grid-2">
               <div class="dash-card">
                 <div class="dash-card-title">Mood Check-in</div>
-                <div class="dash-card-sub">How are you feeling today?</div>
+                <div class="dash-card-sub">How are you feeling, right now?</div>
                 <div class="mood-grid">
                   <button class="mood-btn ${lastLoggedMood === 'happy' ? 'active' : ''}" onclick="selectDashMood('happy', this)">
                     <div class="mood-btn-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
@@ -1216,9 +1305,9 @@
                   </button>
                 </div>
 
-                <!-- DYNAMIC MOOD INSIGHT BOX -->
+                <!-- MOOD INSIGHT BOX (follows your last check-in) -->
                 <div style="margin-top:14px; background:rgba(255,255,255,0.03); border-left:3px solid ${currentInsight.color}; border-radius:10px; padding:12px 14px;">
-                  <div style="font-size:11px; font-weight:700; color:${currentInsight.color}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Dynamic Mood Insight • ${currentInsight.title}</div>
+                  <div style="font-size:11px; font-weight:700; color:${currentInsight.color}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">A note on your mood • ${currentInsight.title}</div>
                   <div style="font-size:12px; color:#ffffff; line-height:1.4;">${currentInsight.text}</div>
                 </div>
               </div>
@@ -1237,41 +1326,16 @@
                   </svg>
                   
                   <div class="timeline-nodes-row">
-                    <div class="timeline-node-item ${todayIndex === 0 ? 'active-glow' : ''}" id="day-node-1" onclick="clickTimelineDay(1, 'Sleep Sync', 'Morning sunlight & circadian sync')">
-                      <div class="node-day-label">Day 1</div>
+                    ${plan.map((p, idx) => {
+                      const shortTitle = (p.title || ('Day ' + (idx + 1))).split('—')[1] ? (p.title.split('—')[1] || '').trim() : (p.title || '').trim();
+                      const shortDesc = (p.focus || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                      return `
+                    <div class="timeline-node-item ${todayIndex === idx ? 'active-glow' : ''}" id="day-node-${idx + 1}" onclick="clickTimelineDay(${idx + 1})">
+                      <div class="node-day-label">Day ${idx + 1}</div>
                       <div class="node-dot"></div>
-                      <div class="node-desc">Sleep Sync</div>
-                    </div>
-                    <div class="timeline-node-item ${todayIndex === 1 ? 'active-glow' : ''}" id="day-node-2" onclick="clickTimelineDay(2, 'Nutrient Focus', 'Mindful hydration & clean dinner')">
-                      <div class="node-day-label">Day 2</div>
-                      <div class="node-dot"></div>
-                      <div class="node-desc">Nutrient Focus</div>
-                    </div>
-                    <div class="timeline-node-item ${todayIndex === 2 ? 'active-glow' : ''}" id="day-node-3" onclick="clickTimelineDay(3, 'Mindful Move', 'Somatic stretch & 60s breath reset')">
-                      <div class="node-day-label">Day 3</div>
-                      <div class="node-dot"></div>
-                      <div class="node-desc">Mindful Move</div>
-                    </div>
-                    <div class="timeline-node-item ${todayIndex === 3 ? 'active-glow' : ''}" id="day-node-4" onclick="clickTimelineDay(4, 'Social Break', '1-hr digital unwind with tea')">
-                      <div class="node-day-label">Day 4</div>
-                      <div class="node-dot"></div>
-                      <div class="node-desc">Social Break</div>
-                    </div>
-                    <div class="timeline-node-item ${todayIndex === 4 ? 'active-glow' : ''}" id="day-node-5" onclick="clickTimelineDay(5, 'Activity Boost', '25-min movement & micro-journaling')">
-                      <div class="node-day-label">Day 5</div>
-                      <div class="node-dot"></div>
-                      <div class="node-desc">Activity Boost</div>
-                    </div>
-                    <div class="timeline-node-item ${todayIndex === 5 ? 'active-glow' : ''}" id="day-node-6" onclick="clickTimelineDay(6, 'Creative Outlet', 'Expressive reflection & gratitude')">
-                      <div class="node-day-label">Day 6</div>
-                      <div class="node-dot"></div>
-                      <div class="node-desc">Creative Outlet</div>
-                    </div>
-                    <div class="timeline-node-item ${todayIndex === 6 ? 'active-glow' : ''}" id="day-node-7" onclick="clickTimelineDay(7, 'Reflect & Renew', 'Weekly review & renewed direction')">
-                      <div class="node-day-label">Day 7</div>
-                      <div class="node-dot"></div>
-                      <div class="node-desc">Reflect & Renew</div>
-                    </div>
+                      <div class="node-desc">${shortTitle}</div>
+                    </div>`;
+                    }).join('')}
                   </div>
 
                   <!-- ACTIVE DAY POPOVER -->
@@ -1300,8 +1364,11 @@
                     <div class="plan-choice-header">
                       <span class="plan-choice-title" style="color:var(--theme-accent); font-size:14px;">${today.title}: ${today.focus}</span>
                       <span class="plan-choice-pill active-pill">Day ${todayIndex + 1}</span>
+                      ${today.duration ? `<span class="plan-choice-pill" style="font-size:9px;">${today.duration}</span>` : ''}
                     </div>
-                    <div class="plan-choice-action"><strong>Action:</strong> ${today.action}</div>
+                    ${today.why ? `<div class="plan-choice-action" style="font-style:italic; color:var(--theme-text-muted);">${today.why}</div>` : ''}
+                    <div class="plan-choice-action"><strong>How:</strong> ${today.action}</div>
+                    ${(today.steps || []).map(s => `<div style="font-size:11px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
                     <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${today.reflection}</div>
                     <div class="plan-choice-quote">"${today.forgiveness}"</div>
                   </div>
@@ -1321,22 +1388,22 @@
                 </div>
 
                 <div class="progress-stats-row">
+                  ${(() => {
+                    const usage = (window.PeakoraTracker ? PeakoraTracker.getSummary().counts : {});
+                    const checkins = getCheckins().length;
+                    const clamp = (v) => Math.min(96, Math.max(8, Math.round(v)));
+                    const stats = [
+                      ['Mindfulness', 18 + (usage.soundscape_played || 0) * 7 + (usage.solfeggio_played || 0) * 6 + (usage.breath_session_completed || 0) * 12],
+                      ['Check-ins', 15 + checkins * 12],
+                      ['Momentum', 14 + (usage.step_viewed || 0) * 2 + todayIndex * 8],
+                      ['Reflections', 10 + (getReflections().length || 0) * 15]
+                    ];
+                    return stats.map(([label, val]) => `
                   <div class="progress-stat-item">
-                    <span class="stat-label">Mindfulness</span>
-                    <span class="stat-value">71%</span>
-                  </div>
-                  <div class="progress-stat-item">
-                    <span class="stat-label">Nutrition</span>
-                    <span class="stat-value">65%</span>
-                  </div>
-                  <div class="progress-stat-item">
-                    <span class="stat-label">Activity</span>
-                    <span class="stat-value">80%</span>
-                  </div>
-                  <div class="progress-stat-item">
-                    <span class="stat-label">Sleep</span>
-                    <span class="stat-value">75%</span>
-                  </div>
+                    <span class="stat-label">${label}</span>
+                    <span class="stat-value">${clamp(val)}%</span>
+                  </div>`).join('');
+                  })()}
                 </div>
               </div>
             </div>
@@ -1359,7 +1426,7 @@
                         <span class="toolkit-btn-title">Daily Energy & Mood Check-in</span>
                         <span class="toolkit-pill-badge">Interactive</span>
                       </div>
-                      <div class="toolkit-btn-row2">Log your current emotional state and track daily vitality trends</div>
+                      <div class="toolkit-btn-row2">Note how you feel and watch honest patterns build</div>
                     </div>
                   </button>
 
@@ -1373,7 +1440,7 @@
                         <span class="toolkit-btn-title">Somatic Diaphragmatic Breathing</span>
                         <span class="toolkit-pill-badge" style="background:rgba(52,211,153,0.15); color:#34d399; border-color:rgba(52,211,153,0.3);">60-Sec Loop</span>
                       </div>
-                      <div class="toolkit-btn-row2">Guided 4-2-6 breathing cycle to calm your autonomic nervous system</div>
+                      <div class="toolkit-btn-row2">A guided 4-2-6 rhythm that settles your whole system</div>
                     </div>
                   </button>
 
@@ -1387,7 +1454,7 @@
                         <span class="toolkit-btn-title">Micro-Journal & Thought Unloading</span>
                         <span class="toolkit-pill-badge" style="background:rgba(167,139,250,0.15); color:#a78bfa; border-color:rgba(167,139,250,0.3);">Clarity Tool</span>
                       </div>
-                      <div class="toolkit-btn-row2">Safely offload mental chatter, quiet anxiety, and capture key reflections</div>
+                      <div class="toolkit-btn-row2">Empty the mental chatter and keep what matters</div>
                     </div>
                   </button>
 
@@ -1401,21 +1468,21 @@
                         <span class="toolkit-btn-title">Single-Task Focus Anchor</span>
                         <span class="toolkit-pill-badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.3);">1-Task Priority</span>
                       </div>
-                      <div class="toolkit-btn-row2">Set one immediate priority for right now without pressure or distraction</div>
+                      <div class="toolkit-btn-row2">One priority for the next hour — nothing more, no guilt</div>
                     </div>
                   </button>
 
                   <!-- Choice 5 -->
-                  <button class="toolkit-choice-btn" onclick="restartOnboarding()">
+                  <button class="toolkit-choice-btn" onclick="startNewPlan()">
                     <div class="toolkit-btn-icon">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                     </div>
                     <div class="toolkit-btn-content">
                       <div class="toolkit-btn-row1">
-                        <span class="toolkit-btn-title">Re-Evaluate Onboarding Strategy</span>
-                        <span class="toolkit-pill-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">New Parameters</span>
+                        <span class="toolkit-btn-title">Start a Fresh Plan</span>
+                        <span class="toolkit-pill-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">New Week</span>
                       </div>
-                      <div class="toolkit-btn-row2">Reset your onboarding inputs and generate a fresh 7-day personalized strategy</div>
+                      <div class="toolkit-btn-row2">Answer the questions again and shape a new 7-day plan around now</div>
                     </div>
                   </button>
                 </div>
@@ -1440,11 +1507,11 @@
                     Saved Quotes (<span id="reflections-count-badge">0</span>)
                   </button>
                 </div>
-                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:8px;">Share a thought or gentle win for yourself today:</p>
-                <textarea id="story-input" class="input" style="min-height:60px; font-size:12px;" placeholder="What made you feel proud or calm today?"></textarea>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:8px;">A thought, a small win, or just a moment — drop it here:</p>
+                <textarea id="story-input" class="input" style="min-height:60px; font-size:12px;" placeholder="What felt good (or honestly, what didn't) today?"></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                  <span style="font-size:10px; color:var(--theme-text-muted);">Saved securely on device</span>
-                  <button class="btn primary" style="font-size:11px; padding:6px 14px;" onclick="handleShareStory()">Save Reflection</button>
+                  <span style="font-size:10px; color:var(--theme-text-muted);">Kept private — only on this device</span>
+                  <button class="btn primary" style="font-size:11px; padding:6px 14px;" onclick="handleShareStory()">Keep this thought</button>
                 </div>
               </div>
             </div>
@@ -1452,7 +1519,7 @@
           
           setTimeout(() => {
             if (typeof clickTimelineDay === 'function') {
-              clickTimelineDay(todayIndex + 1, today.title, today.action);
+              clickTimelineDay(todayIndex + 1);
             }
             if (typeof updateReflectionsBadge === 'function') {
               updateReflectionsBadge();
@@ -1469,9 +1536,9 @@
                 <span>Peakora</span>
               </div>
               <div style="display:flex; gap:16px; align-items:center;">
-                <span>98% Battery</span>
-                <span>09:41</span>
-                <span>WiFi Connected</span>
+                <span id="ss-battery">Battery: --</span>
+                <span id="ss-clock">--:--</span>
+                <span id="ss-net">Online</span>
               </div>
             </div>
 
@@ -1480,44 +1547,41 @@
               <div class="dash-card">
                 <div class="dash-card-title" style="letter-spacing:0.06em;">BREATHING & SOUNDSCAPES</div>
                 
-                <div class="breathing-ring-outer">
-                  <div class="breathing-ring-circle"></div>
+                <div class="breathing-ring-outer" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer;" title="Tap to start or pause">
+                  <div class="breathing-ring-circle" id="dash-breath-circle"></div>
+                  <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
                   <div class="breathing-center-info">
-                    <div class="breathing-action-label" id="dash-breath-state">INHALE</div>
-                    <div class="breathing-time-rem" id="dash-breath-time">3s remaining • 4/10 cycles</div>
-                    <div style="font-size:11px; color:#ffffff; font-weight:700; margin-top:4px;">5:17 / 10:00</div>
+                    <div class="breathing-action-label" id="dash-breath-state">READY</div>
+                    <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
+                    <div style="font-size:11px; color:#ffffff; font-weight:700; margin-top:4px;" id="dash-breath-total">0:00 / 2:00</div>
                   </div>
                 </div>
+                <p style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin:0 0 10px;">A gentle 4-2-6 rhythm: breathe in 4s, hold 2s, let go 6s. Ten slow cycles, about two minutes.</p>
 
-                <!-- AUDIO WAVE VISUALIZER -->
+                <!-- AUDIO WAVE VISUALIZER (live, follows the sound actually playing) -->
                 <div class="audio-wave-box" style="margin-bottom:12px;">
-                  <div class="audio-wave-header">AUDIO WAVE VISUALIZER</div>
-                  <svg class="audio-wave-canvas-svg" viewBox="0 0 300 40">
-                    <path d="M 0 20 Q 25 5, 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20" fill="none" stroke="#f4a261" stroke-width="2.5"/>
-                    <path d="M 0 20 Q 25 32, 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.75"/>
-                  </svg>
+                  <div class="audio-wave-header">Live Audio Wave</div>
+                  <canvas id="audio-wave-canvas" class="audio-wave-canvas"></canvas>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                     <div>
-                      <div style="font-size:13px; font-weight:700; color:#ffffff;">Deep Zen Forest</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted);">01:23 / 08:45</div>
+                      <div style="font-size:13px; font-weight:700; color:#ffffff;" id="wave-track-name">Nothing playing yet</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted);" id="wave-track-time">Pick a sound below and press play</div>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center;">
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="showToastNotification('Previous track selected')">⏮</button>
-                      <button class="btn primary" style="padding:8px 16px; font-size:14px; border-radius:50%;" onclick="toggleAmbientAudio('harmony')">⏸</button>
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="showToastNotification('Next track selected')">⏭</button>
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(-1)" title="Previous sound">⏮</button>
+                      <button class="btn primary" style="padding:8px 16px; font-size:14px; border-radius:50%;" id="wave-play-btn" onclick="toggleWavePlayback()" title="Play or pause">▶</button>
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(1)" title="Next sound">⏭</button>
                     </div>
                   </div>
                 </div>
 
-                <!-- ORGANIC AUDIO SOUNDSCAPE DROPDOWN CARD -->
+                <!-- SOUNDSCAPE LIBRARY -->
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
-                  <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Synthesized Soundscapes Selector</div>
+                  <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Soundscape Library</div>
                   <div id="audio-playing-status" style="font-size:11px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:8px; border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
                   <div style="display:flex; flex-direction:column; gap:6px;">
                     <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;">
-                      <option value="harmony" ${currentlyPlayingTrack === 'harmony' ? 'selected' : ''}>528Hz Solfeggio & Singing Bowl Harmonics</option>
-                      <option value="ocean" ${currentlyPlayingTrack === 'ocean' ? 'selected' : ''}>Ocean Shoreline Surf (Pink Noise Waves)</option>
-                      <option value="rain" ${currentlyPlayingTrack === 'rain' ? 'selected' : ''}>Forest Rainfall & Zen Bell Chimes</option>
+                      ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
                     </select>
                     <div style="display:flex; gap:6px;">
                       <button id="audio-play-btn" class="btn primary" style="flex:1; font-size:12px; font-weight:600;" onclick="playAmbientAudioFromDropdown()">
@@ -1534,141 +1598,158 @@
                 <!-- SOLFEGGIO FREQUENCIES -->
                 <div class="dash-card" style="margin-bottom:16px;">
                   <div class="dash-card-title">SOLFEGGIO FREQUENCIES</div>
+                  <p style="font-size:11px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a frequency to hear it; tap again to stop.</p>
                   <div class="solfeggio-toggle-grid">
-                    <div class="solfeggio-item" onclick="toggleSolfeggio(396, this)">
+                    ${[[396,'Root'],[417,'Change'],[528,'Love'],[639,'Connect'],[741,'Intuition'],[852,'Clarity']].map(([f, d]) => `
+                    <div class="solfeggio-item ${activeSolfeggioFreq === f ? 'active' : ''}" onclick="toggleSolfeggio(${f}, this)">
                       <div class="solfeggio-switch"></div>
-                      <div class="solfeggio-freq">396Hz</div>
-                      <div class="solfeggio-desc">Root</div>
-                    </div>
-                    <div class="solfeggio-item active" onclick="toggleSolfeggio(528, this)">
-                      <div class="solfeggio-switch"></div>
-                      <div class="solfeggio-freq">528Hz</div>
-                      <div class="solfeggio-desc">Love</div>
-                    </div>
-                    <div class="solfeggio-item" onclick="toggleSolfeggio(639, this)">
-                      <div class="solfeggio-switch"></div>
-                      <div class="solfeggio-freq">639Hz</div>
-                      <div class="solfeggio-desc">Connect</div>
-                    </div>
-                    <div class="solfeggio-item" onclick="toggleSolfeggio(741, this)">
-                      <div class="solfeggio-switch"></div>
-                      <div class="solfeggio-freq">741Hz</div>
-                      <div class="solfeggio-desc">Intuition</div>
-                    </div>
+                      <div class="solfeggio-freq">${f}Hz</div>
+                      <div class="solfeggio-desc">${d}</div>
+                    </div>`).join('')}
                   </div>
                 </div>
 
-                <!-- AMBIENT SOUNDSCAPES -->
+                <!-- AMBIENT SOUNDSCAPES (mix and layer them — tap a card to start or stop it) -->
                 <div class="dash-card" style="margin-bottom:16px;">
                   <div class="dash-card-title">AMBIENT SOUNDSCAPES</div>
+                  <p style="font-size:11px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a card to start or stop that layer, then blend volumes to taste.</p>
                   <div class="ambient-list">
-                    
-                    <div class="ambient-card-item active">
-                      <img src="src/assets/images/soundscape_rainforest_1785859412795.jpg" class="ambient-thumb" alt="Rainforest">
-                      <div class="ambient-info">
-                        <div class="ambient-title">RAINFOREST</div>
-                        <div class="ambient-slider-wrap">
-                          <input type="range" class="ambient-slider" min="0" max="100" value="70" oninput="adjustAmbientVol('rainforest', this.value)">
-                          <span class="ambient-pct" id="pct-rainforest">70%</span>
+                    ${[
+                      { key: 'rainforest', label: 'RAINFOREST', img: 'src/assets/images/soundscape_rainforest_1785859412795.jpg', desc: 'Warm rain on leaves' },
+                      { key: 'ocean', label: 'SOFT OCEAN', img: 'src/assets/images/soundscape_ocean_1785859428118.jpg', desc: 'Slow shoreline surf' },
+                      { key: 'wind', label: 'WIND', img: 'src/assets/images/soundscape_wind_1785859440905.jpg', desc: 'Open valley breeze' },
+                      { key: 'om', label: 'OM CHANT', img: 'src/assets/images/soundscape_om_chant_1785859453828.jpg', desc: '136Hz temple drone' },
+                      { key: 'fire', label: 'FIREPLACE', orb: 'linear-gradient(135deg,#f97316,#b91c1c)', desc: 'Soft crackling hearth' },
+                      { key: 'night', label: 'NIGHT CRICKETS', orb: 'linear-gradient(135deg,#818cf8,#312e81)', desc: 'Summer evening chorus' }
+                    ].map(a => {
+                      const isOn = !!(ambientLayers[a.key] && ambientLayers[a.key].playing);
+                      const vol = ambientLayerVolumes[a.key] != null ? ambientLayerVolumes[a.key] : 50;
+                      const thumb = a.img
+                        ? `<img src="${a.img}" class="ambient-thumb" alt="${a.label}">`
+                        : `<div class="ambient-thumb" style="background:${a.orb}; box-shadow:0 0 14px rgba(255,255,255,0.12);"></div>`;
+                      return `
+                    <div class="ambient-card-item ${isOn ? 'active' : ''}" id="ambient-card-${a.key}">
+                      <div onclick="toggleAmbientLayer('${a.key}')" style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer; min-width:0;">
+                        ${thumb}
+                        <div class="ambient-info">
+                          <div class="ambient-title">${a.label} <span style="font-size:9px; font-weight:600; color:${isOn ? '#34d399' : 'var(--theme-text-muted)'}; margin-left:4px;">${isOn ? '● PLAYING' : '○ TAP TO PLAY'}</span></div>
+                          <div style="font-size:10px; color:var(--theme-text-muted);">${a.desc}</div>
                         </div>
                       </div>
-                    </div>
-
-                    <div class="ambient-card-item">
-                      <img src="src/assets/images/soundscape_ocean_1785859428118.jpg" class="ambient-thumb" alt="Soft Ocean">
-                      <div class="ambient-info">
-                        <div class="ambient-title">SOFT OCEAN</div>
-                        <div class="ambient-slider-wrap">
-                          <input type="range" class="ambient-slider" min="0" max="100" value="30" oninput="adjustAmbientVol('ocean', this.value)">
-                          <span class="ambient-pct" id="pct-ocean">30%</span>
-                        </div>
+                      <div class="ambient-slider-wrap">
+                        <input type="range" class="ambient-slider" min="0" max="100" value="${vol}" oninput="adjustAmbientVol('${a.key}', this.value)">
+                        <span class="ambient-pct" id="pct-${a.key}">${vol}%</span>
                       </div>
-                    </div>
-
-                    <div class="ambient-card-item">
-                      <img src="src/assets/images/soundscape_wind_1785859440905.jpg" class="ambient-thumb" alt="Wind">
-                      <div class="ambient-info">
-                        <div class="ambient-title">WIND</div>
-                        <div class="ambient-slider-wrap">
-                          <input type="range" class="ambient-slider" min="0" max="100" value="45" oninput="adjustAmbientVol('wind', this.value)">
-                          <span class="ambient-pct" id="pct-wind">45%</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="ambient-card-item">
-                      <img src="src/assets/images/soundscape_om_chant_1785859453828.jpg" class="ambient-thumb" alt="Om Chant">
-                      <div class="ambient-info">
-                        <div class="ambient-title">OM CHANT</div>
-                        <div class="ambient-slider-wrap">
-                          <input type="range" class="ambient-slider" min="0" max="100" value="55" oninput="adjustAmbientVol('om', this.value)">
-                          <span class="ambient-pct" id="pct-om">55%</span>
-                        </div>
-                      </div>
-                    </div>
-
+                    </div>`;
+                    }).join('')}
                   </div>
                 </div>
 
-                <!-- DEEP MOOD & ENERGY ANALYTICS CARD -->
+                <!-- DEEP MOOD & ENERGY ANALYTICS CARD (built from your real check-ins) -->
+                ${(() => {
+                  const real = getCheckins();
+                  const usingSample = !real || real.length === 0;
+                  const week = usingSample ? getLast7CheckinsOrPlaceholder() : real.slice(-7);
+                  const energyScore = { heavy: 22, anxious: 45, neutral: 55, hopeful: 74, energized: 92 };
+                  const familyLabels = {
+                    hopeful: ['Bright & Hopeful', '#AEE6C5'],
+                    energized: ['Energized & Alive', '#6EC8C8'],
+                    neutral: ['Steady & Balanced', '#F5B35C'],
+                    anxious: ['Wired & Tense', '#F5C26B'],
+                    heavy: ['Low & Heavy', '#E8A0A0']
+                  };
+                  const counts = {};
+                  week.forEach(c => { const f = getMoodFamily(c.feeling); counts[f] = (counts[f] || 0) + 1; });
+                  const total = week.length || 1;
+                  const avgEnergy = Math.round(week.reduce((s, c) => s + (energyScore[getMoodFamily(c.feeling)] || 50), 0) / total);
+                  const dominant = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] || 'neutral';
+                  const domLabel = familyLabels[dominant] || familyLabels.neutral;
+
+                  const barW = 30, gap = 12, baseY = 62, maxH = 52;
+                  const bars = week.map((c, i) => {
+                    const fam = getMoodFamily(c.feeling);
+                    const e = energyScore[fam] || 50;
+                    const h = Math.max(10, Math.round((e / 100) * maxH));
+                    const x = 12 + i * (barW + gap);
+                    return { x, y: baseY - h, h, color: getMoodColor(fam), label: (c.feeling || '').split(' ')[0], e };
+                  });
+                  const linePts = bars.map(b => (b.x + barW / 2) + ' ' + (b.y - 4)).join(' L ');
+                  const peakBar = bars.reduce((m, b) => (b && b.e > (m ? m.e : -1) ? b : m), null);
+
+                  const distRows = Object.keys(familyLabels)
+                    .filter(f => counts[f])
+                    .sort((a, b) => counts[b] - counts[a])
+                    .map(f => {
+                      const pct = Math.round((counts[f] / total) * 100);
+                      const [label, color] = familyLabels[f];
+                      return { label, color, pct };
+                    });
+
+                  const insightByFamily = {
+                    hopeful: "Your week is trending bright. Whatever you've been doing — keep a little of it every day.",
+                    energized: "Lots of spark in your check-ins lately. Lovely — just remember to spend some of it on rest too.",
+                    neutral: "A steady, even week. If you'd like a lift, a short morning breathing round is the gentlest place to start.",
+                    anxious: "Your check-ins show some tension this week. The breathing ring and a slow OM chant are your best friends right now.",
+                    heavy: "Things have felt heavy lately. Nothing to fix — small steps and early nights are real progress too."
+                  };
+                  const breathSessions = (PeakoraTracker.getSummary().counts.breath_session_completed) || 0;
+                  const breathNote = breathSessions > 0
+                    ? " You've finished " + breathSessions + " breathing session" + (breathSessions > 1 ? "s" : "") + " — your future self says thanks."
+                    : " You haven't tried the breathing ring yet — two quiet minutes is all it asks.";
+
+                  return `
                 <div class="dash-card">
                   <div class="dash-card-title">Deep Mood & Energy Analytics</div>
-                  <p style="font-size:11px; color:var(--theme-text-muted); margin-bottom:10px;">Emotional energy distribution derived from logged sessions:</p>
-                  
+                  <p style="font-size:11px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' — showing a sample week until you log your first mood' : ''}:</p>
+
+                  <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <div style="flex:1; background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:12px; padding:10px 12px; text-align:center;">
+                      <div style="font-size:22px; font-weight:800; color:var(--theme-accent);">${avgEnergy}</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">Avg energy this week</div>
+                    </div>
+                    <div style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; text-align:center;">
+                      <div style="font-size:22px; font-weight:800; color:#ffffff;">${total}</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">Check-ins logged</div>
+                    </div>
+                    <div style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; text-align:center;">
+                      <div style="font-size:12px; font-weight:800; color:${domLabel[1]}; line-height:1.3; margin-top:4px;">${domLabel[0]}</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">Leading tone</div>
+                    </div>
+                  </div>
+
                   <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                      <div style="font-size:11px; font-weight:700; color:#ffffff;">Weekly Emotional Spectrum</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">7 Sessions Analyzed</div>
+                      <div style="font-size:11px; font-weight:700; color:#ffffff;">Your weekly emotional spectrum</div>
+                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">${total} check-in${total === 1 ? '' : 's'}</div>
                     </div>
                     <svg viewBox="0 0 300 70" style="width:100%; height:60px;">
-                      <rect x="10" y="20" width="35" height="40" rx="4" fill="#AEE6C5" opacity="0.9"/>
-                      <rect x="55" y="10" width="35" height="50" rx="4" fill="#6EC8C8" opacity="0.9"/>
-                      <rect x="100" y="30" width="35" height="30" rx="4" fill="#F5C26B" opacity="0.9"/>
-                      <rect x="145" y="15" width="35" height="45" rx="4" fill="#E8A0A0" opacity="0.9"/>
-                      <rect x="190" y="5" width="35" height="55" rx="4" fill="#F5B35C" opacity="0.9"/>
-                      <rect x="235" y="25" width="35" height="35" rx="4" fill="#6EC8C8" opacity="0.9"/>
-                      <path d="M 27 30 L 72 20 L 117 40 L 162 25 L 207 15 L 252 35" fill="none" stroke="#f4a261" stroke-width="2.5" stroke-dasharray="3,3"/>
-                      <circle cx="207" cy="15" r="4" fill="#f4a261"/>
+                      ${bars.map(b => `<rect x="${b.x}" y="${b.y}" width="${barW}" height="${b.h}" rx="4" fill="${b.color}" opacity="0.9"><title>${b.label}</title></rect>`).join('')}
+                      ${bars.length > 1 ? `<path d="M ${linePts}" fill="none" stroke="#f4a261" stroke-width="2.5" stroke-dasharray="3,3"/>` : ''}
+                      ${peakBar ? `<circle cx="${peakBar.x + barW / 2}" cy="${peakBar.y - 4}" r="4" fill="#f4a261"><title>Your brightest moment: ${peakBar.label}</title></circle>` : ''}
                     </svg>
                   </div>
 
                   <div style="display:flex; flex-direction:column; gap:6px;">
+                    ${distRows.map(r => `
                     <div>
                       <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
-                        <span>Calm & Grounded (Sage State)</span>
-                        <strong style="color:#AEE6C5;">62%</strong>
+                        <span>${r.label}</span>
+                        <strong style="color:${r.color};">${r.pct}%</strong>
                       </div>
                       <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
-                        <div style="width:62%; height:100%; background:#AEE6C5; border-radius:999px;"></div>
+                        <div class="analytics-bar" style="width:${r.pct}%; height:100%; background:${r.color}; border-radius:999px; box-shadow:0 0 8px ${r.color}66;"></div>
                       </div>
-                    </div>
-
-                    <div>
-                      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
-                        <span>Mindful Rest & Unwind (Ocean State)</span>
-                        <strong style="color:#6EC8C8;">24%</strong>
-                      </div>
-                      <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
-                        <div style="width:24%; height:100%; background:#6EC8C8; border-radius:999px;"></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
-                        <span>Peak Focus & Clarity (Twilight State)</span>
-                        <strong style="color:#F5C26B;">14%</strong>
-                      </div>
-                      <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
-                        <div style="width:14%; height:100%; background:#F5C26B; border-radius:999px;"></div>
-                      </div>
-                    </div>
+                    </div>`).join('') || '<div style="font-size:11px; color:var(--theme-text-muted);">No distribution yet — log a mood on the Home tab to wake this up.</div>'}
                   </div>
 
-                  <p style="font-size:10px; color:var(--theme-text-muted); font-style:italic; margin:8px 0 0;">Peakora Insight: Your emotional clarity increases by 38% on days with completed morning breathing resets.</p>
-                </div>
+                  <p style="font-size:10px; color:var(--theme-text-muted); font-style:italic; margin:8px 0 0;">${insightByFamily[dominant]}${breathNote}</p>
+                </div>`;
+                })()}
               </div>
             </div>
           `;
+
+          setTimeout(() => { if (typeof initInsightsTab === 'function') initInsightsTab(); }, 60);
         }
 
         // TAB 3: PLANS & PAST PLANS HISTORY
@@ -1676,13 +1757,13 @@
           const pastPlans = getPastPlans();
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Active Reset Plans & History</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Manage your current 7-day reset plan and view saved past plan archives.</p>
+              <h1 class="dash-welcome-h1">Your Plans & Past Weeks</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Your current 7-day reset lives here, along with any weeks you've saved for later.</p>
             </div>
             
             <div class="dash-card mb-16">
-              <div class="dash-card-title">Active 7-Day Reset Plan</div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Goal: ${state.goal || 'General Calm'} • Routine Pace: ${state.routine || 'Steady'}</p>
+              <div class="dash-card-title">This Week's Reset Plan</div>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Working toward: ${(state.answers && state.answers.goal) ? state.answers.goal : 'feeling a little more steady'} • Daily pace: ${(state.answers && state.answers.time) ? state.answers.time : '5–10 minutes'} a day</p>
               <div style="display:flex; flex-direction:column; gap:10px;">
                 ${plan.map((p, idx) => {
                   const isToday = idx === todayIndex;
@@ -1701,32 +1782,42 @@
                       <div class="plan-choice-icon">${icon}</div>
                       <div class="plan-choice-content">
                         <div class="plan-choice-header">
-                          <span class="plan-choice-title">DAY ${idx + 1}: ${p.title}</span>
-                          ${isToday ? '<span class="plan-choice-pill active-pill">Current Day</span>' : ''}
+                          <span class="plan-choice-title">${p.title}</span>
+                          ${isToday ? '<span class="plan-choice-pill active-pill">Today</span>' : ''}
+                          ${p.duration ? `<span class="plan-choice-pill" style="font-size:9px;">${p.duration}</span>` : ''}
                         </div>
-                        <div class="plan-choice-action"><strong>Action:</strong> ${p.action}</div>
+                        <div class="plan-choice-action"><strong>Focus:</strong> ${p.focus || ''}</div>
+                        <div class="plan-choice-action"><strong>How:</strong> ${p.action}</div>
+                        ${(p.steps || []).map(s => `<div style="font-size:11px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
+                        <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${p.reflection || ''}</div>
                         <div class="plan-choice-quote">"${p.forgiveness}"</div>
                       </div>
                     </div>
                   `;
                 }).join('')}
+
+                <!-- START A NEW PLAN -->
+                <button class="btn secondary" style="width:100%; font-weight:700; font-size:13px; margin-top:6px; padding:14px; border:1.5px dashed var(--theme-accent); color:var(--theme-accent); background:rgba(244,162,97,0.06);" onclick="startNewPlan()">
+                  + Start a New Plan
+                </button>
+                <p style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin:2px 0 0;">Finished this week, or life changed? Begin a fresh onboarding and we'll shape a new 7 days around where you are now. Your current plan is saved to history first, so nothing is lost.</p>
               </div>
             </div>
 
             <!-- PREVIOUS 7-DAY PLANS HISTORY CARD -->
             <div class="dash-card mb-16">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div class="dash-card-title">Previous 7-Day Plans History</div>
-                <button class="btn secondary" style="font-size:11px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save Active Plan</button>
+                <div class="dash-card-title">Your Saved Weeks</div>
+                <button class="btn secondary" style="font-size:11px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save This Week</button>
               </div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">Select an archived 7-day plan from your personal reset history:</p>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">Weeks you've saved live here — revisit one any time:</p>
           `;
           
           if (!pastPlans || pastPlans.length === 0) {
             html += `
               <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
-                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">No archived 7-day plans saved yet.</p>
-                <p style="font-size:11px; color:var(--theme-text-muted); opacity:0.8; margin:0;">Click <strong>"Save Active Plan"</strong> to archive your resets here.</p>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">Nothing saved yet — and that's fine.</p>
+                <p style="font-size:11px; color:var(--theme-text-muted); opacity:0.8; margin:0;">When a week ends, tap <strong>"Save This Week"</strong> and it will wait for you here.</p>
               </div>
             `;
           } else {
@@ -1746,8 +1837,8 @@
         if (activeTab === "picks" || activeTab === "library") {
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Peakora Picks & Micro-Guides</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Curated micro-guides for quiet moments throughout your day.</p>
+              <h1 class="dash-welcome-h1">Little Guides for Quiet Moments</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">A few gentle reads for when you have three minutes to yourself.</p>
             </div>
             <div class="dash-card mb-16">
               <div class="dash-card-title">Peakora Picks</div>
@@ -1775,8 +1866,8 @@
 
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Peakora Experience & Membership Tiers</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Compare features between Peakora Core Free and Peakora+ Premium.</p>
+              <h1 class="dash-welcome-h1">Your Peakora, Your Way</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Free forever, or Plus when you want more room to play.</p>
             </div>
 
             <!-- FREE PLAN BOX -->
@@ -1859,8 +1950,8 @@
 
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Settings & Preferences</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Customize visual themes, notification preferences, device installation, and app settings.</p>
+              <h1 class="dash-welcome-h1">Settings & Little Comforts</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Make this space yours — colors, reminders, and everything in between.</p>
             </div>
 
             <div class="dash-grid-2">
@@ -1975,7 +2066,7 @@
 
           <!-- Paddle Merchant Compliance Footer Links -->
           <div style="text-align:center; padding:16px 0 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted);">
-            <div>Peakora AI — Personal Daily Wellness & Reset Assistant</div>
+            <div>Peakora — your gentle daily wellness companion</div>
             <div style="margin-top:6px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
               <a href="#" style="color:var(--accent-violet, #a78bfa); text-decoration:none;" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
               <span>•</span>
@@ -2826,7 +2917,9 @@
       };
       list.unshift(newArchive);
       localStorage.setItem("peakora_past_plans", JSON.stringify(list));
-      alert("Current 7-Day Plan archived to your history!");
+      if (typeof showToastNotification === 'function') {
+        showToastNotification("This week is safely saved in your history");
+      }
       renderStep();
     }
 
@@ -2907,37 +3000,25 @@
       if (modal) modal.style.display = "none";
     }
 
-    function archiveCurrentPlan() {
-      if (!state.plan) { alert("No active plan to save."); return; }
-      const list = getPastPlans();
-      const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      const newArchive = {
-        title: `7-Day Plan Archive (${dateStr})`,
-        date: dateStr,
-        goal: (state.answers && state.answers.goal) || "Personal Reset",
-        days: state.plan
-      };
-      list.unshift(newArchive);
-      localStorage.setItem("peakora_past_plans", JSON.stringify(list));
-      alert("Current 7-Day Plan archived to your history!");
-      renderStep();
-    }
+    /* SOUNDSCAPE SYNTHESIZER, WAVE VISUALIZER, AMBIENT MIXER & BREATH RING */
+    const SOUNDSCAPE_TRACKS = [
+      { key: 'harmony', name: '528Hz Solfeggio Harmonics — deep calm' },
+      { key: 'om', name: 'OM Chant Drone — temple resonance (136Hz)' },
+      { key: 'bowl', name: 'Tibetan Singing Bowl — soft ringing waves' },
+      { key: 'ocean', name: 'Ocean Shoreline Surf — rolling pink noise' },
+      { key: 'rain', name: 'Forest Rainfall — gentle droplets & chimes' },
+      { key: 'wind', name: 'Valley Wind — slow airy sweeps' },
+      { key: 'fire', name: 'Fireplace Crackle — warm evening hearth' },
+      { key: 'night', name: 'Night Crickets — summer evening chorus' },
+      { key: 'binaural', name: 'Binaural Theta (6Hz) — deep focus drift' }
+    ];
+    const SOUNDSCAPE_NAME = {};
+    SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' — ')[0]; });
 
-    function viewPastPlan(index) {
-      const list = getPastPlans();
-      const p = list[index];
-      if (!p) return;
-      let text = `📜 ${p.title}\nDate Created: ${p.date}\nPrimary Goal: ${p.goal}\n\nPlan Overview:\n`;
-      (p.days || []).forEach(d => {
-        text += `• ${d.title}: ${d.focus} — ${d.action}\n`;
-      });
-      alert(text);
-    }
-
-    /* 🎵 HIGH-QUALITY WELLNESS SOUNDSCAPE SYNTHESIZER */
     let audioCtx = null;
     let activeSoundNodes = [];
     let currentlyPlayingTrack = null;
+    let trackStartedAt = null;
 
     function stopAmbientAudio() {
       if (activeSoundNodes && activeSoundNodes.length) {
@@ -2957,7 +3038,40 @@
         window.PeakoraTracker.track("soundscape_stopped", { track: currentlyPlayingTrack });
       }
       currentlyPlayingTrack = null;
+      trackStartedAt = null;
       renderStepAudioState();
+    }
+
+    function makeNoiseBuffer(ctx, tint) {
+      const bufferSize = ctx.sampleRate * 2;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      if (tint === 'pink') {
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+          b6 = white * 0.115926;
+        }
+      } else if (tint === 'brown') {
+        let last = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          last = (last + 0.02 * white) / 1.02;
+          data[i] = last * 3.2;
+        }
+      } else {
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.35;
+        }
+      }
+      return buffer;
     }
 
     function playAmbientAudio(type) {
@@ -2978,71 +3092,91 @@
 
         const masterGain = audioCtx.createGain();
         masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-        masterGain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 1.2);
-        masterGain.connect(audioCtx.destination);
+        masterGain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 1.2);
+
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        masterGain.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        registerWaveAnalyser(analyser);
         activeSoundNodes.push(masterGain);
 
+        const push = (...nodes) => nodes.forEach(n => activeSoundNodes.push(n));
+
         if (type === 'harmony') {
-          // 🧘 528Hz Solfeggio Meditation Harmonics
           const freqs = [528, 264, 792];
           freqs.forEach((f, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-
             const lfo = audioCtx.createOscillator();
             const lfoGain = audioCtx.createGain();
             lfo.frequency.setValueAtTime(0.08 + i * 0.02, audioCtx.currentTime);
             lfoGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
             lfo.connect(lfoGain.gain);
             lfo.start();
-            activeSoundNodes.push(lfo, lfoGain);
-
             gain.gain.setValueAtTime(i === 0 ? 0.28 : 0.08 / (i + 1), audioCtx.currentTime);
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start();
-            activeSoundNodes.push(osc, gain);
+            push(lfo, lfoGain, osc, gain);
           });
-          currentlyPlayingTrack = 'harmony';
-        } 
+        }
+        else if (type === 'om') {
+          [136.1, 272.2, 408.3].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            const trem = audioCtx.createOscillator();
+            const tremGain = audioCtx.createGain();
+            trem.frequency.setValueAtTime(0.15 + i * 0.06, audioCtx.currentTime);
+            tremGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            trem.connect(tremGain);
+            tremGain.connect(gain.gain);
+            trem.start();
+            gain.gain.setValueAtTime(i === 0 ? 0.32 : 0.09 / i, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start();
+            push(trem, tremGain, osc, gain);
+          });
+        }
+        else if (type === 'bowl') {
+          [432, 1080, 2160].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            gain.gain.setValueAtTime(i === 0 ? 0.24 : 0.06, audioCtx.currentTime);
+            const slow = audioCtx.createOscillator();
+            const slowGain = audioCtx.createGain();
+            slow.frequency.setValueAtTime(0.11 + i * 0.04, audioCtx.currentTime);
+            slowGain.gain.setValueAtTime(0.045, audioCtx.currentTime);
+            slow.connect(slowGain);
+            slowGain.connect(gain.gain);
+            slow.start();
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start();
+            push(slow, slowGain, osc, gain);
+          });
+        }
         else if (type === 'ocean') {
-          // 🌊 Ocean Shoreline Waves
-          const bufferSize = audioCtx.sampleRate * 2;
-          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const data = buffer.getChannelData(0);
-          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            b0 = 0.99886 * b0 + white * 0.0555179;
-            b1 = 0.99332 * b1 + white * 0.0750759;
-            b2 = 0.96900 * b2 + white * 0.1538520;
-            b3 = 0.86650 * b3 + white * 0.3104856;
-            b4 = 0.55000 * b4 + white * 0.5329522;
-            b5 = -0.7616 * b5 - white * 0.0168980;
-            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-            data[i] *= 0.11;
-            b6 = white * 0.115926;
-          }
           const noise = audioCtx.createBufferSource();
-          noise.buffer = buffer;
+          noise.buffer = makeNoiseBuffer(audioCtx, 'pink');
           noise.loop = true;
-
           const filter = audioCtx.createBiquadFilter();
           filter.type = 'lowpass';
           filter.frequency.setValueAtTime(250, audioCtx.currentTime);
-
           const waveLfo = audioCtx.createOscillator();
           const waveGain = audioCtx.createGain();
           waveLfo.frequency.setValueAtTime(0.12, audioCtx.currentTime);
           waveGain.gain.setValueAtTime(450, audioCtx.currentTime);
-
           waveLfo.connect(waveGain);
           waveGain.connect(filter.frequency);
           waveLfo.start();
-          activeSoundNodes.push(waveLfo, waveGain);
-
           const subOsc = audioCtx.createOscillator();
           subOsc.type = 'sine';
           subOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
@@ -3051,60 +3185,383 @@
           subOsc.connect(subGain);
           subGain.connect(masterGain);
           subOsc.start();
-          activeSoundNodes.push(subOsc, subGain);
-
           noise.connect(filter);
           filter.connect(masterGain);
           noise.start();
-          activeSoundNodes.push(noise, filter);
-          currentlyPlayingTrack = 'ocean';
-        } 
+          push(waveLfo, waveGain, subOsc, subGain, noise, filter);
+        }
         else if (type === 'rain') {
-          // 🌧️ Forest Rainfall & Zen Chimes
-          const bufferSize = audioCtx.sampleRate * 2;
-          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-          const data = buffer.getChannelData(0);
-          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-          for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            b0 = 0.99886 * b0 + white * 0.0555179;
-            b1 = 0.99332 * b1 + white * 0.0750759;
-            b2 = 0.96900 * b2 + white * 0.1538520;
-            b3 = 0.86650 * b3 + white * 0.3104856;
-            b4 = 0.55000 * b4 + white * 0.5329522;
-            b5 = -0.7616 * b5 - white * 0.0168980;
-            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-            data[i] *= 0.09;
-            b6 = white * 0.115926;
-          }
           const noise = audioCtx.createBufferSource();
-          noise.buffer = buffer;
+          noise.buffer = makeNoiseBuffer(audioCtx, 'pink');
           noise.loop = true;
-
           const rainFilter = audioCtx.createBiquadFilter();
           rainFilter.type = 'bandpass';
           rainFilter.frequency.setValueAtTime(1200, audioCtx.currentTime);
           rainFilter.Q.setValueAtTime(0.6, audioCtx.currentTime);
-
           noise.connect(rainFilter);
           rainFilter.connect(masterGain);
           noise.start();
-          activeSoundNodes.push(noise, rainFilter);
-
-          currentlyPlayingTrack = 'rain';
+          push(noise, rainFilter);
+        }
+        else if (type === 'wind') {
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = makeNoiseBuffer(audioCtx, 'brown');
+          noise.loop = true;
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(400, audioCtx.currentTime);
+          filter.Q.setValueAtTime(0.5, audioCtx.currentTime);
+          const sweep = audioCtx.createOscillator();
+          const sweepGain = audioCtx.createGain();
+          sweep.frequency.setValueAtTime(0.07, audioCtx.currentTime);
+          sweepGain.gain.setValueAtTime(280, audioCtx.currentTime);
+          sweep.connect(sweepGain);
+          sweepGain.connect(filter.frequency);
+          sweep.start();
+          noise.connect(filter);
+          filter.connect(masterGain);
+          noise.start();
+          push(sweep, sweepGain, noise, filter);
+        }
+        else if (type === 'fire') {
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = makeNoiseBuffer(audioCtx, 'brown');
+          noise.loop = true;
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(900, audioCtx.currentTime);
+          const crackleGain = audioCtx.createGain();
+          crackleGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+          noise.connect(filter);
+          filter.connect(crackleGain);
+          crackleGain.connect(masterGain);
+          noise.start();
+          push(noise, filter, crackleGain);
+        }
+        else if (type === 'night') {
+          [4200, 4450, 3900].forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gate = audioCtx.createOscillator();
+            const gateGain = audioCtx.createGain();
+            const level = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            gate.type = 'square';
+            gate.frequency.setValueAtTime(14 + i * 3, audioCtx.currentTime);
+            gateGain.gain.setValueAtTime(0.055 - i * 0.012, audioCtx.currentTime);
+            gate.connect(gateGain);
+            gateGain.connect(level.gain);
+            osc.connect(level);
+            level.connect(masterGain);
+            osc.start();
+            gate.start();
+            push(gate, gateGain, osc, level);
+          });
+          const bed = audioCtx.createBufferSource();
+          bed.buffer = makeNoiseBuffer(audioCtx, 'brown');
+          bed.loop = true;
+          const bedFilter = audioCtx.createBiquadFilter();
+          bedFilter.type = 'lowpass';
+          bedFilter.frequency.setValueAtTime(300, audioCtx.currentTime);
+          const bedGain = audioCtx.createGain();
+          bedGain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+          bed.connect(bedFilter);
+          bedFilter.connect(bedGain);
+          bedGain.connect(masterGain);
+          bed.start();
+          push(bed, bedFilter, bedGain);
+        }
+        else if (type === 'binaural') {
+          const baseFreq = 200;
+          [0, 6].forEach((offset, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(baseFreq + offset, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+            const pan = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+            osc.connect(gain);
+            if (pan) {
+              pan.pan.setValueAtTime(i === 0 ? -1 : 1, audioCtx.currentTime);
+              gain.connect(pan);
+              pan.connect(masterGain);
+              push(osc, gain, pan);
+            } else {
+              gain.connect(masterGain);
+              push(osc, gain);
+            }
+            osc.start();
+          });
         }
 
+        currentlyPlayingTrack = type;
+        trackStartedAt = Date.now();
         renderStepAudioState();
       } catch (e) {
         console.error("Audio error:", e);
       }
     }
 
+    /* LIVE AUDIO WAVE VISUALIZER */
+    let waveAnalyser = null;
+    let waveRAF = null;
+    let waveIdlePhase = 0;
+
+    function registerWaveAnalyser(analyser) {
+      waveAnalyser = analyser;
+      startWaveLoop();
+    }
+
+    function startWaveLoop() {
+      if (waveRAF) return;
+      const tick = () => {
+        const canvas = document.getElementById('audio-wave-canvas');
+        if (canvas) drawWaveFrame(canvas);
+        pulseBreathRing();
+        waveRAF = requestAnimationFrame(tick);
+      };
+      waveRAF = requestAnimationFrame(tick);
+    }
+
+    function drawWaveFrame(canvas) {
+      const ctx2d = canvas.getContext('2d');
+      const w = canvas.width = canvas.clientWidth || 300;
+      const h = canvas.height = canvas.clientHeight || 60;
+      const mid = h / 2;
+      ctx2d.clearRect(0, 0, w, h);
+
+      let data = null;
+      let peak = 0.05;
+      if (waveAnalyser) {
+        try {
+          data = new Uint8Array(waveAnalyser.frequencyBinCount);
+          waveAnalyser.getByteTimeDomainData(data);
+          for (let i = 0; i < data.length; i++) {
+            const v = Math.abs(data[i] - 128) / 128;
+            if (v > peak) peak = v;
+          }
+        } catch (e) { data = null; }
+      }
+
+      const paint = (color, amp, opacity) => {
+        ctx2d.beginPath();
+        for (let x = 0; x <= w; x += 2) {
+          let y;
+          if (data) {
+            const sample = data[Math.floor((x / w) * data.length)] || 128;
+            const normalized = ((sample - 128) / 128) / peak;
+            y = mid + normalized * mid * 0.92 * amp;
+          } else {
+            y = mid + Math.sin((x / w) * Math.PI * 2 + waveIdlePhase) * mid * 0.18 * amp;
+          }
+          x === 0 ? ctx2d.moveTo(x, y) : ctx2d.lineTo(x, y);
+        }
+        ctx2d.strokeStyle = color;
+        ctx2d.globalAlpha = opacity;
+        ctx2d.lineWidth = 2.2;
+        ctx2d.stroke();
+        ctx2d.globalAlpha = 1;
+      };
+
+      paint('#f4a261', 1, 1);
+      paint('#a78bfa', 0.6, 0.7);
+      if (!data) waveIdlePhase += 0.02;
+
+      const nameEl = document.getElementById('wave-track-name');
+      const timeEl = document.getElementById('wave-track-time');
+      const playBtn = document.getElementById('wave-play-btn');
+      if (nameEl && timeEl) {
+        if (currentlyPlayingTrack && trackStartedAt) {
+          const secs = Math.floor((Date.now() - trackStartedAt) / 1000);
+          const mm = String(Math.floor(secs / 60)).padStart(2, '0');
+          const ss = String(secs % 60).padStart(2, '0');
+          nameEl.textContent = SOUNDSCAPE_NAME[currentlyPlayingTrack] || currentlyPlayingTrack;
+          timeEl.textContent = 'Playing for ' + mm + ':' + ss + ' — lovely, keep it going';
+          if (playBtn) playBtn.textContent = '⏸';
+        } else {
+          nameEl.textContent = 'Nothing playing yet';
+          timeEl.textContent = 'Pick a sound below and press play';
+          if (playBtn) playBtn.textContent = '▶';
+        }
+      }
+    }
+
+    window.toggleWavePlayback = function() {
+      if (currentlyPlayingTrack) {
+        stopAmbientAudio();
+      } else {
+        const select = document.getElementById('audio-track-select');
+        playAmbientAudio(select ? select.value : 'harmony');
+      }
+    };
+
+    window.stepSoundscape = function(direction) {
+      const idx = SOUNDSCAPE_TRACKS.findIndex(t => t.key === currentlyPlayingTrack);
+      const wasPlaying = idx !== -1;
+      const nextIdx = wasPlaying
+        ? (idx + direction + SOUNDSCAPE_TRACKS.length) % SOUNDSCAPE_TRACKS.length
+        : (direction > 0 ? 0 : SOUNDSCAPE_TRACKS.length - 1);
+      const next = SOUNDSCAPE_TRACKS[nextIdx];
+      const select = document.getElementById('audio-track-select');
+      if (select) select.value = next.key;
+      if (wasPlaying) {
+        stopAmbientAudio();
+        playAmbientAudio(next.key);
+      } else if (typeof showToastNotification === 'function') {
+        showToastNotification('Queued up: ' + next.name);
+      }
+    };
+
+    /* AMBIENT MIXER — layerable soundscapes with real volume sliders */
+    let ambientCtx = null;
+    let ambientMaster = null;
+    const ambientLayers = {};
+    const ambientLayerVolumes = { rainforest: 70, ocean: 30, wind: 45, om: 55, fire: 50, night: 50 };
+    if (typeof window !== 'undefined') {
+      window.ambientLayers = ambientLayers;
+      window.ambientLayerVolumes = ambientLayerVolumes;
+    }
+
+    function ensureAmbientCtx() {
+      if (!ambientCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return null;
+        ambientCtx = new AudioContext();
+        ambientMaster = ambientCtx.createGain();
+        ambientMaster.gain.setValueAtTime(0.6, ambientCtx.currentTime);
+        const analyser = ambientCtx.createAnalyser();
+        analyser.fftSize = 512;
+        ambientMaster.connect(analyser);
+        analyser.connect(ambientCtx.destination);
+        registerWaveAnalyser(analyser);
+      }
+      return ambientCtx;
+    }
+
+    function buildAmbientLayer(ctx, key) {
+      const gain = ctx.createGain();
+      gain.connect(ambientMaster);
+      const vol = (ambientLayerVolumes[key] != null ? ambientLayerVolumes[key] : 50) / 100;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol * 0.5), ctx.currentTime + 1.0);
+      const nodes = [gain];
+
+      if (key === 'om') {
+        [136.1, 272.2, 408.3].forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, ctx.currentTime);
+          const trem = ctx.createOscillator();
+          const tg = ctx.createGain();
+          trem.frequency.setValueAtTime(0.15 + i * 0.06, ctx.currentTime);
+          tg.gain.setValueAtTime(0.05, ctx.currentTime);
+          trem.connect(tg);
+          tg.connect(g.gain);
+          osc.connect(g);
+          g.connect(gain);
+          g.gain.setValueAtTime(i === 0 ? 0.5 : 0.14 / i, ctx.currentTime);
+          osc.start();
+          trem.start();
+          nodes.push(osc, g, trem, tg);
+        });
+      } else {
+        const tint = key === 'rainforest' || key === 'ocean' ? 'pink' : 'brown';
+        const noise = ctx.createBufferSource();
+        noise.buffer = makeNoiseBuffer(ctx, tint);
+        noise.loop = true;
+        const filter = ctx.createBiquadFilter();
+        let lfoCfg = null;
+        if (key === 'rainforest') {
+          filter.type = 'bandpass'; filter.frequency.value = 1800; filter.Q.value = 0.4;
+        } else if (key === 'ocean') {
+          filter.type = 'lowpass'; filter.frequency.value = 300;
+          lfoCfg = { rate: 0.12, depth: 500 };
+        } else if (key === 'wind') {
+          filter.type = 'bandpass'; filter.frequency.value = 500; filter.Q.value = 0.5;
+          lfoCfg = { rate: 0.07, depth: 320 };
+        } else if (key === 'fire') {
+          filter.type = 'lowpass'; filter.frequency.value = 950;
+        } else if (key === 'night') {
+          filter.type = 'lowpass'; filter.frequency.value = 320;
+        }
+        noise.connect(filter);
+        filter.connect(gain);
+        noise.start();
+        nodes.push(noise, filter);
+        if (lfoCfg) {
+          const lfo = ctx.createOscillator();
+          const lg = ctx.createGain();
+          lfo.frequency.setValueAtTime(lfoCfg.rate, ctx.currentTime);
+          lg.gain.setValueAtTime(lfoCfg.depth, ctx.currentTime);
+          lfo.connect(lg);
+          lg.connect(filter.frequency);
+          lfo.start();
+          nodes.push(lfo, lg);
+        }
+        if (key === 'night') {
+          [4200, 4450].forEach((f, i) => {
+            const osc = ctx.createOscillator();
+            const gate = ctx.createOscillator();
+            const gg = ctx.createGain();
+            const lvl = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, ctx.currentTime);
+            gate.type = 'square';
+            gate.frequency.setValueAtTime(14 + i * 3, ctx.currentTime);
+            gg.gain.setValueAtTime(0.05 - i * 0.015, ctx.currentTime);
+            gate.connect(gg);
+            gg.connect(lvl.gain);
+            osc.connect(lvl);
+            lvl.connect(gain);
+            osc.start();
+            gate.start();
+            nodes.push(osc, gate, gg, lvl);
+          });
+        }
+      }
+      return nodes;
+    }
+
+    window.toggleAmbientLayer = function(key) {
+      const existing = ambientLayers[key];
+      if (existing && existing.playing) {
+        existing.nodes.forEach(n => {
+          try { if (n.stop) n.stop(); if (n.disconnect) n.disconnect(); } catch (e) {}
+        });
+        ambientLayers[key] = { playing: false, nodes: [] };
+        if (typeof showToastNotification === 'function') {
+          showToastNotification(key.toUpperCase() + ' layer stopped');
+        }
+      } else {
+        const ctx = ensureAmbientCtx();
+        if (!ctx) return;
+        const nodes = buildAmbientLayer(ctx, key);
+        ambientLayers[key] = { playing: true, nodes };
+        if (window.PeakoraTracker) PeakoraTracker.track("ambient_layer_started", { layer: key });
+        if (typeof showToastNotification === 'function') {
+          showToastNotification(key.toUpperCase() + ' layer is now playing — blend away');
+        }
+      }
+      renderStep();
+    };
+
+    window.adjustAmbientVol = function(key, volPct) {
+      ambientLayerVolumes[key] = parseInt(volPct, 10);
+      const pctLabel = document.getElementById('pct-' + key);
+      if (pctLabel) pctLabel.textContent = volPct + '%';
+      const layer = ambientLayers[key];
+      if (layer && layer.playing && layer.nodes[0] && ambientCtx) {
+        try {
+          layer.nodes[0].gain.setTargetAtTime((volPct / 100) * 0.5, ambientCtx.currentTime, 0.1);
+        } catch (e) {}
+      }
+    };
+
     function playAmbientAudioFromDropdown() {
       const select = document.getElementById("audio-track-select");
       if (!select) return;
-      const val = select.value;
-      playAmbientAudio(val);
+      playAmbientAudio(select.value);
     }
 
     function renderStepAudioState() {
@@ -3112,14 +3569,14 @@
       const statusEl = document.getElementById("audio-playing-status");
 
       if (playBtn) {
-        playBtn.textContent = currentlyPlayingTrack ? '⏸ Pause / Change Soundscape' : '▶ Play Selected Soundscape';
+        playBtn.textContent = currentlyPlayingTrack ? 'Pause Soundscape' : 'Play Selected Soundscape';
       }
 
       if (statusEl) {
         if (currentlyPlayingTrack) {
-          const name = currentlyPlayingTrack === 'harmony' ? '528Hz Meditation Harmonics' : currentlyPlayingTrack === 'ocean' ? 'Ocean Shoreline Surf' : 'Forest Rainfall & Zen Chimes';
+          const name = SOUNDSCAPE_NAME[currentlyPlayingTrack] || currentlyPlayingTrack;
           statusEl.style.display = "block";
-          statusEl.innerHTML = `<span style="color:#10b981; font-weight:700;">🔊 Playing: ${name}</span>`;
+          statusEl.innerHTML = '<span style="color:#10b981; font-weight:700;">Now playing: ' + name + '</span>';
         } else {
           statusEl.style.display = "none";
           statusEl.innerHTML = "";
@@ -3127,14 +3584,176 @@
       }
     }
 
-    function showPickTip(title, text) {
-      alert(`${title}\n\n${text}`);
+    /* DASH BREATHING RING — 4-2-6 rhythm, 10 cycles, tap the ring to run it */
+    const DASH_BREATH_PHASES = [
+      { name: 'INHALE', dur: 4, scale: 1.22 },
+      { name: 'HOLD', dur: 2, scale: 1.22 },
+      { name: 'EXHALE', dur: 6, scale: 0.86 }
+    ];
+    const DASH_BREATH_CYCLES = 10;
+    const dashBreath = {
+      running: false,
+      done: false,
+      phaseIdx: 0,
+      phaseLeft: DASH_BREATH_PHASES[0].dur,
+      cycle: 0,
+      elapsed: 0,
+      timer: null,
+      total: DASH_BREATH_PHASES.reduce((s, p) => s + p.dur, 0) * DASH_BREATH_CYCLES
+    };
+
+    function fmtTime(secs) {
+      const mm = Math.floor(secs / 60);
+      const ss = String(secs % 60).padStart(2, '0');
+      return mm + ':' + ss;
     }
 
-    function restartOnboarding() {
-      clearState();
-      goToStepKey("welcome");
+    function syncDashBreathUI() {
+      const stateEl = document.getElementById('dash-breath-state');
+      const timeEl = document.getElementById('dash-breath-time');
+      const totalEl = document.getElementById('dash-breath-total');
+      if (!stateEl) return;
+
+      if (dashBreath.done) {
+        stateEl.textContent = 'COMPLETE';
+        timeEl.textContent = 'All 10 cycles done — nicely done';
+        if (totalEl) totalEl.textContent = fmtTime(dashBreath.total) + ' / ' + fmtTime(dashBreath.total);
+        return;
+      }
+      if (!dashBreath.running && dashBreath.elapsed === 0) {
+        stateEl.textContent = 'READY';
+        timeEl.textContent = 'Tap the ring to begin';
+        if (totalEl) totalEl.textContent = '0:00 / ' + fmtTime(dashBreath.total);
+        return;
+      }
+      stateEl.textContent = DASH_BREATH_PHASES[dashBreath.phaseIdx].name + (dashBreath.running ? '' : ' (paused)');
+      timeEl.textContent = dashBreath.phaseLeft + 's remaining • ' + (dashBreath.cycle + 1) + '/' + DASH_BREATH_CYCLES + ' cycles';
+      if (totalEl) totalEl.textContent = fmtTime(dashBreath.elapsed) + ' / ' + fmtTime(dashBreath.total);
     }
+
+    function pulseBreathRing() {
+      const pulse = document.getElementById('dash-breath-pulse');
+      if (!pulse) return;
+      if (dashBreath.running) {
+        const phase = DASH_BREATH_PHASES[dashBreath.phaseIdx];
+        pulse.style.transitionDuration = phase.dur + 's';
+        pulse.style.transform = 'scale(' + phase.scale + ')';
+      } else if (!dashBreath.done) {
+        pulse.style.transitionDuration = '0.6s';
+        pulse.style.transform = 'scale(1)';
+      }
+    }
+
+    window.toggleDashBreathing = function() {
+      if (dashBreath.done) {
+        dashBreath.running = false;
+        dashBreath.done = false;
+        dashBreath.phaseIdx = 0;
+        dashBreath.phaseLeft = DASH_BREATH_PHASES[0].dur;
+        dashBreath.cycle = 0;
+        dashBreath.elapsed = 0;
+        syncDashBreathUI();
+        return;
+      }
+      dashBreath.running = !dashBreath.running;
+      if (dashBreath.running) {
+        startWaveLoop();
+        if (window.PeakoraTracker) PeakoraTracker.track("breath_session_started", {});
+        if (!dashBreath.timer) {
+          dashBreath.timer = setInterval(() => {
+            if (!dashBreath.running) return;
+            dashBreath.elapsed += 1;
+            dashBreath.phaseLeft -= 1;
+            if (dashBreath.phaseLeft <= 0) {
+              dashBreath.phaseIdx = (dashBreath.phaseIdx + 1) % DASH_BREATH_PHASES.length;
+              if (dashBreath.phaseIdx === 0) dashBreath.cycle += 1;
+              if (dashBreath.cycle >= DASH_BREATH_CYCLES) {
+                dashBreath.running = false;
+                dashBreath.done = true;
+                dashBreath.elapsed = dashBreath.total;
+                if (window.PeakoraTracker) PeakoraTracker.track("breath_session_completed", {});
+                if (typeof showToastNotification === 'function') {
+                  showToastNotification('Ten full cycles — that was beautiful. Notice how your shoulders feel.');
+                }
+              }
+              dashBreath.phaseLeft = DASH_BREATH_PHASES[dashBreath.phaseIdx].dur;
+            }
+            syncDashBreathUI();
+          }, 1000);
+        }
+      }
+      syncDashBreathUI();
+    };
+
+    /* INSIGHTS TAB LIVE STATUS BAR + WAVE/BREATH UI BOOT */
+    window.initInsightsTab = function() {
+      const clockEl = document.getElementById('ss-clock');
+      const netEl = document.getElementById('ss-net');
+      const batteryEl = document.getElementById('ss-battery');
+
+      const updateClock = () => {
+        const now = new Date();
+        const t = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        if (clockEl) clockEl.textContent = t;
+      };
+      updateClock();
+      if (window._ssClockTimer) clearInterval(window._ssClockTimer);
+      window._ssClockTimer = setInterval(updateClock, 20000);
+
+      const updateNet = () => {
+        if (netEl) netEl.textContent = navigator.onLine ? 'Online' : 'Offline';
+      };
+      updateNet();
+
+      if (navigator.getBattery) {
+        navigator.getBattery().then(b => {
+          const update = () => { if (batteryEl) batteryEl.textContent = 'Battery: ' + Math.round(b.level * 100) + '%'; };
+          update();
+          b.addEventListener('levelchange', update);
+        }).catch(() => { if (batteryEl) batteryEl.style.display = 'none'; });
+      } else {
+        if (batteryEl) batteryEl.style.display = 'none';
+      }
+
+      startWaveLoop();
+      syncDashBreathUI();
+    };
+
+    /* TOAST NOTIFICATIONS */
+    window.showToastNotification = function(message) {
+      let toast = document.getElementById('peakora-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'peakora-toast';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(21,17,34,0.95);color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;border:1px solid var(--theme-accent);box-shadow:0 8px 30px rgba(0,0,0,0.5), 0 0 16px var(--theme-accent-glow, rgba(244,162,97,0.3));transition:opacity 0.3s ease, transform 0.3s ease;max-width:88vw;text-align:center;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.style.opacity = '1';
+      if (window._toastTimer) clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2600);
+    };
+
+    /* START A BRAND NEW PLAN — archive the old week, then fresh onboarding */
+    window.startNewPlan = function() {
+      if (state.plan) {
+        const list = getPastPlans();
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        list.unshift({
+          title: '7-Day Reset Plan (' + dateStr + ')',
+          date: dateStr,
+          goal: (state.answers && state.answers.goal) || 'Personal Reset',
+          days: state.plan
+        });
+        localStorage.setItem('peakora_past_plans', JSON.stringify(list));
+      }
+      clearState();
+      saveState();
+      if (typeof showToastNotification === 'function') {
+        showToastNotification('Your old week is safely saved. Let us build the next one, together.');
+      }
+      goToStepKey('welcome');
+    };
 
     /* LEGAL & PADDLE MERCHANT COMPLIANCE MODAL HANDLER */
     function openLegalModal(type) {
@@ -3310,7 +3929,7 @@
       }
 
       if (typeof showToastNotification === 'function') {
-        showToastNotification('Mood logged: ' + moodName.toUpperCase() + ' • Pattern updated ✨');
+        showToastNotification('Noted — ' + moodName + ' today. Thanks for being honest.');
       }
 
       if (typeof renderStep === 'function') {
@@ -3320,22 +3939,26 @@
 
     let solfeggioOsc = null;
     let solfeggioCtx = null;
+    window.activeSolfeggioFreq = null;
 
     window.toggleSolfeggio = function(freq, el) {
-      const isActive = el.classList.contains('active');
       document.querySelectorAll('.solfeggio-item').forEach(i => i.classList.remove('active'));
-      if (!isActive) {
-        el.classList.add('active');
+      if (window.activeSolfeggioFreq !== freq) {
+        if (el) el.classList.add('active');
+        window.activeSolfeggioFreq = freq;
         playSolfeggioTone(freq);
+        if (window.PeakoraTracker) PeakoraTracker.track("solfeggio_played", { freq: freq });
         if (typeof showToastNotification === 'function') {
-          showToastNotification('Playing ' + freq + 'Hz Solfeggio frequency harmonic 🎵');
+          showToastNotification(freq + 'Hz tone is humming — let it wash over you');
         }
       } else {
+        window.activeSolfeggioFreq = null;
         stopSolfeggioTone();
         if (typeof showToastNotification === 'function') {
-          showToastNotification('Solfeggio frequency paused');
+          showToastNotification('Tone paused. The quiet counts too.');
         }
       }
+      renderStep();
     };
 
     function playSolfeggioTone(freq) {
@@ -3347,8 +3970,12 @@
         solfeggioOsc.type = 'sine';
         solfeggioOsc.frequency.setValueAtTime(freq, solfeggioCtx.currentTime);
         gainNode.gain.setValueAtTime(0.12, solfeggioCtx.currentTime);
+        const analyser = solfeggioCtx.createAnalyser();
+        analyser.fftSize = 512;
         solfeggioOsc.connect(gainNode);
-        gainNode.connect(solfeggioCtx.destination);
+        gainNode.connect(analyser);
+        analyser.connect(solfeggioCtx.destination);
+        if (typeof registerWaveAnalyser === 'function') registerWaveAnalyser(analyser);
         solfeggioOsc.start();
       } catch(e) {}
     }
@@ -3358,39 +3985,24 @@
         try { solfeggioOsc.stop(); solfeggioOsc.disconnect(); } catch(e){}
         solfeggioOsc = null;
       }
+      if (solfeggioCtx) {
+        try { solfeggioCtx.close(); } catch(e){}
+        solfeggioCtx = null;
+      }
     }
 
-    window.adjustAmbientVol = function(ambientKey, volPct) {
-      const pctLabel = document.getElementById('pct-' + ambientKey);
-      if (pctLabel) pctLabel.textContent = volPct + '%';
-      if (typeof showToastNotification === 'function') {
-        showToastNotification(ambientKey.toUpperCase() + ' volume: ' + volPct + '%');
-      }
-    };
-
-    window.toggleAmbientAudio = function(type) {
-      if (typeof playAmbientAudio === 'function') {
-        playAmbientAudio(type || 'harmony');
-      }
-    };
-
-    window.clickTimelineDay = function(dayNum, title, desc) {
+    window.clickTimelineDay = function(dayNum) {
       document.querySelectorAll('.timeline-node-item').forEach(n => n.classList.remove('active-glow'));
       const target = document.getElementById('day-node-' + dayNum);
       if (target) target.classList.add('active-glow');
 
       const popover = document.getElementById('timeline-popover-box');
       if (popover) {
-        const shortDescs = {
-          1: "Morning sunlight & circadian sync",
-          2: "Mindful hydration & clean dinner",
-          3: "Somatic stretch & 60s breath reset",
-          4: "1-hr digital unwind with tea",
-          5: "25-min movement & micro-journaling",
-          6: "Expressive reflection & gratitude",
-          7: "Weekly review & renewed direction"
-        };
-        const shortText = shortDescs[dayNum] || desc || "Daily reset action";
+        const planDay = (state.plan && state.plan[dayNum - 1]) || null;
+        const title = planDay ? planDay.title : ('Day ' + dayNum);
+        const shortText = planDay
+          ? (planDay.focus || '') + ' — ' + (planDay.action || '')
+          : "Your daily gentle step";
 
         popover.innerHTML = `
           <div class="popover-title">DAY ${dayNum}: ${title}</div>
