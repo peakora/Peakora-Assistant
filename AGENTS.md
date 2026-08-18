@@ -263,3 +263,36 @@ Copy and save the exact prompt below when generating new components or entire ap
 
 > **Master Style Prompt**:
 > "Always apply the Peakora 'Dark Luxury Wellness' master design system. Build all cards and components using dark glassmorphism backgrounds (`background: var(--theme-card-bg); border: 1px solid var(--theme-card-border); border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); padding: 24px;`), high-contrast light typography, and ambient theme accent glows (`var(--theme-accent)`). Build all responsive layouts using CSS Grid (`grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr))`). Use `.peakora-modal-standard` for all pop-ups with `backdrop-filter: blur(12px)` overlay backdrops, and dynamically bind theme attributes via `data-theme`."
+
+---
+
+## Cross-Repo Memory Protocol (MANDATORY — from the peakora/openhands-skills hub)
+
+This repo consumes the central skills hub: **github.com/peakora/openhands-skills**
+(branch: master). The hub holds the master system blueprint, the shared skills,
+and the cross-repo memory layers. User preference: call the owner **Ala**. No
+emoji anywhere (chat, code, copy, commits).
+
+### Session start — recall (NEVER SKIP)
+1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text):
+   `https://raw.githubusercontent.com/peakora/openhands-skills/master/MEMORY.md`
+2. Read this repo's `AGENTS.md` in full.
+3. Best-effort Cognee recall (semantic layer, may be empty on the free tier):
+   use `skills/cognee-memory/cognee_client.py` from the hub —
+   `recall_safe("cross-repo architecture constraints, tech stack, coding preferences")`.
+
+### Session end — remember (NEVER SKIP, before finishing)
+1. GUARANTEED: append a dated entry to the Session Log in the hub's `MEMORY.md`
+   (commit to peakora/openhands-skills master, via git or GitHub API)
+   summarizing decisions, API/schema changes, and gotchas for this repo.
+2. Best-effort: `cognee_client.remember_safe(summary)` — add-only. NEVER call
+   cognify automatically (burns the 20/day Gemini free quota; cognify is a
+   manual, deliberate run).
+3. Memory sync never blocks task completion — the MEMORY.md write is the
+   fallback that always works.
+
+### Cognee access (cloud agent — no local .env needed)
+- URL auto-discovered from `tunnel_url.txt` in the hub repo.
+- Auth: registered secret `COGNEE_API_KEY` sent as `X-Api-Key` header
+  (fallback: `COGNEE_AUTH_EMAIL` / `COGNEE_AUTH_PASSWORD` Bearer login).
+- Dataset: `global_user_memory`.
