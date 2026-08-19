@@ -35,7 +35,7 @@
         <div class="brand">
           <div class="brand-mark"></div>
           <div>
-            <div class="brand-name">PEAKORA</div>
+            <div class="brand-name" id="header-brand-name">PEAKORA</div>
             <div class="brand-tagline">Gentle guidance. Real momentum.</div>
           </div>
         </div>
@@ -401,6 +401,16 @@
       }
     }
 
+    function isPeakoraPlusActive() {
+      const isPlusMember = localStorage.getItem("peakora_plus_member") === "true";
+      const subStatus = localStorage.getItem("peakora_subscription_status") || "";
+      return isPlusMember || subStatus === "Active";
+    }
+
+    function getBrandName() {
+      return isPeakoraPlusActive() ? "Peakora+" : "Peakora";
+    }
+
     function fadeIn() {
       const el = document.getElementById("step-container");
       if (el) {
@@ -719,11 +729,12 @@
       if (key === "welcome") {
         container.innerHTML = `
           <div class="step step-centered">
-            <h2>Welcome to Peakora</h2>
+            <h2>Welcome to ${getBrandName()}</h2>
             <p class="soft-note">A gentle corner of your day to breathe, reset, and get back to yourself.</p>
             <p>In a few short questions, we'll shape a 7-day plan that actually fits your life — no pressure, no perfection.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="goToStepKey('explanation')">Let's begin</button>
+              <button class="btn ghost" onclick="goToStepKey('home')" style="margin-top:10px;">Back to your space</button>
             </div>
           </div>
         `;
@@ -734,7 +745,7 @@
       if (key === "explanation") {
         container.innerHTML = `
           <div class="step">
-            <h2>How Peakora works</h2>
+            <h2>How ${getBrandName()} works</h2>
             <p class="soft-note">Made to fit into your day, not take it over.</p>
             <ul class="preview-list">
               <li><strong>Gentle by design:</strong> No guilt, no pressure — you set the pace.</li>
@@ -928,7 +939,8 @@
               <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day7.focus}:</strong> ${day7.action}</p>
             </div>
             <div class="actions">
-              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('pricing')">Continue to Experience</button>
+              <button class="btn secondary" onclick="goToStepKey('email')">Back</button>
+              <button class="btn primary" style="flex:1; font-weight:700;" onclick="goToStepKey('pricing')">Continue to Experience</button>
             </div>
           </div>
         `;
@@ -956,7 +968,8 @@
               <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Unlimited resets, themes, soundscapes, saved weeks, and deep mood analytics.</p>
             </div>
             <div class="actions">
-              <button class="btn primary" style="width:100%; font-weight:700;" onclick="goToStepKey('done')">Start with the Free Plan</button>
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" style="flex:1; font-weight:700;" onclick="goToStepKey('done')">Start with the Free Plan</button>
             </div>
           </div>
         `;
@@ -1181,7 +1194,7 @@
                 <div class="dash-brand">
                   <div class="dash-brand-icon-orb" style="width:1.1em; height:1.1em; border-radius:50%; background:linear-gradient(135deg, #f4a261, #e76f51); box-shadow:0 0 12px rgba(244,162,97,0.6); flex-shrink:0;"></div>
                   <div>
-                    <div class="dash-brand-title">PEAKORA</div>
+                    <div class="dash-brand-title">${getBrandName().toUpperCase()}</div>
                     <div class="dash-brand-sub">Wellness Assistant</div>
                   </div>
                 </div>
@@ -1533,7 +1546,7 @@
             <div class="soundscape-top-bar">
               <div class="soundscape-brand">
                 <div class="soundscape-brand-icon"></div>
-                <span>Peakora</span>
+                <span>${getBrandName()}</span>
               </div>
               <div style="display:flex; gap:16px; align-items:center;">
                 <span id="ss-battery">Battery: --</span>
@@ -1619,8 +1632,8 @@
                       { key: 'ocean', label: 'SOFT OCEAN', img: 'src/assets/images/soundscape_ocean_1785859428118.jpg', desc: 'Slow shoreline surf' },
                       { key: 'wind', label: 'WIND', img: 'src/assets/images/soundscape_wind_1785859440905.jpg', desc: 'Open valley breeze' },
                       { key: 'om', label: 'OM CHANT', img: 'src/assets/images/soundscape_om_chant_1785859453828.jpg', desc: '136Hz temple drone' },
-                      { key: 'fire', label: 'FIREPLACE', orb: 'linear-gradient(135deg,#f97316,#b91c1c)', desc: 'Soft crackling hearth' },
-                      { key: 'night', label: 'NIGHT CRICKETS', orb: 'linear-gradient(135deg,#818cf8,#312e81)', desc: 'Summer evening chorus' }
+                      { key: 'fire', label: 'FIREPLACE', img: 'src/assets/images/soundscape_fireplace_1785859465200.jpg', desc: 'Soft crackling hearth' },
+                      { key: 'night', label: 'NIGHT CRICKETS', img: 'src/assets/images/soundscape_night_crickets_1785859476200.jpg', desc: 'Summer evening chorus' }
                     ].map(a => {
                       const isOn = !!(ambientLayers[a.key] && ambientLayers[a.key].playing);
                       const vol = ambientLayerVolumes[a.key] != null ? ambientLayerVolumes[a.key] : 50;
@@ -1835,28 +1848,71 @@
 
         // TAB 5: PEAKORA PICKS
         if (activeTab === "picks" || activeTab === "library") {
+          const picks = [
+            {
+              badge: "Editor's Pick",
+              badgeColor: "#c084fc",
+              title: "Flip Your Subconscious Switch",
+              tagline: "Delete Limiting Beliefs & Force Your Frequency to Shift",
+              desc: "An audio-first program built around guided sessions that target the quiet stories running under your habits. If you love the breathing and mood work here, this is the same idea pushed deeper — you listen, and your inner script slowly rewrites itself.",
+              points: ["Audio sessions you can fold into your evening reset", "Targets the beliefs behind self-sabotage loops", "Pairs naturally with your 7-day plan rhythm"],
+              cta: "See how it works",
+              url: "https://www.digistore24.com/redir/574669/peakoranetworka0d8/",
+              img: "src/assets/images/pick_subconscious_switch.jpg"
+            },
+            {
+              badge: "Most Talked About",
+              badgeColor: "#facc15",
+              title: "The 7-Minute Wealth Frequency",
+              tagline: "Activate Your Subconscious Theta Wave for Rapid Abundance",
+              desc: "Seven minutes a day with headphones — a theta-based audio track designed to quiet mental noise and prime your mind for noticing opportunity. You already trust sound to calm your nervous system; this applies the same ritual to your money mindset.",
+              points: ["Only 7 minutes — easy to stack after your check-in", "Theta-wave entrainment, the same band behind deep calm", "Backed by a full money-back guarantee"],
+              cta: "Listen to the frequency",
+              url: "https://thebillionairebrainwave.com/DSvsl/#aff=peakoranetworka0d8",
+              img: "src/assets/images/pick_wealth_frequency.jpg"
+            },
+            {
+              badge: "Deep Dive",
+              badgeColor: "#f4a261",
+              title: "Peakora Digital E-Book Vault",
+              tagline: "Curated Blueprints for Subconscious Mastery & Habit Alignment",
+              desc: "A hand-picked shelf of guides for the quiet work: habit design, subconscious rewiring, and small daily rituals that compound. Think of it as the reading list behind everything Peakora gently nudges you toward.",
+              points: ["Curated blueprints, not 500-page doorstops", "Habit alignment frameworks you can apply the same day", "Reads beautifully alongside your saved weeks"],
+              cta: "Browse the vault",
+              url: "https://www.digistore24.com/redir/640866/peakoranetworka0d8/",
+              img: "src/assets/images/pick_ebook_vault.jpg"
+            }
+          ];
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Little Guides for Quiet Moments</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">A few gentle reads for when you have three minutes to yourself.</p>
+              <h1 class="dash-welcome-h1">Picked With Care</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Three companions we trust for the work beneath the work. Chosen slowly, shared honestly.</p>
             </div>
-            <div class="dash-card mb-16">
-              <div class="dash-card-title">Peakora Picks</div>
-              <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
-                <button class="btn ghost" style="text-align:left; font-size:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#ffffff;" onclick="showPickTip('3-Minute Morning Grounding', 'Before reaching for your phone, pause in bed. Take 3 deep breaths, place your feet on the floor, and notice one thing you are grateful for today.')">
-                  <strong>3-Minute Morning Grounding</strong>
-                  <div style="font-size:11px; color:var(--theme-text-muted); margin-top:2px;">Bedside mindfulness & body awareness before screen time</div>
-                </button>
-                <button class="btn ghost" style="text-align:left; font-size:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#ffffff;" onclick="showPickTip('Softening Midday Overwhelm', 'Unclench your jaw, drop your shoulders away from your ears, and take a 10-second pause. You do not need to solve everything right now.')">
-                  <strong>Softening Midday Overwhelm</strong>
-                  <div style="font-size:11px; color:var(--theme-text-muted); margin-top:2px;">Somatic tension release and physical posture softening</div>
-                </button>
-                <button class="btn ghost" style="text-align:left; font-size:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#ffffff;" onclick="showPickTip('Evening Sleep & Unwind Routine', 'Write down the top 2 things on your mind for tomorrow. Closing the tab in your head lets your body rest deeply.')">
-                  <strong>Evening Sleep & Unwind Routine</strong>
-                  <div style="font-size:11px; color:var(--theme-text-muted); margin-top:2px;">Mental offloading and circadian wind-down preparation</div>
-                </button>
-              </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:18px;">
+              ${picks.map(p => `
+                <a href="${p.url}" target="_blank" rel="noopener sponsored" style="text-decoration:none; display:block;" onclick="if(window.PeakoraTracker){PeakoraTracker.track('affiliate_pick_clicked',{title:'${p.title.replace(/'/g, "")}'});}">
+                  <div class="dash-card" style="height:100%; margin:0; overflow:hidden; padding:0; display:flex; flex-direction:column; transition:transform .25s ease, box-shadow .25s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 18px 44px rgba(0,0,0,0.55), 0 0 28px var(--theme-card-glow-hover)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                    <div style="position:relative;">
+                      <img src="${p.img}" alt="${p.title}" style="width:100%; height:150px; object-fit:cover; display:block;">
+                      <span style="position:absolute; top:10px; left:10px; background:rgba(8,6,14,0.78); backdrop-filter:blur(6px); color:${p.badgeColor}; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid ${p.badgeColor}55;">${p.badge}</span>
+                    </div>
+                    <div style="padding:18px 18px 20px; display:flex; flex-direction:column; flex:1;">
+                      <h3 style="margin:0 0 2px; font-size:16px; font-weight:800; color:var(--theme-heading, #ffffff); line-height:1.3;">${p.title}</h3>
+                      <div style="font-size:11px; font-weight:600; color:${p.badgeColor}; margin-bottom:10px; line-height:1.4;">${p.tagline}</div>
+                      <p style="margin:0 0 12px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">${p.desc}</p>
+                      <div style="margin-bottom:16px; display:flex; flex-direction:column; gap:6px;">
+                        ${p.points.map(pt => `<div style="display:flex; gap:8px; font-size:11px; color:var(--theme-text-main); line-height:1.5;"><span style="color:${p.badgeColor}; flex-shrink:0;">&#10003;</span><span>${pt}</span></div>`).join('')}
+                      </div>
+                      <div style="margin-top:auto;">
+                        <div style="background:var(--theme-primary-grad); color:#ffffff; text-align:center; font-size:13px; font-weight:800; padding:11px 14px; border-radius:12px; letter-spacing:0.02em;">${p.cta} &rarr;</div>
+                        <div style="margin-top:8px; font-size:10px; color:var(--theme-text-muted); text-align:center;">Opens on the partner site &mdash; Peakora earns a small commission at no cost to you.</div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              `).join('')}
             </div>
+            <p style="margin-top:16px; font-size:11px; color:var(--theme-text-muted); text-align:center;">We only share tools we would hand to a friend. If one is not for you, no harm &mdash; your plan here stays free and whole.</p>
           `;
         }
 
@@ -1866,7 +1922,7 @@
 
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Your Peakora, Your Way</h1>
+              <h1 class="dash-welcome-h1">Your ${getBrandName()}, Your Way</h1>
               <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Free forever, or Plus when you want more room to play.</p>
             </div>
 
@@ -2066,7 +2122,7 @@
 
           <!-- Paddle Merchant Compliance Footer Links -->
           <div style="text-align:center; padding:16px 0 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted);">
-            <div>Peakora — your gentle daily wellness companion</div>
+            <div>${getBrandName()} — your gentle daily wellness companion</div>
             <div style="margin-top:6px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
               <a href="#" style="color:var(--accent-violet, #a78bfa); text-decoration:none;" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
               <span>•</span>
@@ -3092,7 +3148,7 @@
 
         const masterGain = audioCtx.createGain();
         masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-        masterGain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 1.2);
+        masterGain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 1.6);
 
         const analyser = audioCtx.createAnalyser();
         analyser.fftSize = 512;
@@ -3104,39 +3160,53 @@
         const push = (...nodes) => nodes.forEach(n => activeSoundNodes.push(n));
 
         if (type === 'harmony') {
-          const freqs = [528, 264, 792];
-          freqs.forEach((f, i) => {
+          // Soft 528Hz pad: warm root, gentle fifth, faint octave shimmer
+          const voices = [
+            { f: 264, g: 0.16 },
+            { f: 396, g: 0.10 },
+            { f: 528, g: 0.07 }
+          ];
+          voices.forEach((v, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-            const lfo = audioCtx.createOscillator();
-            const lfoGain = audioCtx.createGain();
-            lfo.frequency.setValueAtTime(0.08 + i * 0.02, audioCtx.currentTime);
-            lfoGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-            lfo.connect(lfoGain.gain);
-            lfo.start();
-            gain.gain.setValueAtTime(i === 0 ? 0.28 : 0.08 / (i + 1), audioCtx.currentTime);
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start();
-            push(lfo, lfoGain, osc, gain);
-          });
-        }
-        else if (type === 'om') {
-          [136.1, 272.2, 408.3].forEach((f, i) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(v.f, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(v.g, audioCtx.currentTime + 2.5 + i * 0.8);
             const trem = audioCtx.createOscillator();
             const tremGain = audioCtx.createGain();
-            trem.frequency.setValueAtTime(0.15 + i * 0.06, audioCtx.currentTime);
-            tremGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            trem.frequency.setValueAtTime(0.06 + i * 0.03, audioCtx.currentTime);
+            tremGain.gain.setValueAtTime(v.g * 0.25, audioCtx.currentTime);
             trem.connect(tremGain);
             tremGain.connect(gain.gain);
             trem.start();
-            gain.gain.setValueAtTime(i === 0 ? 0.32 : 0.09 / i, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start();
+            push(trem, tremGain, osc, gain);
+          });
+        }
+        else if (type === 'om') {
+          // Temple drone: deep sub + soft fundamental + faint third harmonic
+          const voices = [
+            { f: 68.05, g: 0.10 },
+            { f: 136.1, g: 0.2 },
+            { f: 272.2, g: 0.05 }
+          ];
+          voices.forEach((v, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(v.f, audioCtx.currentTime);
+            const trem = audioCtx.createOscillator();
+            const tremGain = audioCtx.createGain();
+            trem.frequency.setValueAtTime(0.11 + i * 0.04, audioCtx.currentTime);
+            tremGain.gain.setValueAtTime(0.025, audioCtx.currentTime);
+            trem.connect(tremGain);
+            tremGain.connect(gain.gain);
+            trem.start();
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(v.g, audioCtx.currentTime + 2.2 + i);
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start();
@@ -3144,16 +3214,23 @@
           });
         }
         else if (type === 'bowl') {
-          [432, 1080, 2160].forEach((f, i) => {
+          // Singing bowl: mellow fundamentals with a slow breathing swell
+          const voices = [
+            { f: 256, g: 0.18 },
+            { f: 384, g: 0.06 },
+            { f: 512, g: 0.025 }
+          ];
+          voices.forEach((v, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-            gain.gain.setValueAtTime(i === 0 ? 0.24 : 0.06, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(v.f, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(v.g, audioCtx.currentTime + 1.8 + i * 0.6);
             const slow = audioCtx.createOscillator();
             const slowGain = audioCtx.createGain();
-            slow.frequency.setValueAtTime(0.11 + i * 0.04, audioCtx.currentTime);
-            slowGain.gain.setValueAtTime(0.045, audioCtx.currentTime);
+            slow.frequency.setValueAtTime(0.05 + i * 0.02, audioCtx.currentTime);
+            slowGain.gain.setValueAtTime(v.g * 0.3, audioCtx.currentTime);
             slow.connect(slowGain);
             slowGain.connect(gain.gain);
             slow.start();
@@ -3165,30 +3242,33 @@
         }
         else if (type === 'ocean') {
           const noise = audioCtx.createBufferSource();
-          noise.buffer = makeNoiseBuffer(audioCtx, 'pink');
+          noise.buffer = makeNoiseBuffer(audioCtx, 'brown');
           noise.loop = true;
           const filter = audioCtx.createBiquadFilter();
           filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(250, audioCtx.currentTime);
+          filter.frequency.setValueAtTime(240, audioCtx.currentTime);
           const waveLfo = audioCtx.createOscillator();
           const waveGain = audioCtx.createGain();
-          waveLfo.frequency.setValueAtTime(0.12, audioCtx.currentTime);
-          waveGain.gain.setValueAtTime(450, audioCtx.currentTime);
+          waveLfo.frequency.setValueAtTime(0.09, audioCtx.currentTime);
+          waveGain.gain.setValueAtTime(320, audioCtx.currentTime);
           waveLfo.connect(waveGain);
           waveGain.connect(filter.frequency);
           waveLfo.start();
+          const noiseLevel = audioCtx.createGain();
+          noiseLevel.gain.setValueAtTime(0.9, audioCtx.currentTime);
           const subOsc = audioCtx.createOscillator();
           subOsc.type = 'sine';
-          subOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
+          subOsc.frequency.setValueAtTime(84, audioCtx.currentTime);
           const subGain = audioCtx.createGain();
-          subGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+          subGain.gain.setValueAtTime(0.035, audioCtx.currentTime);
           subOsc.connect(subGain);
           subGain.connect(masterGain);
           subOsc.start();
           noise.connect(filter);
-          filter.connect(masterGain);
+          filter.connect(noiseLevel);
+          noiseLevel.connect(masterGain);
           noise.start();
-          push(waveLfo, waveGain, subOsc, subGain, noise, filter);
+          push(waveLfo, waveGain, subOsc, subGain, noise, filter, noiseLevel);
         }
         else if (type === 'rain') {
           const noise = audioCtx.createBufferSource();
@@ -3196,12 +3276,29 @@
           noise.loop = true;
           const rainFilter = audioCtx.createBiquadFilter();
           rainFilter.type = 'bandpass';
-          rainFilter.frequency.setValueAtTime(1200, audioCtx.currentTime);
-          rainFilter.Q.setValueAtTime(0.6, audioCtx.currentTime);
+          rainFilter.frequency.setValueAtTime(950, audioCtx.currentTime);
+          rainFilter.Q.setValueAtTime(0.45, audioCtx.currentTime);
+          const rainLevel = audioCtx.createGain();
+          rainLevel.gain.setValueAtTime(0.6, audioCtx.currentTime);
           noise.connect(rainFilter);
-          rainFilter.connect(masterGain);
+          rainFilter.connect(rainLevel);
+          rainLevel.connect(masterGain);
           noise.start();
-          push(noise, rainFilter);
+          push(noise, rainFilter, rainLevel);
+          // low cozy rumble underneath
+          const rumble = audioCtx.createBufferSource();
+          rumble.buffer = makeNoiseBuffer(audioCtx, 'brown');
+          rumble.loop = true;
+          const rumbleFilter = audioCtx.createBiquadFilter();
+          rumbleFilter.type = 'lowpass';
+          rumbleFilter.frequency.setValueAtTime(160, audioCtx.currentTime);
+          const rumbleGain = audioCtx.createGain();
+          rumbleGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          rumble.connect(rumbleFilter);
+          rumbleFilter.connect(rumbleGain);
+          rumbleGain.connect(masterGain);
+          rumble.start();
+          push(rumble, rumbleFilter, rumbleGain);
         }
         else if (type === 'wind') {
           const noise = audioCtx.createBufferSource();
@@ -3209,19 +3306,22 @@
           noise.loop = true;
           const filter = audioCtx.createBiquadFilter();
           filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(400, audioCtx.currentTime);
-          filter.Q.setValueAtTime(0.5, audioCtx.currentTime);
+          filter.frequency.setValueAtTime(360, audioCtx.currentTime);
+          filter.Q.setValueAtTime(0.4, audioCtx.currentTime);
           const sweep = audioCtx.createOscillator();
           const sweepGain = audioCtx.createGain();
-          sweep.frequency.setValueAtTime(0.07, audioCtx.currentTime);
-          sweepGain.gain.setValueAtTime(280, audioCtx.currentTime);
+          sweep.frequency.setValueAtTime(0.05, audioCtx.currentTime);
+          sweepGain.gain.setValueAtTime(220, audioCtx.currentTime);
           sweep.connect(sweepGain);
           sweepGain.connect(filter.frequency);
           sweep.start();
+          const windLevel = audioCtx.createGain();
+          windLevel.gain.setValueAtTime(0.7, audioCtx.currentTime);
           noise.connect(filter);
-          filter.connect(masterGain);
+          filter.connect(windLevel);
+          windLevel.connect(masterGain);
           noise.start();
-          push(sweep, sweepGain, noise, filter);
+          push(sweep, sweepGain, noise, filter, windLevel);
         }
         else if (type === 'fire') {
           const noise = audioCtx.createBufferSource();
@@ -3229,9 +3329,9 @@
           noise.loop = true;
           const filter = audioCtx.createBiquadFilter();
           filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(900, audioCtx.currentTime);
+          filter.frequency.setValueAtTime(720, audioCtx.currentTime);
           const crackleGain = audioCtx.createGain();
-          crackleGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+          crackleGain.gain.setValueAtTime(0.34, audioCtx.currentTime);
           noise.connect(filter);
           filter.connect(crackleGain);
           crackleGain.connect(masterGain);
@@ -3239,16 +3339,19 @@
           push(noise, filter, crackleGain);
         }
         else if (type === 'night') {
-          [4200, 4450, 3900].forEach((f, i) => {
+          // Distant crickets — very soft, felt more than heard
+          const cricketFreqs = [3800, 4150];
+          cricketFreqs.forEach((f, i) => {
             const osc = audioCtx.createOscillator();
             const gate = audioCtx.createOscillator();
             const gateGain = audioCtx.createGain();
             const level = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-            gate.type = 'square';
-            gate.frequency.setValueAtTime(14 + i * 3, audioCtx.currentTime);
-            gateGain.gain.setValueAtTime(0.055 - i * 0.012, audioCtx.currentTime);
+            gate.type = 'sine';
+            gate.frequency.setValueAtTime(11 + i * 2.5, audioCtx.currentTime);
+            gateGain.gain.setValueAtTime(0.012 - i * 0.004, audioCtx.currentTime);
+            level.gain.setValueAtTime(0.004, audioCtx.currentTime);
             gate.connect(gateGain);
             gateGain.connect(level.gain);
             osc.connect(level);
@@ -3262,9 +3365,9 @@
           bed.loop = true;
           const bedFilter = audioCtx.createBiquadFilter();
           bedFilter.type = 'lowpass';
-          bedFilter.frequency.setValueAtTime(300, audioCtx.currentTime);
+          bedFilter.frequency.setValueAtTime(260, audioCtx.currentTime);
           const bedGain = audioCtx.createGain();
-          bedGain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+          bedGain.gain.setValueAtTime(0.28, audioCtx.currentTime);
           bed.connect(bedFilter);
           bedFilter.connect(bedGain);
           bedGain.connect(masterGain);
@@ -3272,13 +3375,14 @@
           push(bed, bedFilter, bedGain);
         }
         else if (type === 'binaural') {
-          const baseFreq = 200;
+          const baseFreq = 180;
           [0, 6].forEach((offset, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(baseFreq + offset, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.1, audioCtx.currentTime + 2.2);
             const pan = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
             osc.connect(gain);
             if (pan) {
@@ -3306,6 +3410,7 @@
     let waveAnalyser = null;
     let waveRAF = null;
     let waveIdlePhase = 0;
+    let waveEnvelope = 0;
 
     function registerWaveAnalyser(analyser) {
       waveAnalyser = analyser;
@@ -3330,30 +3435,38 @@
       const mid = h / 2;
       ctx2d.clearRect(0, 0, w, h);
 
-      let data = null;
-      let peak = 0.05;
+      // Calm renderer: the wave SHAPE is always a slow, gentle sine; the real
+      // audio only drives its amplitude through a heavily smoothed envelope.
+      // Raw time-domain frames jitter in phase at 60fps, which is what made
+      // the old visualizer feel frantic.
+      let level = 0;
       if (waveAnalyser) {
         try {
-          data = new Uint8Array(waveAnalyser.frequencyBinCount);
-          waveAnalyser.getByteTimeDomainData(data);
-          for (let i = 0; i < data.length; i++) {
-            const v = Math.abs(data[i] - 128) / 128;
-            if (v > peak) peak = v;
+          const raw = new Uint8Array(waveAnalyser.frequencyBinCount);
+          waveAnalyser.getByteTimeDomainData(raw);
+          let sum = 0;
+          for (let i = 0; i < raw.length; i++) {
+            const v = (raw[i] - 128) / 128;
+            sum += v * v;
           }
-        } catch (e) { data = null; }
+          const rms = Math.sqrt(sum / raw.length);
+          // envelope follows loudness slowly: fast-ish up, slow release down
+          waveEnvelope = waveEnvelope * (rms > waveEnvelope ? 0.82 : 0.96) + rms * (rms > waveEnvelope ? 0.18 : 0.04);
+          level = Math.min(1, waveEnvelope * 3.2);
+        } catch (e) { level = 0; }
+      } else {
+        waveEnvelope *= 0.96;
       }
 
-      const paint = (color, amp, opacity) => {
+      waveIdlePhase += 0.006;
+
+      const paint = (color, amp, opacity, phaseShift) => {
         ctx2d.beginPath();
         for (let x = 0; x <= w; x += 2) {
-          let y;
-          if (data) {
-            const sample = data[Math.floor((x / w) * data.length)] || 128;
-            const normalized = ((sample - 128) / 128) / peak;
-            y = mid + normalized * mid * 0.92 * amp;
-          } else {
-            y = mid + Math.sin((x / w) * Math.PI * 2 + waveIdlePhase) * mid * 0.18 * amp;
-          }
+          const base = Math.sin((x / w) * Math.PI * 2 + waveIdlePhase + phaseShift);
+          const detail = Math.sin((x / w) * Math.PI * 5 + waveIdlePhase * 1.6 + phaseShift) * 0.35;
+          const height = mid * (0.12 + level * 0.8) * amp;
+          const y = mid + (base + detail * (0.4 + level)) * height;
           x === 0 ? ctx2d.moveTo(x, y) : ctx2d.lineTo(x, y);
         }
         ctx2d.strokeStyle = color;
@@ -3363,9 +3476,8 @@
         ctx2d.globalAlpha = 1;
       };
 
-      paint('#f4a261', 1, 1);
-      paint('#a78bfa', 0.6, 0.7);
-      if (!data) waveIdlePhase += 0.02;
+      paint('#f4a261', 1, 0.95, 0);
+      paint('#a78bfa', 0.65, 0.6, Math.PI / 3);
 
       const nameEl = document.getElementById('wave-track-name');
       const timeEl = document.getElementById('wave-track-time');
@@ -3447,43 +3559,43 @@
       const nodes = [gain];
 
       if (key === 'om') {
-        [136.1, 272.2, 408.3].forEach((f, i) => {
+        [68.05, 136.1, 272.2].forEach((f, i) => {
           const osc = ctx.createOscillator();
           const g = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(f, ctx.currentTime);
           const trem = ctx.createOscillator();
           const tg = ctx.createGain();
-          trem.frequency.setValueAtTime(0.15 + i * 0.06, ctx.currentTime);
-          tg.gain.setValueAtTime(0.05, ctx.currentTime);
+          trem.frequency.setValueAtTime(0.11 + i * 0.04, ctx.currentTime);
+          tg.gain.setValueAtTime(0.03, ctx.currentTime);
           trem.connect(tg);
           tg.connect(g.gain);
           osc.connect(g);
           g.connect(gain);
-          g.gain.setValueAtTime(i === 0 ? 0.5 : 0.14 / i, ctx.currentTime);
+          g.gain.setValueAtTime(i === 0 ? 0.22 : i === 1 ? 0.42 : 0.09, ctx.currentTime);
           osc.start();
           trem.start();
           nodes.push(osc, g, trem, tg);
         });
       } else {
-        const tint = key === 'rainforest' || key === 'ocean' ? 'pink' : 'brown';
+        const tint = key === 'rainforest' ? 'pink' : 'brown';
         const noise = ctx.createBufferSource();
         noise.buffer = makeNoiseBuffer(ctx, tint);
         noise.loop = true;
         const filter = ctx.createBiquadFilter();
         let lfoCfg = null;
         if (key === 'rainforest') {
-          filter.type = 'bandpass'; filter.frequency.value = 1800; filter.Q.value = 0.4;
+          filter.type = 'bandpass'; filter.frequency.value = 1100; filter.Q.value = 0.4;
         } else if (key === 'ocean') {
-          filter.type = 'lowpass'; filter.frequency.value = 300;
-          lfoCfg = { rate: 0.12, depth: 500 };
+          filter.type = 'lowpass'; filter.frequency.value = 240;
+          lfoCfg = { rate: 0.09, depth: 320 };
         } else if (key === 'wind') {
-          filter.type = 'bandpass'; filter.frequency.value = 500; filter.Q.value = 0.5;
-          lfoCfg = { rate: 0.07, depth: 320 };
+          filter.type = 'bandpass'; filter.frequency.value = 360; filter.Q.value = 0.4;
+          lfoCfg = { rate: 0.05, depth: 220 };
         } else if (key === 'fire') {
-          filter.type = 'lowpass'; filter.frequency.value = 950;
+          filter.type = 'lowpass'; filter.frequency.value = 720;
         } else if (key === 'night') {
-          filter.type = 'lowpass'; filter.frequency.value = 320;
+          filter.type = 'lowpass'; filter.frequency.value = 260;
         }
         noise.connect(filter);
         filter.connect(gain);
@@ -3500,16 +3612,17 @@
           nodes.push(lfo, lg);
         }
         if (key === 'night') {
-          [4200, 4450].forEach((f, i) => {
+          [3800, 4150].forEach((f, i) => {
             const osc = ctx.createOscillator();
             const gate = ctx.createOscillator();
             const gg = ctx.createGain();
             const lvl = ctx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(f, ctx.currentTime);
-            gate.type = 'square';
-            gate.frequency.setValueAtTime(14 + i * 3, ctx.currentTime);
-            gg.gain.setValueAtTime(0.05 - i * 0.015, ctx.currentTime);
+            gate.type = 'sine';
+            gate.frequency.setValueAtTime(11 + i * 2.5, ctx.currentTime);
+            gg.gain.setValueAtTime(0.012 - i * 0.004, ctx.currentTime);
+            lvl.gain.setValueAtTime(0.004, ctx.currentTime);
             gate.connect(gg);
             gg.connect(lvl.gain);
             osc.connect(lvl);
@@ -4000,13 +4113,15 @@
       if (popover) {
         const planDay = (state.plan && state.plan[dayNum - 1]) || null;
         const title = planDay ? planDay.title : ('Day ' + dayNum);
-        const shortText = planDay
-          ? (planDay.focus || '') + ' — ' + (planDay.action || '')
-          : "Your daily gentle step";
+        const focusText = planDay
+          ? (planDay.focus || 'Your daily gentle step')
+          : 'Your daily gentle step';
 
+        const displayTitle = String(title).replace(/^Day\s*\d+\s*[—–-]\s*/i, '');
         popover.innerHTML = `
-          <div class="popover-title">DAY ${dayNum}: ${title}</div>
-          <div class="popover-text">${shortText}</div>
+          <div class="popover-title">DAY ${dayNum} — ${displayTitle}</div>
+          <div class="popover-text">${focusText}</div>
+          <div class="popover-hint">Full detail is waiting in the Plans tab</div>
         `;
 
         const arcWrap = popover.closest('.timeline-arc-wrap');
