@@ -1609,3 +1609,331 @@ header .brand img.brand-logo:hover,
   }
 }
 
+/* ------------------------------------------------------
+   MORE FEATURES & CAPABILITIES — PREMIUM PLUS TILES
+------------------------------------------------------ */
+.more-features-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 36px 28px;
+  margin-top: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.more-features-panel::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 60%;
+  background: radial-gradient(ellipse at center, rgba(224, 122, 95, 0.10) 0%, rgba(167, 139, 250, 0.06) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.more-features-header {
+  text-align: center;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.more-features-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.more-features-lead {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Free vs Plus legend */
+.plan-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.plan-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 7px 16px;
+}
+
+.plan-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.plan-legend-dot-free {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.55);
+}
+
+.plan-legend-dot-plus {
+  background: var(--primary-gradient);
+  box-shadow: 0 0 12px rgba(224, 122, 95, 0.6);
+}
+
+/* Grid */
+.more-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Spotlight tile spans wider to draw extra attention */
+.feature-tile-spotlight {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 760px) {
+  .feature-tile-spotlight {
+    grid-column: 1 / span 2;
+  }
+}
+
+/* Base tile */
+.feature-tile {
+  position: relative;
+  border-radius: 16px;
+  padding: 22px 20px;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.4s ease, background 0.4s ease;
+}
+
+/* Free tiles — calm glass */
+.feature-tile-free {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+}
+
+.feature-tile-free:hover {
+  transform: translateY(-4px);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 22px rgba(52, 211, 153, 0.16);
+}
+
+/* Plus tiles — gradient glow + premium border */
+.feature-tile-plus {
+  background: linear-gradient(155deg, rgba(224, 122, 95, 0.12) 0%, rgba(167, 139, 250, 0.08) 100%);
+  border: 1px solid rgba(224, 122, 95, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 26px rgba(224, 122, 95, 0.18);
+}
+
+.feature-tile-plus:hover {
+  transform: translateY(-6px);
+  border-color: rgba(244, 162, 97, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), 0 0 38px rgba(224, 122, 95, 0.4);
+}
+
+/* Animated ambient glow layer inside Plus tiles */
+.feature-tile-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 0%, rgba(244, 162, 97, 0.22) 0%, transparent 55%),
+              radial-gradient(circle at 100% 100%, rgba(167, 139, 250, 0.18) 0%, transparent 55%);
+  opacity: 0.7;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feature-tile-plus:hover .feature-tile-glow {
+  opacity: 1;
+}
+
+/* Spotlight = the signature premium feature, extra attention */
+.feature-tile-spotlight {
+  background: linear-gradient(135deg, rgba(224, 122, 95, 0.18) 0%, rgba(167, 139, 250, 0.14) 50%, rgba(244, 162, 97, 0.12) 100%);
+  border: 1px solid rgba(244, 162, 97, 0.5);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6), 0 0 42px rgba(224, 122, 95, 0.28);
+}
+
+.feature-tile-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(244, 162, 97, 0.8), rgba(167, 139, 250, 0.55), rgba(224, 122, 95, 0.7));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feature-tile-spotlight .feature-tile-name {
+  font-size: 19px;
+}
+
+.feature-tile-spotlight .feature-tile-desc {
+  font-size: 14px;
+  max-width: 640px;
+}
+
+/* PEAKORA+ badge */
+.peakora-plus-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #1a1206;
+  background: var(--primary-gradient);
+  padding: 4px 11px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(224, 122, 95, 0.45);
+  position: relative;
+  z-index: 1;
+}
+
+/* Tile flags */
+.feature-tile-flag {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-amber);
+  margin-left: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.feature-tile-flag-free {
+  color: var(--accent-emerald);
+  margin-left: 0;
+}
+
+.feature-tile-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 14px 0 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.feature-tile-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.55;
+  position: relative;
+  z-index: 1;
+}
+
+.feature-tile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.feature-tag {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-amber);
+}
+
+.feature-tile-free .feature-tag {
+  color: var(--accent-emerald);
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+/* Plus upsell line */
+.more-features-upsell {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: rgba(224, 122, 95, 0.06);
+  border: 1px solid rgba(224, 122, 95, 0.22);
+  position: relative;
+  z-index: 1;
+}
+
+.upsell-text {
+  font-size: 14px;
+  color: var(--text-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.upsell-cta {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1206;
+  background: var(--primary-gradient);
+  padding: 11px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(224, 122, 95, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  white-space: nowrap;
+}
+
+.upsell-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(224, 122, 95, 0.55);
+}
+
+@media (max-width: 600px) {
+  .more-features-panel {
+    padding: 28px 18px;
+  }
+
+  .plan-legend {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .more-features-upsell {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+

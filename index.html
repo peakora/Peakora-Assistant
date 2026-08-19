@@ -267,63 +267,122 @@
     </div>
 
     <!-- More Options & Features Inside Peakora Assistant Grid -->
-    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 36px 28px; margin-top: 32px;" class="animate-fade-in-up delay-2">
-      <div style="text-align: center; margin-bottom: 28px;">
-        <h3 style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">
-          More Features & Capabilities Inside
+    <div class="more-features-panel animate-fade-in-up delay-2">
+      <div class="more-features-header">
+        <h3 class="more-features-title">
+          More Features &amp; Capabilities Inside
         </h3>
-        <p style="font-size: 14px; color: var(--text-muted); max-width: 600px; margin: 0 auto; line-height: 1.5;">
+        <p class="more-features-lead">
           Peakora Assistant provides a complete ecosystem built for daily clarity, deep focus, and zero-guilt personal growth.
         </p>
+
+        <!-- Free vs Plus Legend -->
+        <div class="plan-legend" role="list" aria-label="Plan availability legend">
+          <span class="plan-legend-item plan-legend-free" role="listitem">
+            <span class="plan-legend-dot plan-legend-dot-free"></span>
+            Included free
+          </span>
+          <span class="plan-legend-item plan-legend-plus" role="listitem">
+            <span class="plan-legend-dot plan-legend-dot-plus"></span>
+            <span class="plan-legend-badge">PEAKORA+</span>
+            Premium feature
+          </span>
+        </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
-        
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-          <div style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
-            Auto Mood-Reactive Canvas
-          </div>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            The interface dynamically adapts its color palettes and atmosphere to match your daily logged emotional state.
+      <div class="more-features-grid">
+
+        <!-- Premium Spotlight: Auto Mood-Reactive Canvas (signature Plus feature) -->
+        <div class="feature-tile feature-tile-plus feature-tile-spotlight">
+          <div class="feature-tile-glow"></div>
+          <span class="peakora-plus-badge">PEAKORA+</span>
+          <span class="feature-tile-flag">Signature premium</span>
+          <div class="feature-tile-name">Auto Mood-Reactive Canvas</div>
+          <p class="feature-tile-desc">
+            The interface dynamically adapts its color palettes and atmosphere to match your daily logged emotional state — the whole app re-themes itself around how you feel.
           </p>
+          <div class="feature-tile-tags">
+            <span class="feature-tag">7 mood palettes</span>
+            <span class="feature-tag">Auto ambient glow</span>
+          </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-          <div style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
-            Past Plans Archive
-          </div>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+        <!-- Plus: Past Plans Archive -->
+        <div class="feature-tile feature-tile-plus">
+          <div class="feature-tile-glow"></div>
+          <span class="peakora-plus-badge">PEAKORA+</span>
+          <div class="feature-tile-name">Past Plans Archive</div>
+          <p class="feature-tile-desc">
             Browse, review, and re-activate previous 7-day reset plans to revisit strategies that worked best for you.
           </p>
+          <div class="feature-tile-tags">
+            <span class="feature-tag">Unlimited history</span>
+            <span class="feature-tag">1-tap re-activate</span>
+          </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-          <div style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
-            PWA Mobile & Offline Mode
+        <!-- Plus: Ambient Soundscapes -->
+        <div class="feature-tile feature-tile-plus">
+          <div class="feature-tile-glow"></div>
+          <span class="peakora-plus-badge">PEAKORA+</span>
+          <div class="feature-tile-name">Ambient Soundscapes</div>
+          <p class="feature-tile-desc">
+            Tune into expanded built-in ambient audio waves and rhythmic breathing guides to ground your nervous system on demand.
+          </p>
+          <div class="feature-tile-tags">
+            <span class="feature-tag">Full sound library</span>
+            <span class="feature-tag">Offline playback</span>
           </div>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+        </div>
+
+        <!-- Free: PWA Mobile & Offline Mode -->
+        <div class="feature-tile feature-tile-free">
+          <span class="feature-tile-flag feature-tile-flag-free">Included free</span>
+          <div class="feature-tile-name">PWA Mobile &amp; Offline Mode</div>
+          <p class="feature-tile-desc">
             Install Peakora Assistant directly to your phone or desktop home screen for instant 1-tap launcher access and use it offline.
           </p>
+          <div class="feature-tile-tags">
+            <span class="feature-tag">1-tap install</span>
+            <span class="feature-tag">Works offline</span>
+          </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-          <div style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
-            Deep Mood & Energy Analytics
-          </div>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+        <!-- Free: Deep Mood & Energy Analytics -->
+        <div class="feature-tile feature-tile-free">
+          <span class="feature-tile-flag feature-tile-flag-free">Included free</span>
+          <div class="feature-tile-name">Deep Mood &amp; Energy Analytics</div>
+          <p class="feature-tile-desc">
             Visualize emotional growth trends, energy cycles, and personal clarity progress over time with compassionate metrics.
           </p>
+          <div class="feature-tile-tags">
+            <span class="feature-tag">Trend charts</span>
+            <span class="feature-tag">Energy cycles</span>
+          </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-          <div style="font-family:'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
-            Micro-Journaling & Energy
-          </div>
-          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+        <!-- Free: Micro-Journaling & Energy -->
+        <div class="feature-tile feature-tile-free">
+          <span class="feature-tile-flag feature-tile-flag-free">Included free</span>
+          <div class="feature-tile-name">Micro-Journaling &amp; Energy</div>
+          <p class="feature-tile-desc">
             Capture brief daily thoughts, gratitude notes, and energy bubbles with zero pressure or streak counters.
           </p>
+          <div class="feature-tile-tags">
+            <span class="feature-tag">Zero streaks</span>
+            <span class="feature-tag">Gratitude notes</span>
+          </div>
         </div>
 
+      </div>
+
+      <!-- Plus upsell line -->
+      <div class="more-features-upsell">
+        <span class="upsell-text">
+          <span class="peakora-plus-badge">PEAKORA+</span>
+          unlocks the signature mood-reactive canvas, full plan archive, and the complete soundscape library.
+        </span>
+        <a href="assistant.html" class="upsell-cta">Explore Peakora+ Plans</a>
       </div>
     </div>
 
