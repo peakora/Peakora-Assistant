@@ -1190,7 +1190,7 @@
                 <div class="dash-brand">
                   <div class="dash-brand-icon-orb" style="width:1.1em; height:1.1em; border-radius:50%; background:linear-gradient(135deg, #f4a261, #e76f51); box-shadow:0 0 12px rgba(244,162,97,0.6); flex-shrink:0;"></div>
                   <div>
-                    <div class="dash-brand-title">PEAKORA</div>
+                    <div class="dash-brand-title">${isPeakoraPlusActive() ? 'PEAKORA <span style="background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent;">+</span>' : 'PEAKORA'}</div>
                     <div class="dash-brand-sub">Wellness Assistant</div>
                   </div>
                 </div>
@@ -1551,21 +1551,40 @@
               </div>
             </div>
 
-            <div class="dash-grid-equal">
-              <!-- LEFT COLUMN: BREATHING & SOUNDSCAPES -->
-              <div class="dash-card">
-                <div class="dash-card-title" style="letter-spacing:0.06em;">BREATHING & SOUNDSCAPES</div>
-                
-                <div class="breathing-ring-outer" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer;" title="Tap to start or pause">
-                  <div class="breathing-ring-circle" id="dash-breath-circle"></div>
-                  <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
-                  <div class="breathing-center-info">
-                    <div class="breathing-action-label" id="dash-breath-state">READY</div>
-                    <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
-                    <div style="font-size:11px; color:#ffffff; font-weight:700; margin-top:4px;" id="dash-breath-total">0:00 / 2:00</div>
-                  </div>
+            <!-- STANDALONE INHALE • EXHALE CARD -->
+            <div class="dash-card" style="margin-bottom:24px; position:relative; overflow:hidden; text-align:center;">
+              <div style="position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow), transparent 70%); pointer-events:none;"></div>
+              <div class="dash-card-title" style="letter-spacing:0.08em;">INHALE &bull; EXHALE</div>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 auto 6px; max-width:460px; line-height:1.6;">
+                A gentle 4-2-6 rhythm — breathe in for 4, hold for 2, let go for 6. Ten slow cycles, about two minutes. Tap the ring to begin, tap again to pause.
+              </p>
+              <div class="breathing-ring-outer" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer; margin:10px auto;" title="Tap to start or pause">
+                <div class="breathing-ring-circle" id="dash-breath-circle"></div>
+                <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
+                <div class="breathing-center-info">
+                  <div class="breathing-action-label" id="dash-breath-state">READY</div>
+                  <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
+                  <div style="font-size:11px; color:#ffffff; font-weight:700; margin-top:4px;" id="dash-breath-total">0:00 / 2:00</div>
                 </div>
-                <p style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin:0 0 10px;">A gentle 4-2-6 rhythm: breathe in 4s, hold 2s, let go 6s. Ten slow cycles, about two minutes.</p>
+              </div>
+              <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
+                <button class="btn ghost" style="font-size:11px; padding:6px 14px;" onclick="resetDashBreathing()">Reset session</button>
+                <span style="font-size:10px; color:var(--theme-text-muted);">Works fully on the free plan — no sound needed, just follow the ring.</span>
+              </div>
+            </div>
+
+            <div class="dash-grid-equal">
+              <!-- LEFT COLUMN: SOUNDSCAPE STUDIO -->
+              <div class="dash-card">
+                <div class="dash-card-title" style="letter-spacing:0.06em; display:flex; justify-content:space-between; align-items:center;">
+                  SOUNDSCAPE STUDIO
+                  ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
+                </div>
+                ${!isPlus ? `
+                <div style="margin-bottom:12px; padding:10px 12px; border-radius:10px; background:rgba(244,162,97,0.08); border:1px dashed rgba(244,162,97,0.4); font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+                  The soundscape studio is a <strong style="color:var(--theme-accent);">Peakora+</strong> treat — preview the library below, and unlock every sound when you're ready.
+                  <a href="#" onclick="openPlanSelectionModal(); return false;" style="color:var(--theme-accent); font-weight:700; text-decoration:none;">Unlock with Plus</a>
+                </div>` : ''}
 
                 <!-- AUDIO WAVE VISUALIZER (live, follows the sound actually playing) -->
                 <div class="audio-wave-box" style="margin-bottom:12px;">
@@ -1576,10 +1595,11 @@
                       <div style="font-size:13px; font-weight:700; color:#ffffff;" id="wave-track-name">Nothing playing yet</div>
                       <div style="font-size:10px; color:var(--theme-text-muted);" id="wave-track-time">Pick a sound below and press play</div>
                     </div>
-                    <div style="display:flex; gap:8px; align-items:center;">
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(-1)" title="Previous sound">⏮</button>
-                      <button class="btn primary" style="padding:8px 16px; font-size:14px; border-radius:50%;" id="wave-play-btn" onclick="toggleWavePlayback()" title="Play or pause">▶</button>
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(1)" title="Next sound">⏭</button>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(-1)" title="Previous sound">&#9198;</button>
+                      <button class="btn primary" style="padding:8px 16px; font-size:14px; border-radius:50%;" id="wave-play-btn" onclick="toggleWavePlayback()" title="Play or pause">&#9654;</button>
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px; color:#fb7185;" onclick="stopAmbientAudio()" title="Stop">&#9209;</button>
+                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(1)" title="Next sound">&#9197;</button>
                     </div>
                   </div>
                 </div>
@@ -1588,39 +1608,21 @@
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
                   <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Soundscape Library</div>
                   <div id="audio-playing-status" style="font-size:11px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:8px; border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
-                  <div style="display:flex; flex-direction:column; gap:6px;">
-                    <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;">
-                      ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
-                    </select>
-                    <div style="display:flex; gap:6px;">
-                      <button id="audio-play-btn" class="btn primary" style="flex:1; font-size:12px; font-weight:600;" onclick="playAmbientAudioFromDropdown()">
-                        ${currentlyPlayingTrack ? 'Pause Soundscape' : 'Play Selected Soundscape'}
-                      </button>
-                      <button class="btn ghost" style="font-size:11px; padding:6px 10px; color:#fb7185;" onclick="stopAmbientAudio()">Stop</button>
-                    </div>
-                  </div>
+                  <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;" onchange="switchSoundscapeTrack(this.value)">
+                    ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
+                  </select>
+                  <p style="font-size:10px; color:var(--theme-text-muted); margin:8px 0 0;">Choosing a track starts it right away — the transport buttons above handle the rest.</p>
                 </div>
               </div>
 
-              <!-- RIGHT COLUMN: SOLFEGGIO & AMBIENT & ANALYTICS -->
+              <!-- RIGHT COLUMN: AMBIENT & ANALYTICS -->
               <div>
-                <!-- SOLFEGGIO FREQUENCIES -->
-                <div class="dash-card" style="margin-bottom:16px;">
-                  <div class="dash-card-title">SOLFEGGIO FREQUENCIES</div>
-                  <p style="font-size:11px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a frequency to hear it; tap again to stop.</p>
-                  <div class="solfeggio-toggle-grid">
-                    ${[[396,'Root'],[417,'Change'],[528,'Love'],[639,'Connect'],[741,'Intuition'],[852,'Clarity']].map(([f, d]) => `
-                    <div class="solfeggio-item ${activeSolfeggioFreq === f ? 'active' : ''}" onclick="toggleSolfeggio(${f}, this)">
-                      <div class="solfeggio-switch"></div>
-                      <div class="solfeggio-freq">${f}Hz</div>
-                      <div class="solfeggio-desc">${d}</div>
-                    </div>`).join('')}
-                  </div>
-                </div>
-
                 <!-- AMBIENT SOUNDSCAPES (mix and layer them — tap a card to start or stop it) -->
                 <div class="dash-card" style="margin-bottom:16px;">
-                  <div class="dash-card-title">AMBIENT SOUNDSCAPES</div>
+                  <div class="dash-card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    AMBIENT SOUNDSCAPES
+                    ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
+                  </div>
                   <p style="font-size:11px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a card to start or stop that layer, then blend volumes to taste.</p>
                   <div class="ambient-list">
                     ${[
@@ -1674,6 +1676,31 @@
                   const dominant = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] || 'neutral';
                   const domLabel = familyLabels[dominant] || familyLabels.neutral;
 
+                  // Day streak: consecutive days with at least one check-in, ending today or yesterday
+                  const daySet = new Set((real || []).map(c => c.date));
+                  let streak = 0;
+                  const cursor = new Date();
+                  if (!daySet.has(cursor.toISOString().slice(0, 10))) cursor.setDate(cursor.getDate() - 1);
+                  while (daySet.has(cursor.toISOString().slice(0, 10))) {
+                    streak++;
+                    cursor.setDate(cursor.getDate() - 1);
+                  }
+
+                  // Trend: average energy of the last 3 check-ins vs the 3 before them
+                  const scoreOf = c => energyScore[getMoodFamily(c.feeling)] || 50;
+                  let trendDelta = 0;
+                  if (!usingSample && real.length >= 4) {
+                    const last3 = real.slice(-3).map(scoreOf);
+                    const prev3 = real.slice(-6, -3).map(scoreOf);
+                    const avg = arr => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+                    trendDelta = Math.round(avg(last3) - (prev3.length ? avg(prev3) : avg(last3)));
+                  }
+                  const trendChip = trendDelta > 3
+                    ? { txt: '▲ +' + trendDelta + ' rising', color: '#34d399' }
+                    : trendDelta < -3
+                      ? { txt: '▼ ' + trendDelta + ' dipping', color: '#fb7185' }
+                      : { txt: '● steady', color: '#a0aec0' };
+
                   const barW = 30, gap = 12, baseY = 62, maxH = 52;
                   const bars = week.map((c, i) => {
                     const fam = getMoodFamily(c.feeling);
@@ -1711,18 +1738,23 @@
                   <div class="dash-card-title">Deep Mood & Energy Analytics</div>
                   <p style="font-size:11px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' — showing a sample week until you log your first mood' : ''}:</p>
 
-                  <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <div style="flex:1; background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:12px; padding:10px 12px; text-align:center;">
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; margin-bottom:10px;">
+                    <div style="background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:12px; padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:var(--theme-accent);">${avgEnergy}</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">Avg energy this week</div>
+                      <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600; margin-bottom:3px;">Avg energy</div>
+                      ${!usingSample ? `<span style="font-size:9px; font-weight:800; color:${trendChip.color};">${trendChip.txt}</span>` : ''}
                     </div>
-                    <div style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; text-align:center;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
+                      <div style="font-size:22px; font-weight:800; color:#ffffff;">${streak}</div>
+                      <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Day streak${streak > 1 ? ' — keep it alive' : ''}</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:#ffffff;">${total}</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">Check-ins logged</div>
+                      <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Check-ins</div>
                     </div>
-                    <div style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 12px; text-align:center;">
-                      <div style="font-size:12px; font-weight:800; color:${domLabel[1]}; line-height:1.3; margin-top:4px;">${domLabel[0]}</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">Leading tone</div>
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
+                      <div style="font-size:11px; font-weight:800; color:${domLabel[1]}; line-height:1.3; margin-top:6px;">${domLabel[0]}</div>
+                      <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600; margin-top:3px;">Leading tone</div>
                     </div>
                   </div>
 
@@ -1731,8 +1763,13 @@
                       <div style="font-size:11px; font-weight:700; color:#ffffff;">Your weekly emotional spectrum</div>
                       <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">${total} check-in${total === 1 ? '' : 's'}</div>
                     </div>
-                    <svg viewBox="0 0 300 70" style="width:100%; height:60px;">
-                      ${bars.map(b => `<rect x="${b.x}" y="${b.y}" width="${barW}" height="${b.h}" rx="4" fill="${b.color}" opacity="0.9"><title>${b.label}</title></rect>`).join('')}
+                    <svg viewBox="0 0 300 78" style="width:100%; height:68px;">
+                      ${bars.map(b => {
+                        const dayName = b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'narrow' }) : '';
+                        return `
+                        <rect x="${b.x}" y="${b.y}" width="${barW}" height="${b.h}" rx="4" fill="${b.color}" opacity="0.9" class="analytics-grow"><title>${b.label}${b.date ? ' — ' + b.date : ''}</title></rect>
+                        ${dayName ? `<text x="${b.x + barW / 2}" y="74" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">${dayName}</text>` : ''}`;
+                      }).join('')}
                       ${bars.length > 1 ? `<path d="M ${linePts}" fill="none" stroke="#f4a261" stroke-width="2.5" stroke-dasharray="3,3"/>` : ''}
                       ${peakBar ? `<circle cx="${peakBar.x + barW / 2}" cy="${peakBar.y - 4}" r="4" fill="#f4a261"><title>Your brightest moment: ${peakBar.label}</title></circle>` : ''}
                     </svg>
@@ -1816,13 +1853,23 @@
             <!-- PREVIOUS 7-DAY PLANS HISTORY CARD -->
             <div class="dash-card mb-16">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div class="dash-card-title">Your Saved Weeks</div>
+                <div class="dash-card-title" style="display:flex; align-items:center; gap:8px;">
+                  Your Saved Weeks
+                  ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
+                </div>
                 <button class="btn secondary" style="font-size:11px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save This Week</button>
               </div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">Weeks you've saved live here — revisit one any time:</p>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">${isPlus ? "Weeks you've saved live here — revisit one any time:" : "With Peakora+ you can save finished weeks and bring them back whenever life calls for them."}</p>
           `;
-          
-          if (!pastPlans || pastPlans.length === 0) {
+
+          if (!isPlus) {
+            html += `
+              <div style="background:rgba(244,162,97,0.06); border:1px dashed rgba(244,162,97,0.4); border-radius:12px; padding:16px; text-align:center;">
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 6px;">Plan history & archiving unlock with <strong style="color:var(--theme-accent);">Peakora+</strong>.</p>
+                <button class="btn primary" style="font-size:11px; padding:6px 16px;" onclick="openPlanSelectionModal()">Unlock saved weeks</button>
+              </div>
+            `;
+          } else if (!pastPlans || pastPlans.length === 0) {
             html += `
               <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">Nothing saved yet — and that's fine.</p>
@@ -2026,6 +2073,19 @@
           const notifWeekly = localStorage.getItem("peakora_notif_weekly") === "true";
           const notifTime = localStorage.getItem("peakora_notif_time") || "08:00 AM";
 
+          const switchBtn = (on, onclick, locked) => `
+            <button type="button" onclick="${onclick}" style="flex-shrink:0; width:46px; height:26px; border-radius:999px; border:1px solid ${on ? 'transparent' : 'rgba(255,255,255,0.15)'}; background:${on ? 'var(--theme-primary-grad)' : 'rgba(255,255,255,0.06)'}; position:relative; cursor:pointer; transition:all 0.25s ease; ${on ? 'box-shadow:0 3px 10px var(--theme-accent-glow);' : ''}">
+              <span style="position:absolute; top:2px; ${on ? 'right:2px' : 'left:2px'}; width:20px; height:20px; border-radius:50%; background:${on ? '#ffffff' : 'rgba(255,255,255,0.35)'}; transition:all 0.25s ease;"></span>
+            </button>`;
+
+          const themeChips = [
+            ['sunrise', 'Sunrise Amber', '#f4a261', false],
+            ['twilight', 'Twilight Indigo', '#818cf8', true],
+            ['sage', 'Sage Emerald', '#34d399', true],
+            ['ocean', 'Serene Sky', '#38bdf8', true],
+            ['sunset', 'Velvet Sunset', '#fb7185', true]
+          ];
+
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
               <h1 class="dash-welcome-h1">Settings & Little Comforts</h1>
@@ -2033,76 +2093,65 @@
             </div>
 
             <div class="dash-grid-2">
-              <!-- SETTINGS CARD 1: THEME TOGGLES & COLOR SPACE -->
+              <!-- SETTINGS CARD 1: THEME & COLOR SPACE -->
               <div class="dash-card">
-                <div class="dash-card-title">Theme & Visual Experience</div>
-                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Select an emotional color spectrum for your workspace:</p>
+                <div class="dash-card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                  Theme & Visual Experience
+                  ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
+                </div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">${isPlus ? 'Pick the color space that feels like today:' : 'Sunrise Amber is your free home. The rest of the palette unlocks with Peakora+.'}</p>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-                  <button class="theme-chip ${currentTheme === 'sunrise' ? 'active' : ''}" onclick="applyTheme('sunrise')">Sunrise Amber</button>
-                  <button class="theme-chip ${currentTheme === 'twilight' ? 'active' : ''}" onclick="applyTheme('twilight')">Twilight Indigo</button>
-                  <button class="theme-chip ${currentTheme === 'sage' || currentTheme === 'emerald' ? 'active' : ''}" onclick="applyTheme('sage')">Sage Emerald</button>
-                  <button class="theme-chip ${currentTheme === 'sky' || currentTheme === 'ocean' ? 'active' : ''}" onclick="applyTheme('ocean')">Serene Sky</button>
-                  <button class="theme-chip ${currentTheme === 'sunset' ? 'active' : ''}" onclick="applyTheme('sunset')">Velvet Sunset</button>
+                  ${themeChips.map(([key, label, color, premium]) => {
+                    const locked = premium && !isPlus;
+                    const active = currentTheme === key || (key === 'sage' && currentTheme === 'emerald') || (key === 'ocean' && currentTheme === 'sky');
+                    return `<button class="theme-chip ${active ? 'active' : ''}" onclick="applyTheme('${key}')" style="position:relative; ${locked ? 'opacity:0.65;' : ''}">
+                      <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:${color}; margin-right:5px; box-shadow:0 0 6px ${color};"></span>${label}${locked ? ' <span style="font-size:9px; opacity:0.9;">&#128274;</span>' : ''}
+                    </button>`;
+                  }).join('')}
                 </div>
 
-                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                  <div>
-                    <div style="font-size:12px; font-weight:700; color:#ffffff;">Dynamic Auto-Theme on Mood Check-ins</div>
-                    <div style="font-size:11px; color:var(--theme-text-muted);">Adapts color theme automatically based on your logged mood</div>
+                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                  <div style="flex:1; min-width:200px;">
+                    <div style="font-size:12px; font-weight:700; color:#ffffff;">Mood-Reactive Auto-Theme ${!isPlus ? '<span style="font-size:9px; font-weight:800; color:var(--theme-accent); letter-spacing:0.06em;">PLUS</span>' : ''}</div>
+                    <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">The room quietly shifts color to match the mood you log each morning.</div>
                   </div>
-                  <button class="btn ${isAutoTheme ? 'primary' : 'secondary'}" style="font-size:11px; padding:6px 14px; font-weight:700;" onclick="toggleAutoTheme()">
-                    ${isAutoTheme ? 'Auto-Theme: ENABLED' : 'Enable Auto-Theme'}
-                  </button>
+                  ${switchBtn(isPlus && isAutoTheme, 'toggleAutoTheme()')}
                 </div>
               </div>
 
-              <!-- SETTINGS CARD 2: NOTIFICATION PREFERENCES -->
+              <!-- SETTINGS CARD 2: NOTIFICATIONS -->
               <div class="dash-card">
-                <div class="dash-card-title">Notification & Reminder Preferences</div>
-                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Manage gentle alerts and local reminder schedules:</p>
-                
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="dash-card-title">Notifications & Gentle Reminders</div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Soft prompts, only when you want them — everything stays on your device.</p>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                     <div>
-                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Daily Check-in Reminders</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">Receive a gentle morning prompt to log your mood</div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Daily Check-in Reminder</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">A gentle prompt at your chosen time to log today's mood</div>
                     </div>
-                    <button class="btn ${notifDaily ? 'primary' : 'secondary'}" style="font-size:11px; padding:5px 12px; font-weight:700;" onclick="toggleNotifSetting('peakora_notif_daily')">
-                      ${notifDaily ? 'ON' : 'OFF'}
-                    </button>
+                    ${switchBtn(notifDaily, "toggleNotifSetting('peakora_notif_daily')")}
                   </div>
-
-                  <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
                     <div>
-                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Soundscape & Chime Alerts</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">Audio feedback during somatic breathing sessions</div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Breathing Chimes</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">A soft tone at each phase change during the Inhale ring</div>
                     </div>
-                    <button class="btn ${notifSound ? 'primary' : 'secondary'}" style="font-size:11px; padding:5px 12px; font-weight:700;" onclick="toggleNotifSetting('peakora_notif_sound')">
-                      ${notifSound ? 'ON' : 'OFF'}
-                    </button>
+                    ${switchBtn(notifSound, "toggleNotifSetting('peakora_notif_sound')")}
                   </div>
-
-                  <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Weekly Progress Digest</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">Summary of mood trends and completed reset days</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">A one-line summary of your week when fresh data is waiting</div>
                     </div>
-                    <button class="btn ${notifWeekly ? 'primary' : 'secondary'}" style="font-size:11px; padding:5px 12px; font-weight:700;" onclick="toggleNotifSetting('peakora_notif_weekly')">
-                      ${notifWeekly ? 'ON' : 'OFF'}
-                    </button>
+                    ${switchBtn(notifWeekly, "toggleNotifSetting('peakora_notif_weekly')")}
                   </div>
-
-                  <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; opacity:${notifDaily ? '1' : '0.45'};">
                     <div>
-                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Reminder Alert Time</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">Preferred time for daily reset prompts</div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Reminder Time</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">When the daily prompt should arrive</div>
                     </div>
-                    <select class="input" style="width:auto; font-size:11px; padding:4px 8px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;" onchange="changeNotifTime(this.value)">
-                      <option value="07:00 AM" ${notifTime === '07:00 AM' ? 'selected' : ''} style="background:#151122; color:#fff;">07:00 AM</option>
-                      <option value="08:00 AM" ${notifTime === '08:00 AM' ? 'selected' : ''} style="background:#151122; color:#fff;">08:00 AM</option>
-                      <option value="09:00 AM" ${notifTime === '09:00 AM' ? 'selected' : ''} style="background:#151122; color:#fff;">09:00 AM</option>
-                      <option value="12:00 PM" ${notifTime === '12:00 PM' ? 'selected' : ''} style="background:#151122; color:#fff;">12:00 PM</option>
-                      <option value="08:00 PM" ${notifTime === '08:00 PM' ? 'selected' : ''} style="background:#151122; color:#fff;">08:00 PM</option>
+                    <select class="input" style="width:auto; font-size:11px; padding:5px 9px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;" onchange="changeNotifTime(this.value)" ${notifDaily ? '' : 'disabled'}>
+                      ${['07:00 AM','08:00 AM','09:00 AM','12:00 PM','08:00 PM'].map(t => `<option value="${t}" ${notifTime === t ? 'selected' : ''} style="background:#151122; color:#fff;">${t}</option>`).join('')}
                     </select>
                   </div>
                 </div>
@@ -2114,22 +2163,28 @@
               <div class="dash-card" id="install-assistant-card">
                 <div class="dash-card-title" style="margin-bottom:6px;">Install Peakora Assistant</div>
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">
-                  Install Peakora Assistant on your mobile device or desktop for fast 1-tap launcher access, offline wellness tools, and native app performance.
+                  Keep Peakora one tap away — add it to your phone's home screen or your desktop for fast access and a full-screen, app-like feel.
                 </p>
                 <button class="btn primary" style="padding:8px 16px; font-size:12px; font-weight:700;" onclick="openInstallModal()">
                   Install App & Setup Guide
                 </button>
               </div>
 
-              <!-- SETTINGS CARD 4: ACCOUNT & DATA PREFERENCES -->
+              <!-- SETTINGS CARD 4: YOUR DATA -->
               <div class="dash-card">
-                <div class="dash-card-title" style="margin-bottom:8px;">Account & Data Preferences</div>
+                <div class="dash-card-title" style="margin-bottom:6px;">Your Data, Your Rules</div>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">
+                  Everything Peakora remembers lives only in this browser. Take it with you, reshape it, or wipe it clean — your call, always.
+                </p>
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:10px; color:#ffffff;" onclick="restartOnboarding()">
-                    <strong>Reset Onboarding & Goal Parameters</strong> — Reconfigure your 7-day plan
+                  <button class="btn secondary" style="text-align:left; justify-content:flex-start; font-size:12px; padding:10px 14px; border-radius:10px;" onclick="exportMyData()">
+                    <strong>Download My Data</strong>&nbsp;— every check-in, plan, and preference as JSON
                   </button>
-                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:10px; color:#fb7185;" onclick="clearAllDataAndReset()">
-                    <strong>Clear Local Cache & Log Out</strong> — Reset all stored logs and settings
+                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:10px; color:#ffffff;" onclick="restartOnboarding()">
+                    <strong>Restart Onboarding</strong>&nbsp;— reshape your 7-day plan (membership & moods stay)
+                  </button>
+                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(251,113,133,0.25); padding:10px 14px; border-radius:10px; color:#fb7185;" onclick="clearAllDataAndReset()">
+                    <strong>Erase Everything</strong>&nbsp;— full reset, nothing kept on this device
                   </button>
                 </div>
               </div>
@@ -2888,6 +2943,14 @@
 
     function applyTheme(themeKey, isFromAuto) {
       if (!themeKey) themeKey = "sunrise";
+      // Free plan keeps the default Sunrise space; the rest of the palette is Peakora+
+      if (themeKey !== "sunrise" && !isPeakoraPlusActive()) {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Color spaces are a Peakora+ treat');
+        }
+        openPlanSelectionModal();
+        return;
+      }
       if (!isFromAuto) {
         // Manual theme choice turns off Auto-Theme so user's explicit choice is preserved
         localStorage.setItem("peakora_auto_theme", "false");
@@ -2946,18 +3009,127 @@
       const current = localStorage.getItem(key) !== "false";
       const next = !current;
       localStorage.setItem(key, next ? "true" : "false");
+      if (key === "peakora_notif_daily") scheduleDailyReminder();
       if (typeof showToastNotification === 'function') {
-        showToastNotification(next ? "Preference Enabled ✨" : "Preference Disabled ⏸");
+        showToastNotification(next ? "Preference on — noted" : "Preference off — quiet it is");
       }
       renderStep();
     };
 
     window.changeNotifTime = function(val) {
       localStorage.setItem("peakora_notif_time", val);
+      localStorage.removeItem("peakora_notif_last_shown");
+      scheduleDailyReminder();
       if (typeof showToastNotification === 'function') {
-        showToastNotification("Daily reminder time set to " + val + " ⏰");
+        showToastNotification("Daily reminder time set to " + val);
       }
       renderStep();
+    };
+
+    /* DAILY REMINDER — in-app gentle prompt at the chosen time while the app is open */
+    function parseReminderTime(str) {
+      const m = /^(\d{2}):(\d{2})\s(AM|PM)$/.exec(str || "08:00 AM");
+      if (!m) return { h: 8, min: 0 };
+      let h = parseInt(m[1], 10) % 12;
+      if (m[3] === 'PM') h += 12;
+      return { h, min: parseInt(m[2], 10) };
+    }
+
+    function scheduleDailyReminder() {
+      if (window._reminderTimer) { clearTimeout(window._reminderTimer); window._reminderTimer = null; }
+      if (localStorage.getItem("peakora_notif_daily") === "false") return;
+      const { h, min } = parseReminderTime(localStorage.getItem("peakora_notif_time") || "08:00 AM");
+      const now = new Date();
+      const next = new Date(now);
+      next.setHours(h, min, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      window._reminderTimer = setTimeout(() => {
+        const today = new Date().toISOString().slice(0, 10);
+        if (localStorage.getItem("peakora_notif_last_shown") !== today) {
+          localStorage.setItem("peakora_notif_last_shown", today);
+          if (typeof showToastNotification === 'function') {
+            showToastNotification("Gentle reminder — a 10-second mood check-in keeps your streak alive");
+          }
+        }
+        scheduleDailyReminder();
+      }, next - now);
+    }
+
+    /* WEEKLY DIGEST — a tiny summary toast when a fresh week of data exists */
+    function maybeShowWeeklyDigest() {
+      if (localStorage.getItem("peakora_notif_weekly") !== "true") return;
+      const last = parseInt(localStorage.getItem("peakora_digest_last") || "0", 10);
+      const sixDays = 6 * 24 * 60 * 60 * 1000;
+      if (Date.now() - last < sixDays) return;
+      const checkins = getCheckins();
+      if (!checkins || checkins.length < 3) return;
+      const energyScore = { heavy: 22, anxious: 45, neutral: 55, hopeful: 74, energized: 92 };
+      const weekArr = checkins.slice(-7);
+      const avg = Math.round(weekArr.reduce((s, c) => s + (energyScore[getMoodFamily(c.feeling)] || 50), 0) / weekArr.length);
+      localStorage.setItem("peakora_digest_last", String(Date.now()));
+      setTimeout(() => {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification("Your week in one line: " + weekArr.length + " check-ins, average energy " + avg + "/100");
+        }
+      }, 4000);
+    }
+
+    /* BREATHING CHIME — honors the Soundscape & Chime Alerts preference */
+    let breathChimeCtx = null;
+    function playBreathChime(phaseIdx) {
+      if (localStorage.getItem("peakora_notif_sound") === "false") return;
+      try {
+        breathChimeCtx = breathChimeCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (breathChimeCtx.state === 'suspended') breathChimeCtx.resume();
+        const freqs = [523.25, 392, 329.63];
+        const osc = breathChimeCtx.createOscillator();
+        const gain = breathChimeCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freqs[phaseIdx % freqs.length], breathChimeCtx.currentTime);
+        gain.gain.setValueAtTime(0.0001, breathChimeCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.06, breathChimeCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, breathChimeCtx.currentTime + 0.9);
+        osc.connect(gain);
+        gain.connect(breathChimeCtx.destination);
+        osc.start();
+        osc.stop(breathChimeCtx.currentTime + 1);
+      } catch (e) {}
+    }
+
+    /* ACCOUNT & DATA ACTIONS */
+    window.restartOnboarding = function() {
+      if (!confirm("Restart onboarding? Your answers and current week will be cleared, but your membership, moods, and settings stay.")) return;
+      if (window.PeakoraTracker) PeakoraTracker.track("onboarding_restarted", {});
+      clearState();
+      saveState();
+      goToStepKey('welcome');
+    };
+
+    window.clearAllDataAndReset = function() {
+      if (!confirm("Clear ALL Peakora data on this device (plan, moods, settings, membership) and start completely fresh?")) return;
+      if (window.PeakoraTracker) PeakoraTracker.track("local_data_cleared", {});
+      localStorage.clear();
+      location.reload();
+    };
+
+    window.exportMyData = function() {
+      const data = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf("peakora") === 0) data[k] = localStorage.getItem(k);
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "peakora-my-data-" + new Date().toISOString().slice(0, 10) + ".json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      if (window.PeakoraTracker) PeakoraTracker.track("data_exported", {});
+      if (typeof showToastNotification === 'function') {
+        showToastNotification("Your data is downloading — everything we keep, in one file");
+      }
     };
 
     window.showToastNotification = function(msg) {
@@ -3029,6 +3201,13 @@
     }
 
     function archiveCurrentPlan() {
+      if (!isPeakoraPlusActive()) {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Saving past weeks is a Peakora+ treat');
+        }
+        openPlanSelectionModal();
+        return;
+      }
       if (!state.plan) { alert("No active plan to save."); return; }
       const list = getPastPlans();
       const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -3069,6 +3248,13 @@
     }
 
     function viewPastPlan(index) {
+      if (!isPeakoraPlusActive()) {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Plan history is a Peakora+ treat');
+        }
+        openPlanSelectionModal();
+        return;
+      }
       const list = getPastPlans();
       const p = list[index];
       if (!p) return;
@@ -3125,7 +3311,6 @@
 
     /* SOUNDSCAPE SYNTHESIZER, WAVE VISUALIZER, AMBIENT MIXER & BREATH RING */
     const SOUNDSCAPE_TRACKS = [
-      { key: 'harmony', name: '528Hz Solfeggio Harmonics — deep calm' },
       { key: 'om', name: 'OM Chant Drone — temple resonance (136Hz)' },
       { key: 'bowl', name: 'Tibetan Singing Bowl — soft ringing waves' },
       { key: 'ocean', name: 'Ocean Shoreline Surf — rolling pink noise' },
@@ -3198,6 +3383,13 @@
     }
 
     function playAmbientAudio(type) {
+      if (!isPeakoraPlusActive()) {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('The Soundscape Studio is a Peakora+ treat');
+        }
+        openPlanSelectionModal();
+        return;
+      }
       if (currentlyPlayingTrack === type) {
         stopAmbientAudio();
         return;
@@ -3226,34 +3418,7 @@
 
         const push = (...nodes) => nodes.forEach(n => activeSoundNodes.push(n));
 
-        if (type === 'harmony') {
-          // Soft 528Hz pad: warm root, gentle fifth, faint octave shimmer
-          const voices = [
-            { f: 264, g: 0.16 },
-            { f: 396, g: 0.10 },
-            { f: 528, g: 0.07 }
-          ];
-          voices.forEach((v, i) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(v.f, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(v.g, audioCtx.currentTime + 2.5 + i * 0.8);
-            const trem = audioCtx.createOscillator();
-            const tremGain = audioCtx.createGain();
-            trem.frequency.setValueAtTime(0.06 + i * 0.03, audioCtx.currentTime);
-            tremGain.gain.setValueAtTime(v.g * 0.25, audioCtx.currentTime);
-            trem.connect(tremGain);
-            tremGain.connect(gain.gain);
-            trem.start();
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start();
-            push(trem, tremGain, osc, gain);
-          });
-        }
-        else if (type === 'om') {
+        if (type === 'om') {
           // Temple drone: deep sub + soft fundamental + faint third harmonic
           const voices = [
             { f: 68.05, g: 0.10 },
@@ -3570,25 +3735,27 @@
         stopAmbientAudio();
       } else {
         const select = document.getElementById('audio-track-select');
-        playAmbientAudio(select ? select.value : 'harmony');
+        playAmbientAudio(select ? select.value : SOUNDSCAPE_TRACKS[0].key);
       }
     };
 
+    window.switchSoundscapeTrack = function(key) {
+      if (!key) return;
+      if (currentlyPlayingTrack === key) return;
+      stopAmbientAudio();
+      playAmbientAudio(key);
+    };
+
     window.stepSoundscape = function(direction) {
-      const idx = SOUNDSCAPE_TRACKS.findIndex(t => t.key === currentlyPlayingTrack);
-      const wasPlaying = idx !== -1;
-      const nextIdx = wasPlaying
-        ? (idx + direction + SOUNDSCAPE_TRACKS.length) % SOUNDSCAPE_TRACKS.length
-        : (direction > 0 ? 0 : SOUNDSCAPE_TRACKS.length - 1);
-      const next = SOUNDSCAPE_TRACKS[nextIdx];
       const select = document.getElementById('audio-track-select');
+      const currentKey = currentlyPlayingTrack || (select ? select.value : null);
+      let idx = SOUNDSCAPE_TRACKS.findIndex(t => t.key === currentKey);
+      if (idx === -1) idx = direction > 0 ? -1 : 0;
+      const nextIdx = (idx + direction + SOUNDSCAPE_TRACKS.length) % SOUNDSCAPE_TRACKS.length;
+      const next = SOUNDSCAPE_TRACKS[nextIdx];
       if (select) select.value = next.key;
-      if (wasPlaying) {
-        stopAmbientAudio();
-        playAmbientAudio(next.key);
-      } else if (typeof showToastNotification === 'function') {
-        showToastNotification('Queued up: ' + next.name);
-      }
+      stopAmbientAudio();
+      playAmbientAudio(next.key);
     };
 
     /* AMBIENT MIXER — layerable soundscapes with real volume sliders */
@@ -3705,6 +3872,13 @@
 
     window.toggleAmbientLayer = function(key) {
       const existing = ambientLayers[key];
+      if (!(existing && existing.playing) && !isPeakoraPlusActive()) {
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Ambient mixing is a Peakora+ treat');
+        }
+        openPlanSelectionModal();
+        return;
+      }
       if (existing && existing.playing) {
         existing.nodes.forEach(n => {
           try { if (n.stop) n.stop(); if (n.disconnect) n.disconnect(); } catch (e) {}
@@ -3738,19 +3912,8 @@
       }
     };
 
-    function playAmbientAudioFromDropdown() {
-      const select = document.getElementById("audio-track-select");
-      if (!select) return;
-      playAmbientAudio(select.value);
-    }
-
     function renderStepAudioState() {
-      const playBtn = document.getElementById("audio-play-btn");
       const statusEl = document.getElementById("audio-playing-status");
-
-      if (playBtn) {
-        playBtn.textContent = currentlyPlayingTrack ? 'Pause Soundscape' : 'Play Selected Soundscape';
-      }
 
       if (statusEl) {
         if (currentlyPlayingTrack) {
@@ -3824,6 +3987,21 @@
       }
     }
 
+    window.resetDashBreathing = function() {
+      dashBreath.running = false;
+      dashBreath.done = false;
+      dashBreath.phaseIdx = 0;
+      dashBreath.phaseLeft = DASH_BREATH_PHASES[0].dur;
+      dashBreath.cycle = 0;
+      dashBreath.elapsed = 0;
+      if (dashBreath.timer) {
+        clearInterval(dashBreath.timer);
+        dashBreath.timer = null;
+      }
+      syncDashBreathUI();
+      pulseBreathRing();
+    };
+
     window.toggleDashBreathing = function() {
       if (dashBreath.done) {
         dashBreath.running = false;
@@ -3857,6 +4035,7 @@
                 }
               }
               dashBreath.phaseLeft = DASH_BREATH_PHASES[dashBreath.phaseIdx].dur;
+              playBreathChime(dashBreath.phaseIdx);
             }
             syncDashBreathUI();
           }, 1000);
@@ -3916,7 +4095,7 @@
 
     /* START A BRAND NEW PLAN — archive the old week, then fresh onboarding */
     window.startNewPlan = function() {
-      if (state.plan) {
+      if (state.plan && isPeakoraPlusActive()) {
         const list = getPastPlans();
         const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         list.unshift({
@@ -3930,7 +4109,7 @@
       clearState();
       saveState();
       if (typeof showToastNotification === 'function') {
-        showToastNotification('Your old week is safely saved. Let us build the next one, together.');
+        showToastNotification(isPeakoraPlusActive() ? 'Your old week is safely saved. Let us build the next one, together.' : 'Fresh start — let us shape your next 7 days.');
       }
       goToStepKey('welcome');
     };
@@ -4117,60 +4296,6 @@
       }
     };
 
-    let solfeggioOsc = null;
-    let solfeggioCtx = null;
-    window.activeSolfeggioFreq = null;
-
-    window.toggleSolfeggio = function(freq, el) {
-      document.querySelectorAll('.solfeggio-item').forEach(i => i.classList.remove('active'));
-      if (window.activeSolfeggioFreq !== freq) {
-        if (el) el.classList.add('active');
-        window.activeSolfeggioFreq = freq;
-        playSolfeggioTone(freq);
-        if (window.PeakoraTracker) PeakoraTracker.track("solfeggio_played", { freq: freq });
-        if (typeof showToastNotification === 'function') {
-          showToastNotification(freq + 'Hz tone is humming — let it wash over you');
-        }
-      } else {
-        window.activeSolfeggioFreq = null;
-        stopSolfeggioTone();
-        if (typeof showToastNotification === 'function') {
-          showToastNotification('Tone paused. The quiet counts too.');
-        }
-      }
-      renderStep();
-    };
-
-    function playSolfeggioTone(freq) {
-      stopSolfeggioTone();
-      try {
-        solfeggioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        solfeggioOsc = solfeggioCtx.createOscillator();
-        const gainNode = solfeggioCtx.createGain();
-        solfeggioOsc.type = 'sine';
-        solfeggioOsc.frequency.setValueAtTime(freq, solfeggioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0.12, solfeggioCtx.currentTime);
-        const analyser = solfeggioCtx.createAnalyser();
-        analyser.fftSize = 512;
-        solfeggioOsc.connect(gainNode);
-        gainNode.connect(analyser);
-        analyser.connect(solfeggioCtx.destination);
-        if (typeof registerWaveAnalyser === 'function') registerWaveAnalyser(analyser);
-        solfeggioOsc.start();
-      } catch(e) {}
-    }
-
-    function stopSolfeggioTone() {
-      if (solfeggioOsc) {
-        try { solfeggioOsc.stop(); solfeggioOsc.disconnect(); } catch(e){}
-        solfeggioOsc = null;
-      }
-      if (solfeggioCtx) {
-        try { solfeggioCtx.close(); } catch(e){}
-        solfeggioCtx = null;
-      }
-    }
-
     window.clickTimelineDay = function(dayNum) {
       document.querySelectorAll('.timeline-node-item').forEach(n => n.classList.remove('active-glow'));
       const target = document.getElementById('day-node-' + dayNum);
@@ -4214,6 +4339,10 @@
 
       // Sync subscription state from backend Paddle webhook database
       checkServerSubscription();
+
+      // Arm the daily reminder + weekly digest preferences
+      scheduleDailyReminder();
+      maybeShowWeeklyDigest();
 
       if (!hasState) {
         goToStepKey("welcome");
@@ -4315,7 +4444,7 @@
             <li>✔ <strong>Everything in Free Plan</strong></li>
             <li>✔ <strong>Theme Customizer & Auto Mood-Reactive Themes</strong></li>
             <li>✔ <strong>Previous 7-Day Plans Archive</strong> (Browse & re-activate past weeks)</li>
-            <li>✔ <strong>Organic Wellness Audio Soundscapes</strong> (528Hz, Ocean, Rain)</li>
+            <li>✔ <strong>Organic Wellness Audio Soundscapes</strong> (Ocean, Rain, OM Drone & more)</li>
             <li>✔ <strong>Deep Mood & Energy Analytics Infographics</strong></li>
             <li>✔ <strong>Unlimited 7-Day Plan Resets</strong></li>
           </ul>
