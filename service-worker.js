@@ -43,3 +43,30 @@ self.addEventListener("fetch", event => {
     )
   );
 });
+
+/* Web Push — gentle nudges delivered even when the app is closed */
+self.addEventListener("push", event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) {}
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Peakora", {
+      body: data.body || "A gentle nudge from your quiet corner.",
+      icon: "./assets/peakora-icon-192.png",
+      badge: "./assets/peakora-icon-192.png",
+      tag: "peakora-nudge",
+      renotify: false
+    })
+  );
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+      for (const client of list) {
+        if (client.url.includes("assistant") && "focus" in client) return client.focus();
+      }
+      return clients.openWindow("./assistant.html");
+    })
+  );
+});

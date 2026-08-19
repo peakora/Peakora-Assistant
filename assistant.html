@@ -79,9 +79,14 @@
           };
           events.push(event);
           if (events.length > 100) events.shift();
-          localStorage.getItem("peakora_usage_events");
           localStorage.setItem("peakora_usage_events", JSON.stringify(events));
           console.log("[Peakora Telemetry]", action, details);
+          // Anonymous usage ping to the server (no email, no identity — action names only)
+          try {
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon("/api/event", new Blob([JSON.stringify({ action, details })], { type: "application/json" }));
+            }
+          } catch (e) {}
         } catch (e) {
           console.warn("Tracker error:", e);
         }
@@ -403,6 +408,13 @@
 
     function isPeakoraPlusActive() {
       return localStorage.getItem("peakora_plus_member") === "true";
+    }
+
+    // Dev/test affordances (plan preview toggle) only appear with ?dev=1 or
+    // localStorage peakora_dev_mode=true — hidden from members and reviewers.
+    function isDevMode() {
+      return localStorage.getItem("peakora_dev_mode") === "true" ||
+             (window.location.search || "").indexOf("dev=1") !== -1;
     }
 
     function getBrandName() {
@@ -2032,9 +2044,9 @@
                   <span class="sub-status-indicator" style="font-size:10px; font-weight:800; padding:4px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${isPlus ? 'background:rgba(244,162,97,0.2); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.45);' : 'background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);'}">
                     <span style="font-size:7px;">&#9679;</span> ${isPlus ? 'Active — thank you for being here' : 'Status: ' + peakoraSubStatus}
                   </span>
-                  <button type="button" class="btn ghost" style="font-size:9px; padding:3px 7px; border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer; opacity:0.6;" onclick="toggleMockSubscriptionStatus()" title="Preview the other membership state">
+                  ${isDevMode() ? `<button type="button" class="btn ghost" style="font-size:9px; padding:3px 7px; border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer; opacity:0.6;" onclick="toggleMockSubscriptionStatus()" title="Preview the other membership state">
                     Preview ${isPlus ? 'free' : 'plus'}
-                  </button>
+                  </button>` : ''}
                 </div>
                 <p style="font-size:12.5px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.6;">
                   ${isPlus ? 'Everything below is already yours. Themes, soundscapes, saved weeks — all of it, unlocked.' : 'For the days you want the lights warmer and the sound deeper. Everything in Core, plus the quiet luxuries.'}
@@ -2145,6 +2157,13 @@
                     </div>
                     ${switchBtn(notifWeekly, "toggleNotifSetting('peakora_notif_weekly')")}
                   </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+                    <div>
+                      <div style="font-size:12px; font-weight:700; color:#ffffff;">Push Nudges on This Device</div>
+                      <div style="font-size:11px; color:var(--theme-text-muted);">Real notifications even when the app is closed — works best once installed</div>
+                    </div>
+                    ${switchBtn(localStorage.getItem("peakora_push_enabled") === "true", "togglePushNotifications()")}
+                  </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; opacity:${notifDaily ? '1' : '0.45'};">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Reminder Time</div>
@@ -2187,6 +2206,18 @@
                     <strong>Erase Everything</strong>&nbsp;— full reset, nothing kept on this device
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- SETTINGS CARD 5: FEEDBACK -->
+            <div class="dash-card" style="text-align:center;">
+              <div class="dash-card-title">Tell Us How Peakora Feels</div>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 auto 12px; max-width:480px; line-height:1.6;">
+                A sentence is plenty. What helped, what annoyed you, what's missing — it goes straight to the small team building this, and we actually read every one.
+              </p>
+              <div style="display:flex; gap:8px; max-width:560px; margin:0 auto;">
+                <input type="text" id="peakora-feedback-input" class="input" style="flex:1; font-size:12px;" placeholder="The thing I wish Peakora did is...">
+                <button class="btn primary" style="font-size:12px; font-weight:700; padding:10px 18px; white-space:nowrap;" onclick="sendFeedback()">Send</button>
               </div>
             </div>
           `;
@@ -2311,6 +2342,15 @@
       }
       state.email = value;
       saveState();
+      // Save to the Peakora subscriber list (fires the 3-email welcome sequence server-side later)
+      try {
+        fetch("/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: value, source: "onboarding" }),
+          keepalive: true
+        }).catch(() => {});
+      } catch (e) {}
       goToStepKey("processing");
     }
 
@@ -3073,6 +3113,92 @@
         }
       }, 4000);
     }
+
+    /* WEB PUSH — real notifications on installed devices, even when closed */
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    }
+
+    window.togglePushNotifications = async function() {
+      const enabled = localStorage.getItem("peakora_push_enabled") === "true";
+      if (enabled) {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            await fetch("/api/push-unsubscribe", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ endpoint: sub.endpoint })
+            }).catch(() => {});
+            await sub.unsubscribe();
+          }
+        } catch (e) {}
+        localStorage.setItem("peakora_push_enabled", "false");
+        if (typeof showToastNotification === 'function') showToastNotification("Push nudges off — the app stays quiet until you return");
+        renderStep();
+        return;
+      }
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        alert("This browser doesn't support push notifications yet. Installing the app on your phone usually enables them.");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        if (typeof showToastNotification === 'function') showToastNotification("Notifications were not allowed — you can enable them in browser settings");
+        return;
+      }
+      try {
+        const keyRes = await fetch("/api/push-key");
+        const keyData = await keyRes.json();
+        if (!keyData || !keyData.key) throw new Error("push key unavailable");
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(keyData.key)
+        });
+        await fetch("/api/push-subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sub)
+        });
+        localStorage.setItem("peakora_push_enabled", "true");
+        if (window.PeakoraTracker) PeakoraTracker.track("push_enabled", {});
+        if (typeof showToastNotification === 'function') showToastNotification("Gentle nudges on — one a day at most, never noise");
+        renderStep();
+      } catch (e) {
+        console.warn("Push subscribe failed:", e);
+        alert("Push notifications need the Peakora server running with push support. Everything else works either way.");
+      }
+    };
+
+    /* IN-APP FEEDBACK — goes straight to the Peakora team inbox */
+    window.sendFeedback = function() {
+      const el = document.getElementById("peakora-feedback-input");
+      const msg = (el && el.value.trim()) || "";
+      if (!msg) {
+        if (typeof showToastNotification === 'function') showToastNotification("Write a line or two first — even one word helps");
+        return;
+      }
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: msg,
+          email: state.email || null,
+          page: "assistant-settings"
+        })
+      }).catch(() => {});
+      if (window.PeakoraTracker) PeakoraTracker.track("feedback_sent", {});
+      if (el) el.value = "";
+      if (typeof showToastNotification === 'function') showToastNotification("Thank you — your words just landed with the team");
+    };
 
     /* BREATHING CHIME — honors the Soundscape & Chime Alerts preference */
     let breathChimeCtx = null;
