@@ -1988,7 +1988,7 @@
           const freeFeatures = [
             ["7-Day Personalized Reset Plan", "custom daily routines shaped around your answers"],
             ["Mood Check-In & Bubble Visualizer", "watch honest patterns build over time"],
-            ["60-Second Breathing Reset", "somatic pacing that settles your whole system"],
+            ["Inhale Breathing Ring", "a 4-4-4 paced breathing guide that settles your nervous system"],
             ["Micro-Journal & Thought Unloading", "offload mental chatter, keep what matters"],
             ["Daily Focus & Intention Anchors", "one clear priority, every morning"]
           ];
@@ -2085,6 +2085,26 @@
               <p style="margin:0; font-size:12.5px; color:var(--theme-text-muted); line-height:1.7; font-style:italic;">
                 "Whether you stay on Core forever or move to Plus tomorrow — this space is yours either way."
               </p>
+            </div>
+
+            <!-- AFFILIATE PROGRAM CARD -->
+            <div class="dash-card" style="margin-top:20px; position:relative; overflow:hidden;">
+              <div style="position:absolute; top:-60px; right:-60px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow), transparent 70%); pointer-events:none;"></div>
+              <div class="dash-card-title" style="display:flex; align-items:center; gap:8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--theme-accent);"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                Peakora Partners — Earn While You Share
+              </div>
+              <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.6;">
+                Love Peakora? Share it and earn 30% recurring commission on every subscriber you bring — for as long as they stay. No audience minimum, 60-day cookie window, real-time tracking.
+              </p>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">30% recurring</span>
+                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">60-day cookie</span>
+                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Bank transfer payouts</span>
+              </div>
+              <a href="mailto:peakora.network@gmail.com?subject=Affiliate%20Program%20Application&body=Name%3A%20%0AWebsite%20or%20social%20%3A%20%0AAudience%20size%20%3A%20%0AHow%20you%27d%20promote%20Peakora%20%3A%20" class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow); text-decoration:none; display:inline-block;">
+                Apply to Become a Partner
+              </a>
             </div>
           `;
         }
@@ -2255,6 +2275,8 @@
               <a href="#" style="color:#7c3aed; text-decoration:none;" onclick="openLegalModal('refund'); return false;">Refund & Guarantee</a>
               <span>•</span>
               <a href="#" style="color:#7c3aed; text-decoration:none;" onclick="openLegalModal('contact'); return false;">Contact Support</a>
+              <span>•</span>
+              <a href="index.html#affiliates" style="color:#7c3aed; text-decoration:none;">Affiliate Program</a>
             </div>
             <div style="margin-top:6px; font-size:10px; color:#999;">© 2026 Peakora. Billed securely. Support: peakora.network@gmail.com</div>
           </div>
@@ -4062,7 +4084,6 @@
         };
       }
     }
-
     // DASHBOARD HELPER FUNCTIONS (SCREENSHOTS 1 & 2)
     window.currentDashTab = "home";
 
@@ -4166,6 +4187,9 @@
         return;
       }
 
+      // User has state but hasn't finished onboarding — resume at the last
+      // step they reached so the page is never blank on refresh.
+      renderStep();
       showOnboardingModal();
     });
   </script>

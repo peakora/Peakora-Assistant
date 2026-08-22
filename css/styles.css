@@ -1881,3 +1881,163 @@ header .brand img.brand-logo:hover,
   }
 }
 
+
+/* ===== AFFILIATE PROGRAM SECTION ===== */
+.peakora-affiliate {
+  padding: 80px 0;
+  background: linear-gradient(180deg, #0a0810 0%, #0e0b18 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.peakora-affiliate::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 162, 97, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.affiliate-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 48px;
+  position: relative;
+}
+
+.affiliate-badge {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #f4a261;
+  background: rgba(244, 162, 97, 0.1);
+  border: 1px solid rgba(244, 162, 97, 0.25);
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.affiliate-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 14px;
+  line-height: 1.2;
+}
+
+.affiliate-sub {
+  font-size: 16px;
+  color: #a0aec0;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.affiliate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.affiliate-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.affiliate-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(244, 162, 97, 0.3);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(244, 162, 97, 0.12);
+}
+
+.affiliate-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(244, 162, 97, 0.15), rgba(167, 139, 250, 0.1));
+  border: 1px solid rgba(244, 162, 97, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  color: #f4a261;
+}
+
+.affiliate-card h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 10px;
+}
+
+.affiliate-card p {
+  font-size: 14px;
+  color: #a0aec0;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.affiliate-cta {
+  text-align: center;
+  margin-top: 48px;
+  position: relative;
+}
+
+.affiliate-cta-note {
+  font-size: 13px;
+  color: #8b90a0;
+  margin: 0 0 20px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.affiliate-cta-button {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #e07a5f, #f4a261);
+  padding: 14px 36px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(224, 122, 95, 0.35);
+  transition: all 0.25s ease;
+  letter-spacing: 0.02em;
+}
+
+.affiliate-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(224, 122, 95, 0.5);
+}
+
+@media (max-width: 600px) {
+  .affiliate-title {
+    font-size: 26px;
+  }
+  .affiliate-sub {
+    font-size: 14px;
+  }
+  .affiliate-card {
+    padding: 22px 18px;
+  }
+}
+

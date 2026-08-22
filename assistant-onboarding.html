@@ -133,7 +133,7 @@
           localStorage.setItem('peakora_onboarding', JSON.stringify(payload));
           
           const assistantState = {
-            stepIndex: 22, // home step (dashboard)
+            stepIndex: 21, // home step (dashboard) — index 21 in steps array
             answers: { goal: payload.goal },
             email: "",
             completed: true,
@@ -148,6 +148,10 @@
         // initialize
         showStep(0);
       })();
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      }
     </script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2-livemode";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
@@ -8,15 +8,20 @@ const FILES_TO_CACHE = [
   "./index.html",
   "./assistant.html",
   "./assistant.css",
+  "./assistant-onboarding.html",
+  "./assistant-home.html",
   "./manifest.json",
   "./offline.html",
-  "./assets/peakora-icon-192.png",
-  "./assets/peakora-icon-512.png"
+  "./service-worker.js",
+  "./assets/peakora-logo.png"
 ];
 
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then(cache =>
+      // addAll fails entirely if any file 404s, so add individually
+      Promise.allSettled(FILES_TO_CACHE.map(f => cache.add(f)))
+    )
   );
   self.skipWaiting();
 });

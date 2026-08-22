@@ -932,11 +932,11 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 
 /* GLASS CARD STYLING */
 .dash-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 30px var(--theme-card-glow);
   position: relative;
   transition: all 0.3s ease;
   min-width: 0;
@@ -947,15 +947,15 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 
 .dash-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(244, 162, 97, 0.4);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 24px rgba(244, 162, 97, 0.22);
+  border-color: var(--theme-card-border);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 40px var(--theme-card-glow-hover);
 }
 
 .dash-card-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 17px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--theme-heading, #ffffff);
   letter-spacing: 0.03em;
   margin: 0 0 4px 0;
 }
@@ -1548,38 +1548,61 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 
 @media (max-width: 900px) {
   .assistant-shell.is-dashboard-mode {
-    padding: 12px 8px;
+    padding: 8px 4px;
   }
   .dash-container {
     flex-direction: column;
     min-height: auto;
   }
+  /* Mobile sidebar: compact horizontal bar, sticky at top, horizontally scrollable.
+     Prevents the "huge ugly box" that overflowed into the header on zoom/mobile. */
   .dash-sidebar {
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 14px 18px;
-    gap: 12px;
+    padding: 10px 12px;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(12, 9, 21, 0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    max-height: 56px;
+    overflow: hidden;
   }
   .dash-brand {
     margin-bottom: 0;
+    flex-shrink: 0;
   }
   .dash-nav {
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-wrap: nowrap;
+    gap: 4px;
     justify-content: flex-start;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .dash-nav::-webkit-scrollbar {
+    display: none;
   }
   .dash-nav-btn {
-    flex: 1 1 auto;
-    min-width: 80px;
+    flex: 0 0 auto;
+    min-width: auto;
     justify-content: center;
     white-space: nowrap;
-    padding: 8px 10px;
+    padding: 8px 12px;
     font-size: 12px;
+    gap: 4px;
+  }
+  .dash-nav-btn svg {
+    flex-shrink: 0;
   }
   .dash-grid-2, .dash-grid-equal {
     grid-template-columns: 1fr;
@@ -1599,6 +1622,16 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   }
   .dash-welcome-h1 {
     font-size: 20px;
+  }
+  /* On very small screens: hide nav button text, show icons only */
+  .dash-nav-btn {
+    padding: 8px 10px;
+    font-size: 0;
+    gap: 0;
+  }
+  .dash-nav-btn svg {
+    width: 20px;
+    height: 20px;
   }
   .timeline-arc-wrap {
     height: auto;

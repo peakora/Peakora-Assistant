@@ -43,16 +43,23 @@ async function verifyDodoWebhook(rawBody, headers, secret) {
 
   for (const part of sigHeader.split(' ')) {
     const sig = part.startsWith('v1,') ? part.slice(3) : part;
-    if (sig.length === expected.length && timingSafeEqual(sig, expected)) return true;
+    if (sig.length === expected.length && timingSafeCompare(sig, expected)) return true;
   }
   return false;
 }
 
-function timingSafeEqual(a, b) {
+function timingSafeCompare(a, b) {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
+}
+
+function requireAdmin(request, env) {
+  if (!env.ADMIN_TOKEN) return false;
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token') || request.headers.get('x-admin-token') || '';
+  return timingSafeCompare(token, env.ADMIN_TOKEN);
 }
 
 // ── Dodo event mapping ────────────────────────────────────────────────────
@@ -95,10 +102,25 @@ function json(data, status = 200) {
   });
 }
 
-function cors(response) {
-  response.headers.set('Access-Control-Allow-Origin', '*');
+const ALLOWED_ORIGINS = [
+  'https://peakora-assistant.pages.dev',
+  'https://peakora.life',
+  'https://www.peakora.life',
+  'https://peakora-api.peakora.workers.dev',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080'
+];
+
+function cors(response, request) {
+  const origin = request ? (request.headers.get('Origin') || '') : '';
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  response.headers.set('Access-Control-Allow-Origin', allowOrigin);
+  response.headers.set('Vary', 'Origin');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
+  response.headers.set('Access-Control-Max-Age', '86400');
   return response;
 }
 
@@ -106,12 +128,6 @@ async function readJson(request) {
   const text = await request.text();
   try { return JSON.parse(text); }
   catch { return {}; }
-}
-
-function requireAdmin(request, env) {
-  const url = new URL(request.url);
-  const token = url.searchParams.get('token') || request.headers.get('x-admin-token') || '';
-  return env.ADMIN_TOKEN && token === env.ADMIN_TOKEN;
 }
 
 // ── Route handlers ─────────────────────────────────────────────────────────
@@ -263,7 +279,7 @@ export default {
     const method = request.method;
 
     if (method === 'OPTIONS') {
-      return cors(new Response(null, { status: 204 }));
+      return cors(new Response(null, { status: 204 }), request);
     }
 
     let response;
@@ -292,9 +308,9 @@ export default {
       }
     } catch (error) {
       console.error('Worker error:', error);
-      response = json({ success: false, error: error.message }, 500);
+      response = json({ success: false, error: 'Internal server error' }, 500);
     }
 
-    return cors(response);
+    return cors(response, request);
   }
 };
