@@ -6,7 +6,8 @@
  * it to Express routes and the JSON-file store.
  *
  * Env vars:
- *   DODO_PAYMENTS_API_KEY        — secret API key (server-side only, never exposed)
+ *   DODO_PAYMENTS_API_KEY        — test-mode secret API key (server-side only)
+ *   DODO_PAYMENTS_LIVE_API_KEY   — live-mode secret API key (used when live_mode)
  *   DODO_PAYMENTS_ENVIRONMENT    — "test_mode" | "live_mode"  (default test_mode)
  *   DODO_MONTHLY_PRODUCT_ID      — pdt_... for the $4.99/mo plan
  *   DODO_YEARLY_PRODUCT_ID       — pdt_... for the $47.99/yr plan
@@ -27,8 +28,11 @@ function env(name, fallback = '') {
 
 export function dodoConfig() {
   const environment = env('DODO_PAYMENTS_ENVIRONMENT', 'test_mode');
+  const apiKey = environment === 'live_mode'
+    ? env('DODO_PAYMENTS_LIVE_API_KEY') || env('DODO_PAYMENTS_API_KEY')
+    : env('DODO_PAYMENTS_API_KEY');
   return {
-    apiKey: env('DODO_PAYMENTS_API_KEY'),
+    apiKey,
     environment,
     baseUrl: BASE_URLS[environment] || BASE_URLS.test_mode,
     webhookSecret: env('DODO_PAYMENTS_WEBHOOK_SECRET'),

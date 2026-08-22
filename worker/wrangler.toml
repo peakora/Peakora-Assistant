@@ -19,9 +19,9 @@ id = "5e3516b101da423f919aae4c77111511"
 
 # Non-secret env vars (set directly here or via dashboard)
 [vars]
-DODO_MONTHLY_PRODUCT_ID = "pdt_0Nlx3FVjtbyCvf8dfX5nk"
-DODO_YEARLY_PRODUCT_ID = "pdt_0Nlx3VzOJd5CuXBGUjG2E"
-DODO_MONTHLY_PAYMENT_LINK = "https://test.checkout.dodopayments.com/buy/pdt_0Nlx3FVjtbyCvf8dfX5nk?quantity=1"
-DODO_YEARLY_PAYMENT_LINK = "https://test.checkout.dodopayments.com/buy/pdt_0Nlx3VzOJd5CuXBGUjG2E?quantity=1"
-DODO_ENVIRONMENT = "test_mode"
+DODO_MONTHLY_PRODUCT_ID = "pdt_0Nly8uZGIn2kDXKM1Lpit"
+DODO_YEARLY_PRODUCT_ID = "pdt_0Nly8uRkxK0Fkfg3SSu5B"
+DODO_MONTHLY_PAYMENT_LINK = "https://checkout.dodopayments.com/buy/pdt_0Nly8uZGIn2kDXKM1Lpit?quantity=1"
+DODO_YEARLY_PAYMENT_LINK = "https://checkout.dodopayments.com/buy/pdt_0Nly8uRkxK0Fkfg3SSu5B?quantity=1"
+DODO_ENVIRONMENT = "live_mode"
 APP_PUBLIC_URL = "https://peakora-assistant.pages.dev"
