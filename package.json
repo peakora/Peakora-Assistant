@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js",
+    "dev": "npx wrangler pages dev . --port 3000",
+    "deploy:worker": "cd worker && npx wrangler deploy",
+    "deploy:pages": "npx wrangler pages deploy . --project-name peakora-site",
+    "db:init": "cd worker && npx wrangler d1 execute peakora-db --remote --file=schema.sql",
     "build": "echo 'No build step needed'"
   },
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "express": "^4.19.2",
-    "web-push": "^3.6.7"
+  "devDependencies": {
+    "wrangler": "^4.125.0"
   }
 }

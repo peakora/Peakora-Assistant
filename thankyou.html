@@ -36,7 +36,7 @@
 
           // Confirm against the server's webhook-driven record (best-effort).
           if (email) {
-            fetch('/api/subscription-status?email=' + encodeURIComponent(email))
+            fetch('https://peakora-api.peakora.workers.dev/subscription-status?email=' + encodeURIComponent(email))
               .then(r => r.json())
               .then(d => {
                 if (d && d.status === 'active') {

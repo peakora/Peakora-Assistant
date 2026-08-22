@@ -83,7 +83,7 @@
           // Anonymous usage ping to the server (no email, no identity — action names only)
           try {
             if (navigator.sendBeacon) {
-              navigator.sendBeacon("/api/event", new Blob([JSON.stringify({ action, details })], { type: "application/json" }));
+              navigator.sendBeacon("https://peakora-api.peakora.workers.dev/event", new Blob([JSON.stringify({ action, details })], { type: "application/json" }));
             }
           } catch (e) {}
         } catch (e) {
@@ -2360,7 +2360,7 @@
       saveState();
       // Save to the Peakora subscriber list (fires the 3-email welcome sequence server-side later)
       try {
-        fetch("/api/subscribe", {
+        fetch("https://peakora-api.peakora.workers.dev/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: value, source: "onboarding" }),
@@ -2543,16 +2543,17 @@
       renderStep();
     }
 
-    /* DODO PAYMENTS HOSTED CHECKOUT INTEGRATION */
-    // Server creates a Dodo checkout session (POST /api/dodo/checkout) and we
-    // redirect the browser to the hosted checkout_url. No client-side SDK, no
-    // card form on our side — Dodo is the Merchant of Record and handles PCI.
+    /* DODO PAYMENTS — STATIC PAYMENT LINK REDIRECT */
+    // No server-side checkout session needed. Dodo payment links are static
+    // URLs that redirect to Dodo's hosted checkout. The Worker receives the
+    // webhook after payment and stores the subscription in D1.
+    const PEAKORA_API = 'https://peakora-api.peakora.workers.dev';
     let dodoConfigCache = null;
 
     async function loadDodoConfig() {
       if (dodoConfigCache) return dodoConfigCache;
       try {
-        const resp = await fetch('/api/dodo-config');
+        const resp = await fetch(PEAKORA_API + '/dodo/config');
         const data = await resp.json();
         dodoConfigCache = data;
         return data;
@@ -2605,25 +2606,23 @@
       if (email) localStorage.setItem('peakora_user_email', email);
 
       const btn = document.getElementById('dodo-continue-btn');
-      const content = document.getElementById('dodo-checkout-content');
-      if (btn) { btn.disabled = true; btn.innerText = 'Preparing checkout...'; }
+      if (btn) { btn.disabled = true; btn.innerText = 'Redirecting to checkout...'; }
 
       try {
-        const resp = await fetch('/api/dodo/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan, email: email || undefined })
-        });
-        const data = await resp.json();
-        if (!resp.ok || !data.checkout_url) {
-          throw new Error(data.error || 'Checkout could not be started');
-        }
+        const config = await loadDodoConfig();
+        const link = plan === 'yearly' ? config.yearlyLink : config.monthlyLink;
+        if (!link) throw new Error('Payment link not configured');
+
+        let url = link;
+        if (email) url += '&email=' + encodeURIComponent(email);
+
         if (window.PeakoraTracker) {
           window.PeakoraTracker.track('dodo_checkout_redirect', { plan, price });
         }
-        window.location.href = data.checkout_url;
+        window.location.href = url;
       } catch (err) {
         console.error('[Dodo Checkout] failed:', err);
+        const content = document.getElementById('dodo-checkout-content');
         if (content) {
           content.innerHTML = `
             <div style="text-align:center; padding:18px 0;">
@@ -2818,7 +2817,7 @@
           const reg = await navigator.serviceWorker.ready;
           const sub = await reg.pushManager.getSubscription();
           if (sub) {
-            await fetch("/api/push-unsubscribe", {
+            await fetch("https://peakora-api.peakora.workers.dev/push-unsubscribe", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ endpoint: sub.endpoint })
@@ -2842,7 +2841,7 @@
         return;
       }
       try {
-        const keyRes = await fetch("/api/push-key");
+        const keyRes = await fetch("https://peakora-api.peakora.workers.dev/push-key");
         const keyData = await keyRes.json();
         if (!keyData || !keyData.key) throw new Error("push key unavailable");
         const reg = await navigator.serviceWorker.ready;
@@ -2850,7 +2849,7 @@
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(keyData.key)
         });
-        await fetch("/api/push-subscribe", {
+        await fetch("https://peakora-api.peakora.workers.dev/push-subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(sub)
@@ -2873,7 +2872,7 @@
         if (typeof showToastNotification === 'function') showToastNotification("Write a line or two first — even one word helps");
         return;
       }
-      fetch("/api/feedback", {
+      fetch("https://peakora-api.peakora.workers.dev/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

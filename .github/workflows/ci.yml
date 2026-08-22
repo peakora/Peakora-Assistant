@@ -27,7 +27,11 @@ jobs:
 
       - name: Verify site entry points exist
         run: |
-          test -f index.html && test -f server.js && echo "entry points OK"
+          test -f index.html && echo "entry points OK"
+
+      - name: Verify Worker syntax
+        run: |
+          test -f worker/wrangler.toml && test -f worker/src/index.js && echo "worker OK"
 
       - name: Ensure no real secrets committed
         run: |

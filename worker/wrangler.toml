@@ -1,0 +1,27 @@
+name = "peakora-api"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# D1 database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "peakora-db"
+database_id = "b2036427-fc76-4b5c-b989-58439f8ca2f5"
+
+# KV namespace for auth sessions
+[[kv_namespaces]]
+binding = "AUTH"
+id = "5e3516b101da423f919aae4c77111511"
+
+# Secrets (set via: npx wrangler secret put NAME)
+# DODO_PAYMENTS_WEBHOOK_SECRET — Standard Webhooks signing secret
+# ADMIN_TOKEN — protects admin endpoints
+
+# Non-secret env vars (set directly here or via dashboard)
+[vars]
+DODO_MONTHLY_PRODUCT_ID = "pdt_0Nlx3FVjtbyCvf8dfX5nk"
+DODO_YEARLY_PRODUCT_ID = "pdt_0Nlx3VzOJd5CuXBGUjG2E"
+DODO_MONTHLY_PAYMENT_LINK = "https://test.checkout.dodopayments.com/buy/pdt_0Nlx3FVjtbyCvf8dfX5nk?quantity=1"
+DODO_YEARLY_PAYMENT_LINK = "https://test.checkout.dodopayments.com/buy/pdt_0Nlx3VzOJd5CuXBGUjG2E?quantity=1"
+DODO_ENVIRONMENT = "test_mode"
+APP_PUBLIC_URL = "https://peakora.pages.dev"
