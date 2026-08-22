@@ -16,8 +16,8 @@
 import crypto from 'crypto';
 
 const BASE_URLS = {
-  test_mode: 'https://testapi.dodopayments.com',
-  live_mode: 'https://api.dodopayments.com'
+  test_mode: 'https://test.dodopayments.com',
+  live_mode: 'https://live.dodopayments.com'
 };
 
 function env(name, fallback = '') {
