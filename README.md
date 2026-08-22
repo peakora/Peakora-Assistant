@@ -29,7 +29,7 @@ This repository holds the public marketing site, the full assistant/dashboard PW
 **Landing site (`index.html`)**
 - Hero, "Why Peakora", "Designed for Real Life", dashboard showcase, and stories sections
 - Embedded conversational assistant modal with a knowledge base for anxiety, overwhelm, focus, sleep, routine, and pricing (`script.js`)
-- Responsive navigation with mobile menu, social links, and Paddle.js v2 checkout integration
+- Responsive navigation with mobile menu, social links, and Dodo Payments checkout integration
 
 **Assistant PWA (`assistant.html` + `assistant.css`)**
 - Installable, standalone PWA with a custom manifest and offline support (`service-worker.js`)
@@ -43,7 +43,7 @@ This repository holds the public marketing site, the full assistant/dashboard PW
 **Backend (`server.js`)**
 - JSON-file persistence (no external database required)
 - Email capture, feedback, and lightweight usage telemetry
-- Paddle billing webhook with HMAC-SHA256 signature verification
+- Dodo Payments billing webhook with Standard Webhooks HMAC-SHA256 signature verification
 - Web Push (VAPID) with subscribe, unsubscribe, and admin broadcast
 - Admin-gated endpoints protected by an `ADMIN_TOKEN`
 
@@ -57,7 +57,7 @@ This repository holds the public marketing site, the full assistant/dashboard PW
 | Runtime | Node.js 20 (ES modules) |
 | Server | Express 4 |
 | Push notifications | web-push (VAPID) |
-| Payments | Paddle.js v2 + webhook verification |
+| Payments | Dodo Payments hosted checkout + webhook verification |
 | Frontend | Vanilla HTML, CSS, and JavaScript (no framework, no build step) |
 | PWA | Web App Manifest, service worker, offline shell |
 | Container | Docker (node:20-alpine) |
@@ -72,7 +72,8 @@ peakora-site/
 ├── assistant-home.html     # Assistant home view
 ├── assistant-onboarding.html
 ├── script.js               # Landing-page assistant modal + knowledge base
-├── server.js               # Express API + static host + Paddle/Push
+├── server.js               # Express API + static host + Dodo/Push
+├── dodo-billing.js         # Dodo Payments checkout-session + webhook verifier (hub-portable)
 ├── service-worker.js       # PWA caching + push handling
 ├── manifest.json           # PWA manifest
 ├── css/
@@ -103,7 +104,7 @@ npm install
 
 # 2. Configure environment (required for billing, push, and admin)
 cp .env.example .env
-#   then fill in PADDLE_*, ADMIN_TOKEN, and VAPID_SUBJECT
+#   then fill in DODO_*, ADMIN_TOKEN, and VAPID_SUBJECT
 
 # 3. Start the dev server
 npm run dev          # or: npm start   (both run: node server.js)
@@ -125,11 +126,12 @@ All variables are optional for local browsing but required for the corresponding
 | --- | --- |
 | `PORT` | Port the server binds to (default `3000`) |
 | `ADMIN_TOKEN` | Protects `/api/stats`, `/api/subscribers`, `/api/feedback`, `/api/push-broadcast` |
-| `PADDLE_CLIENT_TOKEN` | Paddle billing/checkout client token |
-| `PADDLE_ENVIRONMENT` | `sandbox` or `production` |
-| `PADDLE_MONTHLY_PRICE_ID` | Paddle price ID for the monthly plan |
-| `PADDLE_YEARLY_PRICE_ID` | Paddle price ID for the yearly plan |
-| `PADDLE_WEBHOOK_SECRET` | Secret used to verify Paddle webhook signatures |
+| `DODO_PAYMENTS_API_KEY` | Dodo Payments API key (server-side only) |
+| `DODO_PAYMENTS_ENVIRONMENT` | `test_mode` or `live_mode` |
+| `DODO_MONTHLY_PRODUCT_ID` | Dodo product ID for the monthly $4.99 plan |
+| `DODO_YEARLY_PRODUCT_ID` | Dodo product ID for the yearly $47.99 plan |
+| `DODO_PAYMENTS_WEBHOOK_SECRET` | Standard Webhooks secret to verify Dodo webhook signatures |
+| `APP_PUBLIC_URL` | Public base URL for the checkout `return_url` |
 | `VAPID_SUBJECT` | `mailto:` contact for web push (VAPID) |
 
 ## Backend API reference
@@ -144,7 +146,9 @@ All endpoints are served by the same Express app that hosts the static site.
 | `GET` | `/api/feedback` | Admin | Read recent feedback |
 | `POST` | `/api/event` | Public | Record a lightweight usage telemetry event |
 | `GET` | `/api/stats` | Admin | Aggregated counts (subscribers, feedback, active 24h, top actions) |
-| `POST` | `/api/paddle-webhook` | Signature | Paddle billing webhook (verified via HMAC-SHA256) |
+| `POST` | `/api/dodo/checkout` | Public | Create a Dodo hosted checkout session, returns `checkout_url` |
+| `POST` | `/api/dodo/webhook` | Signature | Dodo billing webhook (verified via Standard Webhooks HMAC-SHA256) |
+| `GET` | `/api/dodo-config` | Public | Public-safe Dodo checkout config (no secrets) |
 | `GET` | `/api/subscription-status` | Public | Look up subscription status by `?email=` |
 | `GET` | `/api/push-key` | Public | Returns the public VAPID key |
 | `POST` | `/api/push-subscribe` | Public | Store a push subscription |
@@ -165,8 +169,8 @@ The repo ships a minimal, non-root `Dockerfile`:
 docker build -t peakora-site .
 docker run -p 3000:3000 \
   -e ADMIN_TOKEN=... \
-  -e PADDLE_CLIENT_TOKEN=... \
-  -e PADDLE_WEBHOOK_SECRET=... \
+  -e DODO_PAYMENTS_API_KEY=... \
+  -e DODO_PAYMENTS_WEBHOOK_SECRET=... \
   -e VAPID_SUBJECT=mailto:you@example.com \
   peakora-site
 ```
@@ -182,7 +186,7 @@ The backend uses small JSON files in `./data/` (gitignored) as its datastore —
 | File | Contents |
 | --- | --- |
 | `subscribers.json` | Launch-list email captures |
-| `subscriptions.json` | Paddle subscription records keyed by email |
+| `subscriptions.json` | Dodo subscription records keyed by email |
 | `feedback.json` | User feedback entries |
 | `events.json` | Usage telemetry events |
 | `push-subscriptions.json` | Web Push subscription objects |

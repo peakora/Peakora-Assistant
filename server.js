@@ -1,8 +1,13 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import {
+  dodoPublicConfig, createCheckoutSession,
+  verifyDodoWebhook, mapDodoEvent
+} from './dodo-billing.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,7 +57,7 @@ function requireAdmin(req, res) {
   return true;
 }
 
-/* Capture raw body for Paddle signature verification */
+/* Capture raw body for Dodo webhook signature verification */
 app.use(express.json({
   verify: (req, res, buf) => { req.rawBody = buf; }
 }));
@@ -147,62 +152,53 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-/* ------------------------------- PADDLE ------------------------------------ */
-function verifyPaddleSignature(req) {
-  const secret = process.env.PADDLE_WEBHOOK_SECRET;
-  if (!secret) return true; // not configured yet — accept (sandbox/dev)
-  const header = req.get('Paddle-Signature') || '';
-  const tsMatch = /ts=(\d+)/.exec(header);
-  const h1Match = /h1=([a-f0-9]+)/i.exec(header);
-  if (!tsMatch || !h1Match || !req.rawBody) return false;
-  const signed = `${tsMatch[1]}:${req.rawBody.toString('utf8')}`;
-  const expected = crypto.createHmac('sha256', secret).update(signed).digest('hex');
-  try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(h1Match[1]));
-  } catch {
-    return false;
-  }
-}
+/* ------------------------------- DODO PAYMENTS ----------------------------- */
+/* Public-safe config for the frontend (no secrets leak here). */
+app.get('/api/dodo-config', (_req, res) => {
+  res.json({ success: true, ...dodoPublicConfig() });
+});
 
-app.post('/api/paddle-webhook', (req, res) => {
+/* Create a hosted checkout session and return the redirect URL. */
+app.post('/api/dodo/checkout', async (req, res) => {
   try {
-    if (!verifyPaddleSignature(req)) {
-      console.warn('[Paddle Webhook] Signature verification failed');
+    const body = req.body || {};
+    const plan = String(body.plan || 'monthly').toLowerCase() === 'yearly' ? 'yearly' : 'monthly';
+    const email = String(body.email || '').trim().toLowerCase() || null;
+    const metadata = (typeof body.metadata === 'object' && body.metadata) ? body.metadata : {};
+
+    const session = await createCheckoutSession({ plan, email, metadata });
+    console.log(`[Dodo Checkout] session created for ${email || '(guest)'} plan=${plan}`);
+    res.json({ success: true, checkout_url: session.checkout_url, session_id: session.session_id });
+  } catch (error) {
+    console.error('[Dodo Checkout Error]', error.message);
+    const status = error.code === 'NOT_CONFIGURED' || error.code === 'NO_PRODUCT' || error.code === 'DODO_UNREACHABLE' ? 503
+      : (error.status || 500);
+    res.status(status).json({ success: false, error: error.message, code: error.code || null });
+  }
+});
+
+/* Receive Dodo webhook events (Standard Webhooks spec). */
+app.post('/api/dodo/webhook', (req, res) => {
+  try {
+    const headers = {
+      'webhook-id': req.get('webhook-id') || '',
+      'webhook-signature': req.get('webhook-signature') || '',
+      'webhook-timestamp': req.get('webhook-timestamp') || ''
+    };
+    if (!verifyDodoWebhook(req.rawBody, headers)) {
+      console.warn('[Dodo Webhook] Signature verification failed');
       return res.status(401).json({ success: false, error: 'Invalid signature' });
     }
     const payload = req.body || {};
-    const eventType = payload.event_type || payload.alert_name || payload.type || 'payment_succeeded';
-    const data = payload.data || payload;
-
-    const email = (data.customer && data.customer.email) ||
-                  data.email ||
-                  data.user_email ||
-                  payload.email ||
-                  null;
-
-    const transactionId = data.id || data.order_id || data.checkout_id || ('PAD-' + Date.now().toString().slice(-6));
-    const status = (eventType.includes('cancel') || eventType === 'subscription_canceled') ? 'canceled' : 'active';
-    const plan = data.plan || data.product_id || (payload.price && String(payload.price).includes('47') ? 'yearly' : 'monthly');
-
-    const subscriptionData = {
-      email,
-      status,
-      plan,
-      transactionId,
-      eventType,
-      method: data.method || payload.method || 'Paddle Gateway',
-      updatedAt: new Date().toISOString()
-    };
-
-    if (email) {
-      store.subscriptions[email] = subscriptionData;
+    const rec = mapDodoEvent(payload);
+    if (rec.email) {
+      store.subscriptions[rec.email] = rec;
       persist.subscriptions();
     }
-
-    console.log(`[Paddle Webhook] ${eventType} | ${email} | ${status}`);
-    res.json({ success: true, event_type: eventType, status, email });
+    console.log(`[Dodo Webhook] ${rec.eventType} | ${rec.email} | ${rec.status}`);
+    res.json({ success: true, event_type: rec.eventType, status: rec.status, email: rec.email });
   } catch (error) {
-    console.error('[Paddle Webhook Error]', error);
+    console.error('[Dodo Webhook Error]', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

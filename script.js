@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
       secondStep: (name) =>
         `Peakora Plus includes full access to our interactive AI Assistant dashboard, custom Solfeggio sound frequency generators, unlimited emotional logging, and personalized daily routines.`,
       thirdStep: (name) =>
-        `All subscriptions are secured via Paddle billing, with a simple cancel-anytime policy directly from your member profile.`,
+        `All subscriptions are secured via Dodo Payments billing, with a simple cancel-anytime policy directly from your member profile.`,
       followUpReplies: [
         "Connect me to Peakora Assistant",
         "Explore Peakora Plus",
@@ -308,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (t.includes("routine") || t.includes("schedule") || t.includes("habit") || t.includes("structure") || t.includes("morning") || t.includes("evening")) {
       return "routine";
     }
-    if (t.includes("price") || t.includes("cost") || t.includes("plus") || t.includes("crown") || t.includes("subscription") || t.includes("paddle") || t.includes("member")) {
+    if (t.includes("price") || t.includes("cost") || t.includes("plus") || t.includes("crown") || t.includes("subscription") || t.includes("dodo") || t.includes("member")) {
       return "pricing";
     }
 
@@ -473,43 +473,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------------------------------
-  // PADDLE BILLING SDK INITIALIZATION
+  // DODO PAYMENTS — checkout is server-side (hosted redirect).
+  // No client-side SDK to initialize; the server creates a checkout
+  // session and the browser redirects to Dodo's hosted checkout_url.
+  // Subscription state arrives via the /api/dodo/webhook backend listener.
   // ------------------------------------------------------
-  function initPaddleSDK() {
-    const clientToken = window.PADDLE_CLIENT_TOKEN || localStorage.getItem("paddle_client_token") || "";
-    const environment = localStorage.getItem("paddle_env") || "sandbox";
-
-    if (window.Paddle && typeof window.Paddle.Initialize === "function") {
-      try {
-        if (environment) {
-          window.Paddle.Environment.set(environment);
-        }
-        if (clientToken) {
-          window.Paddle.Initialize({
-            token: clientToken,
-            eventCallback: function (evt) {
-              if (evt && (evt.name === "checkout.completed" || evt.name === "payment.succeeded")) {
-                console.log("[Paddle] Payment transaction completed successfully:", evt);
-                localStorage.setItem("peakora_plus_member", "true");
-                localStorage.setItem("peakora_subscription_status", "Active");
-              }
-            }
-          });
-          console.log(`[Paddle SDK] Initialized successfully in ${environment} mode.`);
-        } else {
-          console.warn("[Paddle SDK] Ready for configuration: set client token via PADDLE_CLIENT_TOKEN or localStorage.");
-        }
-      } catch (err) {
-        console.warn("[Paddle SDK] Configuration note:", err);
-      }
-    }
-  }
-
-  // Expose initialization function globally
-  window.initPaddleSDK = initPaddleSDK;
-
-  // Initialize Paddle SDK
-  initPaddleSDK();
 
   // ------------------------------------------------------
   // EVENT LISTENERS & KEYBOARD SUPPORT

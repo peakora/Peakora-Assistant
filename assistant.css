@@ -531,7 +531,7 @@ select.input option {
   to { opacity: 1; transform: scale(1); }
 }
 
-#paddle-checkout-modal {
+#dodo-checkout-modal {
   z-index: 10000 !important;
 }
 

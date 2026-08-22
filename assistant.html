@@ -8,8 +8,7 @@
   <!-- Assistant theme -->
   <link rel="stylesheet" href="assistant.css">
 
-  <!-- Paddle.js v2 SDK for Secure Subscription Payments -->
-  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <!-- Dodo Payments hosted checkout (no client-side SDK; server creates checkout session) -->
 
   <!-- Favicon fix -->
   <link rel="icon" href="data:,">
@@ -2076,7 +2075,7 @@
                     <span>&bull;</span>
                     <span>Cancel anytime</span>
                     <span>&bull;</span>
-                    <span>Secure checkout by Paddle</span>
+                    <span>Secure checkout by Dodo Payments</span>
                   </div>
                 </div>
               </div>
@@ -2245,7 +2244,7 @@
             </div> <!-- /dash-container -->
           </div> <!-- /assistant-card -->
 
-          <!-- Paddle Merchant Compliance Footer Links -->
+          <!-- Dodo Merchant Compliance Footer Links -->
           <div style="text-align:center; padding:16px 0 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted);">
             <div>© 2026 Peakora™ — For a Better You.</div>
             <div style="margin-top:6px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
@@ -2529,7 +2528,7 @@
 
     function selectPlan(isPlus) {
       if (isPlus) {
-        openPaddleCheckout('monthly');
+        openDodoCheckout('monthly');
         return;
       }
       localStorage.setItem("peakora_plus_member", "false");
@@ -2544,434 +2543,105 @@
       renderStep();
     }
 
-    /* PADDLE SECURE CHECKOUT GATEWAY INTEGRATION */
-    let activePaddlePaymentMethod = 'card';
+    /* DODO PAYMENTS HOSTED CHECKOUT INTEGRATION */
+    // Server creates a Dodo checkout session (POST /api/dodo/checkout) and we
+    // redirect the browser to the hosted checkout_url. No client-side SDK, no
+    // card form on our side — Dodo is the Merchant of Record and handles PCI.
+    let dodoConfigCache = null;
 
-    // Global Paddle SDK Controller Implementation.
-    // If the official paddle.js v2 script loaded (it exposes Paddle.Checkout.open
-    // natively), we NEVER override it — the real hosted checkout must win for
-    // merchant inspection. The mock below is only a fallback for local/offline
-    // demos where the SDK could not load.
-    const paddleSdkLoaded = !!(
-      window.Paddle &&
-      typeof window.Paddle.Initialize === 'function' &&
-      window.Paddle.Checkout &&
-      typeof window.Paddle.Checkout.open === 'function'
-    );
-
-    // Standalone demo checkout completion — used when the official SDK is
-    // unavailable or merchant credentials are not configured yet. Never routed
-    // through the real Paddle.Checkout.open.
-    function runDemoCheckoutCompletion(options) {
-      options = options || {};
-      const email = options.email || options.customerEmail || (state && state.email) || localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com";
-      const planType = options.plan || options.planType || (options.product == 'yearly' ? 'yearly' : 'monthly');
-      const price = options.price || (planType === 'yearly' ? "$47.99 USD" : "$4.99 USD");
-      const methodName = options.method || activePaddlePaymentMethod || 'Credit Card';
-      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
-      const transactionId = "PAD-" + Math.floor(1000 + Math.random() * 9000) + "-" + Date.now().toString().slice(-6);
-
-      console.log(`[Paddle.Checkout.open] Executing checkout for ${email} (${planType}) via ${methodName}`);
-
-      // 1. Post webhook event to server database
-      fetch('/api/paddle-webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_type: 'payment_succeeded',
-          email: email,
-          plan: planType,
-          method: methodName,
-          price: price,
-          data: {
-            id: transactionId,
-            status: 'completed',
-            customer: { email: email }
-          }
-        })
-      }).catch(err => console.error("Paddle Webhook Ping Error:", err));
-
-      // 2. Persist active membership in client state
-      localStorage.setItem("peakora_plus_member", "true");
-      localStorage.setItem("peakora_subscription_status", "Active");
-      localStorage.setItem("peakora_subscription_plan", planType);
-      localStorage.setItem("peakora_subscription_id", transactionId);
-      localStorage.setItem("peakora_subscription_method", methodName);
-      localStorage.setItem("peakora_user_email", email);
-
-      if (window.PeakoraTracker) {
-        window.PeakoraTracker.track("paddle_payment_completed", {
-          plan: planType,
-          price: price,
-          method: methodName,
-          transactionId: transactionId,
-          email: email
-        });
-      }
-
-      // 3. Construct standard event response object
-      const eventData = {
-        checkout: { id: transactionId, completed: true, status: 'completed' },
-        user: { email: email },
-        product: { id: planType, price: price },
-        payment: { method: methodName, status: 'completed' },
-        status: 'active'
-      };
-
-      // 4. Trigger callbacks
-      if (typeof options.successCallback === 'function') {
-        try { options.successCallback(eventData); } catch(e) { console.error("successCallback error:", e); }
-      }
-      if (typeof options.eventCallback === 'function') {
-        try { options.eventCallback({ name: 'checkout.completed', data: eventData }); } catch(e) { console.error("eventCallback error:", e); }
-      }
-
-      // 5. Check for direct redirection request
-      if (options.redirectUrl || options.redirect === true) {
-        const redirectUrl = options.redirectUrl || `thankyou.html?status=success&plan=${planType}&method=${encodeURIComponent(methodName)}&email=${encodeURIComponent(email)}&tx=${transactionId}&theme=${currentTheme}`;
-        window.location.href = redirectUrl;
-      }
-    }
-
-    if (!paddleSdkLoaded) {
-      window.Paddle = window.Paddle || {};
-      window.Paddle.Environment = window.Paddle.Environment || { set: function(env) { console.log('[Paddle] Environment set:', env); } };
-      window.Paddle.Setup = window.Paddle.Setup || function(options) { console.log('[Paddle] Setup initialized:', options); };
-      window.Paddle.Initialize = window.Paddle.Initialize || function(options) { console.log('[Paddle] Initialized:', options); };
-      window.Paddle.Checkout = window.Paddle.Checkout || {};
-      window.Paddle.Checkout.open = runDemoCheckoutCompletion;
-    } else {
-      console.log('[Paddle] Official paddle.js v2 SDK detected — mock checkout disabled.');
-    }
-
-    async function checkServerSubscription() {
+    async function loadDodoConfig() {
+      if (dodoConfigCache) return dodoConfigCache;
       try {
-        const userEmail = (state && state.email) || localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com";
-        const res = await fetch(`/api/subscription-status?email=${encodeURIComponent(userEmail)}`);
-        const data = await res.json();
-        if (data && data.success && data.status === 'active') {
-          localStorage.setItem("peakora_plus_member", "true");
-          localStorage.setItem("peakora_subscription_status", "Active");
-          if (data.plan) localStorage.setItem("peakora_subscription_plan", data.plan);
-          if (data.transactionId) localStorage.setItem("peakora_subscription_id", data.transactionId);
-        }
-      } catch(e) {
-        console.log("Server subscription sync check:", e);
+        const resp = await fetch('/api/dodo-config');
+        const data = await resp.json();
+        dodoConfigCache = data;
+        return data;
+      } catch (err) {
+        console.warn('[Dodo] config fetch failed:', err);
+        return { configured: false, merchantOfRecord: 'Dodo Payments' };
       }
     }
 
-    function openPaddleCheckout(planType, method = 'card') {
-      closePlanSelectionModal();
-      const modal = document.getElementById("paddle-checkout-modal");
-      const content = document.getElementById("paddle-checkout-content");
-      if (!modal || !content) return;
-
-      const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
-      modal.setAttribute("data-theme", currentTheme);
-      
-      const isYearly = planType === 'yearly';
-      const price = isYearly ? "$47.99 USD" : "$4.99 USD";
-      const interval = isYearly ? "billed annually ($3.99/mo equivalent)" : "billed monthly";
-      const planTitle = isYearly ? "Peakora+ Annual Membership" : "Peakora+ Monthly Membership";
-      const userEmail = (state && state.email) ? state.email : (localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com");
-      activePaddlePaymentMethod = method;
-
-      content.innerHTML = `
-        <div style="text-align:center; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.08);">
-          <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px;">
-            <span style="font-size:18px;">🔒</span>
-            <h3 style="margin:0; font-size:18px; color:#ffffff;">Paddle Secure Checkout</h3>
-          </div>
-          <div style="font-size:11px; color:var(--theme-text-muted);">
-            Reseller & Merchant of Record: <strong>Paddle.com</strong> • 256-Bit SSL Encrypted
-          </div>
-        </div>
-
-        <!-- Order Summary Card -->
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div style="font-weight:700; font-size:14px; color:#ffffff;">${planTitle}</div>
-              <div style="font-size:11px; color:var(--theme-text-muted);">${interval} • 7-Day Money-Back Guarantee</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:16px; font-weight:800; color:var(--theme-accent, #f4a261);">${price}</div>
-              <div style="font-size:10px; color:var(--accent-amber, #f4a261); font-weight:600;">Includes tax & fees</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Account Email -->
-        <div style="margin-bottom:12px;">
-          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:4px; color:#ffffff;">ACCOUNT EMAIL FOR RECEIPT & ACCESS</label>
-          <input type="email" id="paddle-email" value="${userEmail}" required style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:13px; background:#181226; color:#ffffff;" placeholder="your.email@example.com">
-        </div>
-
-        <!-- Payment Method Tabs -->
-        <div style="margin-bottom:14px;">
-          <label style="display:block; font-size:11px; font-weight:700; margin-bottom:6px; color:#ffffff;">SELECT PAYMENT METHOD</label>
-          <div style="display:flex; gap:6px;">
-            <button type="button" id="paddle-tab-card" onclick="switchPaddlePaymentMethod('card', '${planType}', '${price}')" class="btn secondary" style="flex:1; font-size:11px; padding:8px 6px; font-weight:700; transition:all 0.15s ease;">💳 Credit Card</button>
-            <button type="button" id="paddle-tab-paypal" onclick="switchPaddlePaymentMethod('paypal', '${planType}', '${price}')" class="btn secondary" style="flex:1; font-size:11px; padding:8px 6px; font-weight:700; transition:all 0.15s ease;">🅿️ PayPal</button>
-            <button type="button" id="paddle-tab-express" onclick="switchPaddlePaymentMethod('express', '${planType}', '${price}')" class="btn secondary" style="flex:1; font-size:11px; padding:8px 6px; font-weight:700; transition:all 0.15s ease;">🍏 Apple / GPay</button>
-          </div>
-        </div>
-
-        <!-- Dynamic Payment Form Container -->
-        <div id="paddle-method-dynamic-container"></div>
-
-        <div style="margin-top:14px; text-align:center; font-size:10px; color:var(--theme-text-muted);">
-          By subscribing, you agree to Peakora's <a href="#" onclick="openLegalModal('terms'); return false;" style="color:var(--accent-violet, #a78bfa); font-weight:600;">Terms of Service</a> & <a href="#" onclick="openLegalModal('refund'); return false;" style="color:var(--accent-violet, #a78bfa); font-weight:600;">7-Day Refund Policy</a>. Billed securely by Paddle.com.
-        </div>
-      `;
-
-      modal.style.display = "flex";
-      switchPaddlePaymentMethod(method, planType, price);
-
-      if (window.PeakoraTracker) {
-        window.PeakoraTracker.track("paddle_checkout_opened", { plan: planType, price, initialMethod: method });
-      }
-    }
-
-    function switchPaddlePaymentMethod(method, planType, price) {
-      activePaddlePaymentMethod = method;
-
-      // Update Tab Highlights
-      ['card', 'paypal', 'express'].forEach(m => {
-        const tab = document.getElementById(`paddle-tab-${m}`);
-        if (tab) {
-          if (m === method) {
-            tab.style.background = "var(--theme-primary-grad)";
-            tab.style.color = "#ffffff";
-            tab.style.borderColor = "transparent";
-            tab.style.boxShadow = "0 4px 12px var(--theme-accent-glow)";
-          } else {
-            tab.style.background = "rgba(255,255,255,0.05)";
-            tab.style.color = "var(--theme-text-muted)";
-            tab.style.borderColor = "rgba(255,255,255,0.1)";
-            tab.style.boxShadow = "none";
-          }
-        }
-      });
-
-      const container = document.getElementById("paddle-method-dynamic-container");
-      if (!container) return;
-
-      if (method === 'card') {
-        container.innerHTML = `
-          <form onsubmit="processPaddlePayment(event, '${planType}', '${price}', 'Credit Card'); return false;" style="display:flex; flex-direction:column; gap:12px;">
-            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:14px;">
-              <div style="margin-bottom:8px;">
-                <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">CARD NUMBER</label>
-                <input type="text" id="paddle-card-num" placeholder="4111 •••• •••• 1111" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
-              </div>
-              <div style="display:flex; gap:8px;">
-                <div style="flex:1;">
-                  <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">EXPIRY</label>
-                  <input type="text" id="paddle-card-exp" placeholder="MM / YY" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
-                </div>
-                <div style="flex:1;">
-                  <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">CVC / CVV</label>
-                  <input type="text" id="paddle-card-cvc" placeholder="123" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
-                </div>
-                <div style="flex:1;">
-                  <label style="display:block; font-size:10px; color:var(--theme-text-muted); margin-bottom:2px; font-weight:600;">ZIP CODE</label>
-                  <input type="text" id="paddle-card-zip" placeholder="90210" required style="width:100%; padding:8px 10px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:12px; background:#181226; color:#ffffff;">
-                </div>
-              </div>
-            </div>
-            <button type="submit" id="paddle-pay-submit-btn" class="btn primary" style="width:100%; padding:12px; font-size:14px; font-weight:700; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;">
-              Pay ${price} via Credit Card 💳
-            </button>
-          </form>
-        `;
-      } else if (method === 'paypal') {
-        container.innerHTML = `
-          <form onsubmit="processPaddlePayment(event, '${planType}', '${price}', 'PayPal'); return false;" style="display:flex; flex-direction:column; gap:12px;">
-            <div style="background:rgba(0, 112, 186, 0.12); border:1px solid #0070ba; border-radius:12px; padding:16px; text-align:center;">
-              <div style="font-size:24px; font-weight:800; color:#38bdf8; margin-bottom:4px;">Pay<span style="color:#0070ba;">Pal</span></div>
-              <p style="font-size:12px; color:#ffffff; margin:0 0 8px; line-height:1.4;">
-                Fast & secure 1-click subscription checkout via PayPal account or linked balance.
-              </p>
-              <div style="font-size:11px; color:var(--theme-text-muted); font-weight:500;">
-                You will authorize the recurring payment of <strong>${price}</strong> safely inside Paddle checkout.
-              </div>
-            </div>
-            <button type="submit" id="paddle-pay-submit-btn" class="btn primary" style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#0070ba; color:#fff; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-              <span>🅿️</span> Continue to PayPal (${price})
-            </button>
-          </form>
-        `;
-      } else if (method === 'express') {
-        container.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="font-size:12px; color:var(--theme-text-muted); text-align:center; font-weight:500;">Choose device wallet for instant 1-tap checkout:</div>
-            
-            <button type="button" onclick="processPaddlePaymentDirect('${planType}', '${price}', 'Apple Pay')" style="width:100%; padding:12px; background:#000000; color:#ffffff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
-              Pay ${price} with Apple Pay
-            </button>
-
-            <button type="button" onclick="processPaddlePaymentDirect('${planType}', '${price}', 'Google Pay')" style="width:100%; padding:12px; background:#1a73e8; color:#ffffff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 2px 8px rgba(66,133,244,0.2);">
-              <span style="font-size:16px;">G Pay</span> Pay ${price} with Google Pay
-            </button>
-
-            <div style="font-size:11px; text-align:center; color:var(--theme-text-muted); margin-top:4px;">
-              Supports Face ID, Touch ID, & Biometric Security via Paddle Merchant Gateway.
-            </div>
-          </div>
-        `;
-      }
-
-      if (window.PeakoraTracker) {
-        window.PeakoraTracker.track("paddle_method_switched", { method, planType });
-      }
-    }
-
-    function processPaddlePaymentDirect(planType, price, methodName) {
-      processPaddlePayment({ preventDefault: () => {} }, planType, price, methodName);
-    }
-
-    function closePaddleCheckoutModal() {
-      const modal = document.getElementById("paddle-checkout-modal");
-      if (modal) modal.style.display = "none";
-    }
-
-    /* Merchant credentials for the live Paddle checkout.
-       Fill these in before submitting for Paddle inspection:
-         window.PADDLE_CLIENT_TOKEN       — client-side token from the Paddle dashboard
-         window.PADDLE_MONTHLY_PRICE_ID   — price ID (pri_...) for the $4.99/mo plan
-         window.PADDLE_YEARLY_PRICE_ID    — price ID (pri_...) for the $47.99/yr plan
-       They can also be provided via localStorage keys of the same lowercase names. */
-    let paddleRealInitialized = false;
-
-    function initRealPaddle(clientToken, planType, price, methodName, email) {
-      if (!paddleSdkLoaded) return false;
-      if (!clientToken) return false;
-      try {
-        if (!paddleRealInitialized) {
-          const env = localStorage.getItem("paddle_env") || 'sandbox';
-          if (env === 'sandbox') window.Paddle.Environment.set('sandbox');
-          window.Paddle.Initialize({
-            token: clientToken,
-            eventCallback: function(evt) {
-              if (evt && (evt.name === 'checkout.completed' || evt.name === 'payment.succeeded')) {
-                executePaddleCheckoutCompletion(planType, price, methodName, email);
-              }
-            }
-          });
-          paddleRealInitialized = true;
-        }
-        return true;
-      } catch(err) {
-        console.warn("[Paddle v2 SDK] Initialize failed:", err);
-        return false;
-      }
-    }
-
-    async function processPaddlePayment(event, planType, price, methodName = 'Credit Card') {
-      if (event && event.preventDefault) event.preventDefault();
-
-      const emailInput = document.getElementById("paddle-email");
-      const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : (localStorage.getItem("peakora_user_email") || "peakora.network@gmail.com");
-      localStorage.setItem("peakora_user_email", email);
-
-      const clientToken = window.PADDLE_CLIENT_TOKEN || localStorage.getItem("paddle_client_token");
-      const monthlyPriceId = window.PADDLE_MONTHLY_PRICE_ID || localStorage.getItem("paddle_monthly_price_id");
-      const yearlyPriceId = window.PADDLE_YEARLY_PRICE_ID || localStorage.getItem("paddle_yearly_price_id");
-      const activePriceId = planType === 'yearly' ? yearlyPriceId : monthlyPriceId;
-
-      // Real Official Paddle SDK v2 Checkout Invocation (if merchant keys are present)
-      if (activePriceId && initRealPaddle(clientToken, planType, price, methodName, email)) {
-        try {
-          window.Paddle.Checkout.open({
-            items: [{ priceId: activePriceId, quantity: 1 }],
-            customer: { email: email }
-          });
-          return;
-        } catch(err) {
-          console.warn("[Paddle v2 SDK] Official checkout launch note:", err);
-        }
-      }
-
-      // Demo fallback when merchant keys are not configured yet
-      executePaddleCheckoutCompletion(planType, price, methodName, email);
-    }
-
-    function executePaddleCheckoutCompletion(planType, price, methodName, email) {
-      const content = document.getElementById("paddle-checkout-content");
-      if (content) {
+    function openDodoCheckout(planType) {
+      const plan = planType === 'yearly' ? 'yearly' : 'monthly';
+      const price = plan === 'yearly' ? '$47.99/yr' : '$4.99/mo';
+      const modal = document.getElementById('dodo-checkout-modal');
+      const content = document.getElementById('dodo-checkout-content');
+      const userEmail = localStorage.getItem('peakora_user_email') || '';
+      if (modal && content) {
+        const currentTheme = localStorage.getItem('peakora_theme') || 'sunrise';
+        modal.setAttribute('data-theme', currentTheme);
         content.innerHTML = `
-          <div style="text-align:center; padding:24px 12px;">
-            <div style="font-size:36px; margin-bottom:12px;">⏳</div>
-            <h3 style="margin:0 0 6px; font-size:18px; color:#ffffff;">Finalizing Paddle Subscription...</h3>
-            <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 16px;">
-              Firing Paddle webhook listener & confirming transaction for <strong>${email}</strong> via <strong>${methodName}</strong>...
+          <div style="text-align:center;">
+            <h3 style="margin:0 0 6px; font-size:18px; color:var(--theme-heading, #ffffff);">Peakora+ Checkout</h3>
+            <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 18px;">
+              ${plan === 'yearly' ? 'Annual plan — $47.99/yr (save 20%)' : 'Monthly plan — $4.99/mo'}
             </p>
-            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
-              <div id="paddle-progress-bar" style="width:25%; height:100%; background:var(--theme-primary-grad); transition:width 0.4s ease;"></div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:12px; padding:14px; margin-bottom:16px;">
+              <label style="display:block; font-size:11px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
+              <input type="email" id="dodo-email" value="${userEmail}" style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:13px; background:rgba(0,0,0,0.25); color:#ffffff;" placeholder="your.email@example.com">
             </div>
-            <div id="paddle-status-text" style="font-size:11px; color:var(--theme-text-muted); margin-top:8px;">Validating payment authorization...</div>
+            <button type="button" id="dodo-continue-btn" class="btn primary" style="width:100%; padding:13px; font-size:14px; font-weight:800; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;" onclick="startDodoCheckout('${plan}', '${price}')">
+              Continue to Secure Checkout
+            </button>
+            <div style="margin-top:14px; font-size:10px; color:var(--theme-text-muted); line-height:1.5;">
+              Billed securely by Dodo Payments (Merchant of Record).<br>
+              7-day money-back guarantee. Cancel anytime.
+            </div>
           </div>
         `;
+        modal.style.display = 'flex';
+        if (window.PeakoraTracker) {
+          window.PeakoraTracker.track('dodo_checkout_opened', { plan, price });
+        }
+      } else {
+        startDodoCheckout(plan, price);
       }
+    }
 
-      setTimeout(() => {
-        const pBar = document.getElementById("paddle-progress-bar");
-        const pText = document.getElementById("paddle-status-text");
-        if (pBar) pBar.style.width = "85%";
-        if (pText) pText.innerText = "Posting payment_succeeded webhook to database...";
-      }, 400);
+    async function startDodoCheckout(plan, price) {
+      const emailInput = document.getElementById('dodo-email');
+      const email = emailInput && emailInput.value.trim() ? emailInput.value.trim() : '';
+      if (email) localStorage.setItem('peakora_user_email', email);
 
-      setTimeout(() => {
-        runDemoCheckoutCompletion({
-          email: email,
-          plan: planType,
-          price: price,
-          method: methodName,
-          successCallback: function(data) {
-            console.log("Paddle checkout success callback executed:", data);
-            const currentTheme = localStorage.getItem("peakora_theme") || "sunrise";
-            const transactionId = data.checkout.id;
-            const receiptUrl = `thankyou.html?status=success&plan=${planType}&method=${encodeURIComponent(methodName)}&email=${encodeURIComponent(email)}&tx=${transactionId}&theme=${currentTheme}`;
+      const btn = document.getElementById('dodo-continue-btn');
+      const content = document.getElementById('dodo-checkout-content');
+      if (btn) { btn.disabled = true; btn.innerText = 'Preparing checkout...'; }
 
-            if (content) {
-              content.innerHTML = `
-                <div style="text-align:center; padding:10px 0;">
-                  <div style="font-size:42px; margin-bottom:8px;">🎉</div>
-                  <h2 style="margin:0 0 6px; font-size:20px; color:var(--theme-accent, #f4a261);">Payment Confirmed!</h2>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px;">
-                    Thank you! Your Peakora+ membership is now active.
-                  </p>
-
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(244,162,97,0.3); border-radius:12px; padding:14px; text-align:left; margin-bottom:16px; font-size:12px; line-height:1.6; color:#ffffff;">
-                    <div><strong>Transaction ID:</strong> ${transactionId}</div>
-                    <div><strong>Plan:</strong> Peakora+ ${planType === 'yearly' ? 'Annual ($47.99/yr)' : 'Monthly ($4.99/mo)'}</div>
-                    <div><strong>Payment Method:</strong> ${methodName}</div>
-                    <div><strong>Receipt Sent To:</strong> ${email}</div>
-                    <div><strong>Reseller & Billing:</strong> Paddle.com (Merchant of Record)</div>
-                    <div><strong>Guarantee:</strong> 100% 7-Day Money-Back Guarantee</div>
-                  </div>
-
-                  <div style="display:flex; flex-direction:column; gap:8px;">
-                    <button class="btn primary" style="width:100%; padding:12px; font-size:14px; font-weight:700; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;" onclick="closePaddleCheckoutModal(); renderStep();">
-                      Unlock & Explore Peakora+ Now 🚀
-                    </button>
-                    <a href="${receiptUrl}" target="_blank" class="btn-open-full" style="justify-content:center; padding:10px; font-size:12px;">
-                      View Full Order Receipt Page ↗
-                    </a>
-                  </div>
-                </div>
-              `;
-            }
-          },
-          closeCallback: function(data) {
-            console.log("Paddle checkout closed:", data);
-          },
-          eventCallback: function(event) {
-            console.log("Paddle event received:", event);
-          }
+      try {
+        const resp = await fetch('/api/dodo/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan, email: email || undefined })
         });
-      }, 900);
+        const data = await resp.json();
+        if (!resp.ok || !data.checkout_url) {
+          throw new Error(data.error || 'Checkout could not be started');
+        }
+        if (window.PeakoraTracker) {
+          window.PeakoraTracker.track('dodo_checkout_redirect', { plan, price });
+        }
+        window.location.href = data.checkout_url;
+      } catch (err) {
+        console.error('[Dodo Checkout] failed:', err);
+        if (content) {
+          content.innerHTML = `
+            <div style="text-align:center; padding:18px 0;">
+              <div style="font-size:32px; margin-bottom:10px;">⚠️</div>
+              <h3 style="margin:0 0 6px; font-size:16px; color:#ffffff;">Checkout unavailable</h3>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 16px;">${err.message}</p>
+              <button class="btn secondary" style="padding:10px 18px; font-size:13px;" onclick="openDodoCheckout('${plan}')">Try again</button>
+            </div>
+          `;
+        }
+        if (btn) { btn.disabled = false; btn.innerText = 'Continue to Secure Checkout'; }
+      }
+    }
+
+    function closeDodoCheckoutModal() {
+      const modal = document.getElementById('dodo-checkout-modal');
+      if (modal) modal.style.display = 'none';
+    }
     }
 
     function toggleMockSubscriptionStatus() {
@@ -4257,7 +3927,7 @@
       goToStepKey('welcome');
     };
 
-    /* LEGAL & PADDLE MERCHANT COMPLIANCE MODAL HANDLER */
+    /* LEGAL & DODO MERCHANT COMPLIANCE MODAL HANDLER */
     function openLegalModal(type) {
       const modal = document.getElementById("legal-modal");
       const content = document.getElementById("legal-modal-content");
@@ -4480,7 +4150,7 @@
       // Check auto-theme on load if active and today's mood exists
       checkAndApplyAutoTheme();
 
-      // Sync subscription state from backend Paddle webhook database
+      // Sync subscription state from backend Dodo webhook database
       checkServerSubscription();
 
       // Arm the daily reminder + weekly digest preferences
@@ -4535,7 +4205,7 @@
     </div>
   </div>
 
-  <!-- Legal / Paddle Compliance Pop-Up Modal -->
+  <!-- Legal / Dodo Compliance Pop-Up Modal -->
   <div id="legal-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:520px;">
       <button class="modal-close-btn peakora-popup-close" onclick="closeLegalModal()" aria-label="Close">✕</button>
@@ -4594,16 +4264,16 @@
           </ul>
           
           <div style="display:flex; gap:8px; margin-top:14px;">
-            <button class="btn primary" style="flex:1; font-size:12px; font-weight:600; background:var(--theme-primary-grad);" onclick="openPaddleCheckout('monthly')">
+            <button class="btn primary" style="flex:1; font-size:12px; font-weight:600; background:var(--theme-primary-grad);" onclick="openDodoCheckout('monthly')">
               Activate Monthly ($4.99/mo)
             </button>
-            <button class="btn secondary" style="flex:1; font-size:12px; font-weight:600; border-color:var(--theme-accent, #f4a261); color:var(--theme-accent, #f4a261);" onclick="openPaddleCheckout('yearly')">
+            <button class="btn secondary" style="flex:1; font-size:12px; font-weight:600; border-color:var(--theme-accent, #f4a261); color:var(--theme-accent, #f4a261);" onclick="openDodoCheckout('yearly')">
               Activate Yearly ($47.99/yr)
             </button>
           </div>
           
           <div style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin-top:8px;">
-            7-day money-back guarantee • Cancel anytime • Billed securely via Paddle
+            7-day money-back guarantee • Cancel anytime • Billed securely via Dodo Payments
           </div>
         </div>
       </div>
@@ -4689,11 +4359,11 @@
     }
   </script>
 
-  <!-- Paddle Secure Payment Gateway Checkout Pop-Up Modal -->
-  <div id="paddle-checkout-modal" class="modal-overlay" style="display: none;">
+  <!-- Dodo Secure Payment Gateway Checkout Pop-Up Modal -->
+  <div id="dodo-checkout-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card peakora-popup-card peakora-modal-standard" style="max-width:480px;">
-      <button class="modal-close-btn peakora-popup-close" onclick="closePaddleCheckoutModal()" aria-label="Close">✕</button>
-      <div id="paddle-checkout-content"></div>
+      <button class="modal-close-btn peakora-popup-close" onclick="closeDodoCheckoutModal()" aria-label="Close">✕</button>
+      <div id="dodo-checkout-content"></div>
     </div>
   </div>
 
@@ -4737,7 +4407,7 @@
           if (typeof closeLegalModal === 'function') closeLegalModal();
           if (typeof closePlanSelectionModal === 'function') closePlanSelectionModal();
           if (typeof closeInstallModal === 'function') closeInstallModal();
-          if (typeof closePaddleCheckoutModal === 'function') closePaddleCheckoutModal();
+          if (typeof closeDodoCheckoutModal === 'function') closeDodoCheckoutModal();
           if (typeof closeReflectionsModal === 'function') closeReflectionsModal();
         }
       });
