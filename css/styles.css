@@ -1882,42 +1882,34 @@ header .brand img.brand-logo:hover,
 }
 
 
-/* ===== AFFILIATE PROGRAM SECTION ===== */
-.peakora-affiliate {
-  padding: 80px 0;
-  background: linear-gradient(180deg, #0a0810 0%, #0e0b18 100%);
+/* ===== AFFILIATE PROGRAM TEASER (landing page) ===== */
+.peakora-affiliate-teaser {
+  padding: 64px 0;
+  text-align: center;
+  position: relative;
+}
+
+.aff-teaser-card {
+  background: linear-gradient(135deg, #181329 0%, #251c3d 100%);
+  border-radius: 28px;
+  padding: 48px 36px;
+  max-width: 680px;
+  margin: 0 auto;
+  border: 1px solid rgba(224, 122, 95, 0.25);
+  box-shadow: 0 20px 56px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(224, 122, 95, 0.15);
   position: relative;
   overflow: hidden;
-}
-
-.peakora-affiliate::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(244, 162, 97, 0.06), transparent 70%);
-  pointer-events: none;
-}
-
-.affiliate-header {
   text-align: center;
-  max-width: 680px;
-  margin: 0 auto 48px;
-  position: relative;
 }
 
-.affiliate-badge {
+.aff-teaser-badge {
   display: inline-block;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #f4a261;
+  color: var(--accent-amber);
   background: rgba(244, 162, 97, 0.1);
   border: 1px solid rgba(244, 162, 97, 0.25);
   padding: 6px 16px;
@@ -1925,119 +1917,40 @@ header .brand img.brand-logo:hover,
   margin-bottom: 18px;
 }
 
-.affiliate-title {
+.aff-teaser-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
   color: #ffffff;
   margin: 0 0 14px;
   line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
-.affiliate-sub {
+.aff-teaser-sub {
   font-size: 16px;
-  color: #a0aec0;
-  line-height: 1.7;
-  margin: 0;
-}
-
-.affiliate-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-  gap: 24px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.affiliate-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 28px 24px;
-  text-align: center;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.affiliate-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(244, 162, 97, 0.3);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(244, 162, 97, 0.12);
-}
-
-.affiliate-card-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(244, 162, 97, 0.15), rgba(167, 139, 250, 0.1));
-  border: 1px solid rgba(244, 162, 97, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 18px;
-  color: #f4a261;
-}
-
-.affiliate-card h3 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 10px;
-}
-
-.affiliate-card p {
-  font-size: 14px;
-  color: #a0aec0;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.affiliate-cta {
-  text-align: center;
-  margin-top: 48px;
-  position: relative;
-}
-
-.affiliate-cta-note {
-  font-size: 13px;
-  color: #8b90a0;
-  margin: 0 0 20px;
+  color: var(--text-light);
+  line-height: 1.65;
+  margin: 0 0 30px;
   max-width: 520px;
   margin-left: auto;
   margin-right: auto;
-  line-height: 1.6;
 }
 
-.affiliate-cta-button {
-  display: inline-block;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-  background: linear-gradient(135deg, #e07a5f, #f4a261);
-  padding: 14px 36px;
-  border-radius: 999px;
-  text-decoration: none;
-  box-shadow: 0 8px 24px rgba(224, 122, 95, 0.35);
-  transition: all 0.25s ease;
-  letter-spacing: 0.02em;
-}
-
-.affiliate-cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(224, 122, 95, 0.5);
+.aff-teaser-btn {
+  padding: 16px 38px;
+  font-size: 16px;
 }
 
 @media (max-width: 600px) {
-  .affiliate-title {
+  .aff-teaser-title {
     font-size: 26px;
   }
-  .affiliate-sub {
+  .aff-teaser-sub {
     font-size: 14px;
   }
-  .affiliate-card {
-    padding: 22px 18px;
+  .aff-teaser-card {
+    padding: 36px 22px;
   }
 }
 

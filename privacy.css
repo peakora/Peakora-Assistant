@@ -302,3 +302,34 @@ body {
     font-size: 14px;
   }
 }
+
+/* PAGE NAVIGATION (shared across aboutus, contactus, privacy, etc.) */
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 680px;
+  margin: 0 auto 48px;
+  padding: 18px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.page-nav-link {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s ease;
+}
+
+.page-nav-link:hover {
+  color: #ffffff;
+  border-color: rgba(244, 162, 97, 0.4);
+  background: rgba(244, 162, 97, 0.08);
+  box-shadow: 0 0 18px rgba(224, 122, 95,0.18);
+}

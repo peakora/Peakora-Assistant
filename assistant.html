@@ -405,7 +405,22 @@
       }
     }
 
+    // Master account — bypasses all paywalls and role restrictions across all
+    // Peakora SaaS apps. Used by Ala for full access to every feature.
+    const MASTER_EMAIL = "peakora.network@gmail.com";
+
+    function getMasterEmail() {
+      return MASTER_EMAIL;
+    }
+
+    function isMasterAccount() {
+      const email = (localStorage.getItem("peakora_user_email") || "").toLowerCase().trim();
+      return email === MASTER_EMAIL || localStorage.getItem("peakora_master_account") === "true";
+    }
+
     function isPeakoraPlusActive() {
+      // Master account always has full Plus access
+      if (isMasterAccount()) return true;
       return localStorage.getItem("peakora_plus_member") === "true";
     }
 
@@ -987,14 +1002,14 @@
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
                 <span style="background:var(--theme-primary-grad); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
               </div>
-              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood tracker, breathing tool & micro-journal — the essentials, on us.</p>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood check-in, breathing ring, micro-journal, analytics, offline mode & unlimited resets — the essentials, on us.</p>
             </div>
             <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora+ Tier</h3>
                 <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$4.99/mo</span>
               </div>
-              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Adaptive Week (your plan waits when life happens), unlimited resets, themes, soundscapes, saved weeks, and deep mood analytics.</p>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Adaptive Week, dynamic themes & color spaces, mood-reactive auto themes, past plan archiving, and the organic soundscape synthesizer.</p>
             </div>
             <div class="actions">
               <button class="btn secondary" onclick="goToPrevious()">Back</button>
@@ -1986,18 +2001,21 @@
         if (activeTab === "experience") {
           const peakoraSubStatus = localStorage.getItem("peakora_subscription_status") || (isPlus ? "Active" : "Trial");
           const freeFeatures = [
-            ["7-Day Personalized Reset Plan", "custom daily routines shaped around your answers"],
-            ["Mood Check-In & Bubble Visualizer", "watch honest patterns build over time"],
+            ["Personalized 7-Day Reset Plan", "custom daily routines shaped around your answers"],
+            ["Daily Mood Check-In & Energy Tracking", "watch honest patterns build over time"],
             ["Inhale Breathing Ring", "a 4-4-4 paced breathing guide that settles your nervous system"],
-            ["Micro-Journal & Thought Unloading", "offload mental chatter, keep what matters"],
-            ["Daily Focus & Intention Anchors", "one clear priority, every morning"]
+            ["Micro-Journal & Reflection Space", "offload mental chatter, keep what matters"],
+            ["Daily Focus & Intention Anchors", "one clear priority, every morning"],
+            ["Mood & Energy Analytics", "visualize emotional trends and energy cycles"],
+            ["PWA Install & Offline Mode", "1-tap install, works without a connection"],
+            ["Unlimited 7-Day Plan Resets", "start a fresh week whenever life calls for it"]
           ];
           const plusFeatures = [
-            ["Adaptive Week", "miss a day and your plan quietly waits — no broken streaks, no catching up"],
-            ["Dynamic Themes & Color Spaces", "Sunrise, Twilight, Sage, Sunset, Ocean — your mood, your palette"],
+            ["Adaptive Week", "miss a day and your plan quietly waits — no broken streaks, no guilt"],
+            ["Dynamic Themes & Color Spaces", "Sunrise, Twilight, Sage, Amethyst, Solar, Sunset, Ocean — your mood, your palette"],
+            ["Mood-Reactive Auto Themes", "the whole room quietly shifts color with how you feel"],
             ["Past Plan History & Archiving", "save weeks you loved and re-activate them anytime"],
-            ["Organic Soundscape Synthesizer", "binaural tones, ambient loops, and layered calm"],
-            ["Mood-Reactive Auto Themes", "the whole room quietly shifts color with how you feel"]
+            ["Organic Soundscape Synthesizer", "binaural tones, ambient loops, and layered calm — offline ready"]
           ];
           const li = (f, color) => `
             <div style="display:flex; gap:10px; align-items:flex-start;">
@@ -2095,15 +2113,15 @@
                 Peakora Partners — Earn While You Share
               </div>
               <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.6;">
-                Love Peakora? Share it and earn 30% recurring commission on every subscriber you bring — for as long as they stay. No audience minimum, 60-day cookie window, real-time tracking.
+                Love Peakora? Share it and earn 30% recurring commission on every subscriber you bring — for as long as they stay. No audience minimum, 90-day cookie window, real-time tracking.
               </p>
               <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
                 <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">30% recurring</span>
-                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">60-day cookie</span>
+                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">90-day cookie</span>
                 <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Bank transfer payouts</span>
               </div>
-              <a href="mailto:peakora.network@gmail.com?subject=Affiliate%20Program%20Application&body=Name%3A%20%0AWebsite%20or%20social%20%3A%20%0AAudience%20size%20%3A%20%0AHow%20you%27d%20promote%20Peakora%20%3A%20" class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow); text-decoration:none; display:inline-block;">
-                Apply to Become a Partner
+              <a href="affiliate.html" class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow); text-decoration:none; display:inline-block;">
+                Explore the Affiliate Program
               </a>
             </div>
           `;
@@ -2276,7 +2294,7 @@
               <span>•</span>
               <a href="#" style="color:#7c3aed; text-decoration:none;" onclick="openLegalModal('contact'); return false;">Contact Support</a>
               <span>•</span>
-              <a href="index.html#affiliates" style="color:#7c3aed; text-decoration:none;">Affiliate Program</a>
+              <a href="affiliate.html" style="color:#7c3aed; text-decoration:none;">Affiliate Program</a>
             </div>
             <div style="margin-top:6px; font-size:10px; color:#999;">© 2026 Peakora. Billed securely. Support: peakora.network@gmail.com</div>
           </div>
@@ -2662,7 +2680,6 @@
     function closeDodoCheckoutModal() {
       const modal = document.getElementById('dodo-checkout-modal');
       if (modal) modal.style.display = 'none';
-    }
     }
 
     function toggleMockSubscriptionStatus() {
@@ -4161,6 +4178,30 @@
         }
       }
     };
+
+    // Sync subscription state from the Cloudflare Worker D1 database.
+    // If the master account email is set, force Plus access regardless of DB.
+    async function checkServerSubscription() {
+      try {
+        const email = localStorage.getItem("peakora_user_email") || "";
+        if (!email) return;
+        const resp = await fetch(
+          "https://peakora-api.peakora.workers.dev/subscription-status?email=" +
+          encodeURIComponent(email)
+        );
+        const data = await resp.json();
+        if (data && data.isMaster) {
+          localStorage.setItem("peakora_plus_member", "true");
+          localStorage.setItem("peakora_subscription_status", "Active");
+          localStorage.setItem("peakora_master_account", "true");
+        } else if (data && data.isPlus) {
+          localStorage.setItem("peakora_plus_member", "true");
+          localStorage.setItem("peakora_subscription_status", "Active");
+        }
+      } catch (e) {
+        // Network/API failure should never block the app
+      }
+    }
   </script>
 
   <script>
@@ -4177,20 +4218,16 @@
       scheduleDailyReminder();
       maybeShowWeeklyDigest();
 
+      // Onboarding shows ONLY on first visit (no state at all).
+      // On any refresh with existing state (completed OR mid-onboarding),
+      // go straight to the dashboard — never force onboarding on refresh.
       if (!hasState) {
         goToStepKey("welcome");
         return;
       }
 
-      if (state.completed) {
-        goToStepKey("home");
-        return;
-      }
-
-      // User has state but hasn't finished onboarding — resume at the last
-      // step they reached so the page is never blank on refresh.
-      renderStep();
-      showOnboardingModal();
+      // User has state — go to home dashboard, regardless of completion.
+      goToStepKey("home");
     });
   </script>
 
@@ -4255,10 +4292,13 @@
           </div>
           <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Essential tools for your daily reset and progress tracking.</p>
           <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">
-            <li>✔ Personalized 7-Day Action Plan</li>
-            <li>✔ Daily Energy & Mood Check-in</li>
-            <li>✔ Micro-Journal & Breathing Tool</li>
-            <li>✔ Core Reflection Space</li>
+            <li>✔ Personalized 7-Day Reset Plan</li>
+            <li>✔ Daily Mood Check-In & Energy Tracking</li>
+            <li>✔ Inhale Breathing Ring (4-4-4)</li>
+            <li>✔ Micro-Journal & Reflection Space</li>
+            <li>✔ Mood & Energy Analytics</li>
+            <li>✔ PWA Install & Offline Mode</li>
+            <li>✔ Unlimited 7-Day Plan Resets</li>
           </ul>
           <button class="btn secondary" style="width:100%; margin-top:12px; font-size:13px; font-weight:600;" onclick="selectPlan(false)">
             Activate Free Plan
@@ -4275,15 +4315,14 @@
               <div style="font-size:10px; color:var(--theme-text-muted);">or $47.99 / year (Save 20%)</div>
             </div>
           </div>
-          <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Complete visual customizability, 7-day plan history archive, synthesized soundscapes, & deep analytics.</p>
+          <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Complete visual customizability, 7-day plan history archive, synthesized soundscapes, & adaptive planning.</p>
           <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">
             <li>✔ <strong>Everything in Free Plan</strong></li>
-            <li>✔ <strong>Theme Customizer & Auto Mood-Reactive Themes</strong></li>
-            <li>✔ <strong>Previous 7-Day Plans Archive</strong> (Browse & re-activate past weeks)</li>
-            <li>✔ <strong>Organic Wellness Audio Soundscapes</strong> (Ocean, Rain, OM Drone & more)</li>
-            <li>✔ <strong>Deep Mood & Energy Analytics Infographics</strong></li>
             <li>✔ <strong>Adaptive Week</strong> (your plan waits when life happens — no guilt)</li>
-            <li>✔ <strong>Unlimited 7-Day Plan Resets</strong></li>
+            <li>✔ <strong>Dynamic Themes & Color Spaces</strong> (7 mood palettes)</li>
+            <li>✔ <strong>Mood-Reactive Auto Themes</strong> (the app re-themes with how you feel)</li>
+            <li>✔ <strong>Past Plan History & Archiving</strong> (browse & re-activate past weeks)</li>
+            <li>✔ <strong>Organic Soundscape Synthesizer</strong> (binaural tones, ambient loops, offline)</li>
           </ul>
           
           <div style="display:flex; gap:8px; margin-top:14px;">

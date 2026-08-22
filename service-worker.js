@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2-livemode";
+const CACHE_VERSION = "v4-affiliate-deploy";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
@@ -7,6 +7,7 @@ const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./assistant.html",
+  "./affiliate.html",
   "./assistant.css",
   "./assistant-onboarding.html",
   "./assistant-home.html",
@@ -56,8 +57,8 @@ self.addEventListener("push", event => {
   event.waitUntil(
     self.registration.showNotification(data.title || "Peakora", {
       body: data.body || "A gentle nudge from your quiet corner.",
-      icon: "./assets/peakora-icon-192.png",
-      badge: "./assets/peakora-icon-192.png",
+      icon: "./assets/peakora-logo.png",
+      badge: "./assets/peakora-logo.png",
       tag: "peakora-nudge",
       renotify: false
     })

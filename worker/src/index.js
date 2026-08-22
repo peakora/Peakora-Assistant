@@ -175,6 +175,12 @@ async function handleSubscriptionStatus(request, env) {
   const email = (url.searchParams.get('email') || '').trim().toLowerCase();
   if (!email) return json({ success: true, status: 'free', isPlus: false });
 
+  // Master account — always full access, bypasses all paywalls
+  const MASTER_EMAIL = 'peakora.network@gmail.com';
+  if (email === MASTER_EMAIL) {
+    return json({ success: true, email, status: 'active', plan: 'master', isPlus: true, isMaster: true });
+  }
+
   const row = await env.DB.prepare(
     'SELECT email, status, plan, updated_at FROM subscriptions WHERE email = ?'
   ).bind(email).first();
