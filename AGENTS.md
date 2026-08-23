@@ -266,16 +266,16 @@ Copy and save the exact prompt below when generating new components or entire ap
 
 ---
 
-## Cross-Repo Memory Protocol (MANDATORY — from the peakora/openhands-skills hub)
+## Cross-Repo Memory Protocol (MANDATORY — from the peakora/peakora-cortex hub)
 
-This repo consumes the central skills hub: **github.com/peakora/openhands-skills**
+This repo consumes the central skills hub: **github.com/peakora/peakora-cortex**
 (branch: master). The hub holds the master system blueprint, the shared skills,
 and the cross-repo memory layers. User preference: call the owner **Ala**. No
 emoji anywhere (chat, code, copy, commits).
 
 ### Session start — recall (NEVER SKIP)
 1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text):
-   `https://raw.githubusercontent.com/peakora/openhands-skills/master/MEMORY.md`
+   `https://raw.githubusercontent.com/peakora/peakora-cortex/master/MEMORY.md`
 2. Read this repo's `AGENTS.md` in full.
 3. Best-effort Cognee recall (semantic layer, may be empty on the free tier):
    use `skills/cognee-memory/cognee_client.py` from the hub —
@@ -283,7 +283,7 @@ emoji anywhere (chat, code, copy, commits).
 
 ### Session end — remember (NEVER SKIP, before finishing)
 1. GUARANTEED: append a dated entry to the Session Log in the hub's `MEMORY.md`
-   (commit to peakora/openhands-skills master, via git or GitHub API)
+   (commit to peakora/peakora-cortex master, via git or GitHub API)
    summarizing decisions, API/schema changes, and gotchas for this repo.
 2. Best-effort: `cognee_client.remember_safe(summary)` — add-only. NEVER call
    cognify automatically (burns the 20/day Gemini free quota; cognify is a
