@@ -274,8 +274,12 @@ and the cross-repo memory layers. User preference: call the owner **Ala**. No
 emoji anywhere (chat, code, copy, commits).
 
 ### Session start — recall (NEVER SKIP)
-1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text):
-   `The hub is PRIVATE, so `raw.githubusercontent` 404s. Fetch via the GitHub`
+1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text).
+   The hub is PRIVATE, so `raw.githubusercontent` 404s. Fetch via the GitHub
+   Contents API (authenticated):
+   `GET https://api.github.com/repos/peakora/Peakora-Cortex/contents/MEMORY.md`
+   with `Authorization: Bearer $GITHUB_TOKEN`, then base64-decode the
+   `content` field. (Fallback: shallow-clone the repo.)
 2. Read this repo's `AGENTS.md` in full.
 3. Best-effort Cognee recall (semantic layer, may be empty on the free tier):
    use `skills/cognee-memory/cognee_client.py` from the hub —
