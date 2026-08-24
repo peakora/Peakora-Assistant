@@ -153,3 +153,16 @@ CREATE INDEX IF NOT EXISTS idx_commissions_transaction ON commissions(transactio
 CREATE INDEX IF NOT EXISTS idx_commissions_hold ON commissions(status, hold_until_date);
 CREATE INDEX IF NOT EXISTS idx_payouts_affiliate ON payouts(affiliate_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_txn ON subscriptions(transaction_id);
+
+-- Backfill the current default rate (0.50) onto every affiliate whose stored
+-- rate still holds an older value. Idempotent: safe to run on every deploy.
+-- Only touches percentage affiliates that have not been given a custom rate
+-- by an admin (custom rates are flagged in notes as 'custom_rate').
+UPDATE affiliates
+   SET commission_rate = 0.50
+ WHERE commission_type = 'percentage'
+   AND commission_rate <> 0.50
+   AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');
+
+-- Backfill the current payout minimum onto existing affiliates.
+UPDATE affiliates SET payout_min = 25.0 WHERE payout_min <> 25.0 AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');

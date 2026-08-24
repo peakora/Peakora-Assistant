@@ -265,12 +265,13 @@ export async function handleAffiliateApply(request, env) {
   // Every applicant is approved instantly so they can generate links and log in
   // right away, the way Calm and Gaia handle their programs. No review queue.
   const initialStatus = 'active';
+  const tier = resolveTier(0, DEFAULT_TIERS);
   await env.DB.prepare(
-    `INSERT INTO affiliates (id, user_email, display_name, referral_code, status, tier_config, notes, approved_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO affiliates (id, user_email, display_name, referral_code, status, commission_type, commission_rate, tier_config, notes, approved_at)
+     VALUES (?, ?, ?, ?, ?, 'percentage', ?, ?, ?, ?)`
   ).bind(
     id, email, name, referralCode, initialStatus,
-    JSON.stringify(DEFAULT_TIERS), notes,
+    tier.rate, JSON.stringify(DEFAULT_TIERS), notes,
     new Date().toISOString()
   ).run();
 
