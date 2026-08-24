@@ -313,6 +313,21 @@ header .brand img.brand-logo:hover,
   text-align: center;
 }
 
+.hero-eyebrow {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent, #f4a261);
+  background: rgba(244, 162, 97, 0.12);
+  border: 1px solid rgba(244, 162, 97, 0.3);
+  padding: 7px 18px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+}
+
 .hero-title span.highlight {
   background: var(--primary-gradient);
   -webkit-background-clip: text;
@@ -439,6 +454,58 @@ header .brand img.brand-logo:hover,
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 28px;
+}
+
+/* Differentiation section ("Not a content library") */
+.diff-eyebrow {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(244, 162, 97, 0.12);
+  border: 1px solid rgba(244, 162, 97, 0.3);
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.diff-section .what-card {
+  /* keep the standard card; the section is distinguished by the eyebrow */
+}
+
+.diff-signature {
+  position: relative;
+}
+
+.diff-signature::after {
+  content: 'Signature';
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0c0a15;
+  background: var(--theme-primary-grad, linear-gradient(135deg, #e07a5f, #f4a261, #a78bfa));
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+@media (max-width: 900px) {
+  .diff-section .what-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .diff-section .what-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .what-card {

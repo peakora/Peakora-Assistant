@@ -16,12 +16,20 @@
 
 // ── Config: commission tiers, cookie windows, payout hold ─────────────────
 
-/** Default tier ladder — auto-applied to new affiliates. JSON-encoded to row. */
+/** Default commission model: a single flat 30% recurring rate for every
+ *  partner. Wellness affiliate programs (Calm, Insight, Gaia) use one rate,
+ *  not a tier ladder — simpler for partners and honest about what we honor.
+ *  Admins can still override an individual partner's rate/commission_type via
+ *  the admin panel (custom deals for high-volume partners). Kept as an array
+ *  so resolveTier() and tier_config stay backward compatible. */
 export const DEFAULT_TIERS = [
-  { minReferrals: 0, rate: 0.30, name: 'Starter', cookieDays: 90, payoutMin: 50, payoutSchedule: 'monthly' },
-  { minReferrals: 25, rate: 0.35, name: 'Growth', cookieDays: 90, payoutMin: 25, payoutSchedule: 'monthly' },
-  { minReferrals: 100, rate: 0.40, name: 'Elite', cookieDays: 120, payoutMin: 0, payoutSchedule: 'weekly' }
+  { minReferrals: 0, rate: 0.30, name: 'Partner', cookieDays: 90, payoutMin: 50, payoutSchedule: 'monthly' }
 ];
+
+/** Master account email — auto-approved on apply so the owner can log into the
+ *  affiliate portal and test immediately, mirroring the master-account bypass
+ *  convention used across all Peakora repos. */
+const MASTER_EMAIL = 'peakora.network@gmail.com';
 
 /** Days a commission stays pending before it is auto-approved (payout hold). */
 export const PAYOUT_HOLD_DAYS = 30;
@@ -254,15 +262,24 @@ export async function handleAffiliateApply(request, env) {
 
   const id = genId('aff');
   const notes = JSON.stringify({ platform, audience, message });
+  // Master account auto-approves so the owner can test the portal immediately.
+  const initialStatus = email === MASTER_EMAIL ? 'active' : 'pending';
   await env.DB.prepare(
-    `INSERT INTO affiliates (id, user_email, display_name, referral_code, status, tier_config, notes)
-     VALUES (?, ?, ?, ?, 'pending', ?, ?)`
-  ).bind(id, email, name, referralCode, JSON.stringify(DEFAULT_TIERS), notes).run();
+    `INSERT INTO affiliates (id, user_email, display_name, referral_code, status, tier_config, notes, approved_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    id, email, name, referralCode, initialStatus,
+    JSON.stringify(DEFAULT_TIERS), notes,
+    initialStatus === 'active' ? new Date().toISOString() : null
+  ).run();
 
   return json({
     success: true,
-    status: 'pending',
-    message: 'Application received. We review every application personally — expect a response within 48 hours.'
+    status: initialStatus,
+    referral_code: initialStatus === 'active' ? referralCode : null,
+    message: initialStatus === 'active'
+      ? 'Welcome back, Ala. Your partner account is active — sign in to your portal.'
+      : 'Application received. We review every application personally — expect a response within 48 hours.'
   });
 }
 
@@ -301,8 +318,16 @@ export async function handleAffiliateLogin(request, env) {
   const body = await readJson(request);
   const email = normalizeEmail(body.email);
   if (!email) return json({ success: false, error: 'Valid email required.' }, 400);
-  const aff = await getAffiliateByEmail(env.DB, email);
+  let aff = await getAffiliateByEmail(env.DB, email);
   if (!aff) return json({ success: false, error: 'No affiliate account found for that email.' }, 404);
+  // Master account auto-activates on login if still pending (so the owner can
+  // test even if an earlier application was submitted as pending).
+  if (email === MASTER_EMAIL && aff.status === 'pending') {
+    await env.DB.prepare(
+      `UPDATE affiliates SET status = 'active', approved_at = ? WHERE id = ?`
+    ).bind(new Date().toISOString(), aff.id).run();
+    aff = await getAffiliateByEmail(env.DB, email);
+  }
   if (aff.status !== 'active') return json({ success: false, error: `Account is ${aff.status}. Awaiting approval.` }, 403);
   const token = await portalToken(email, env);
   return json({ success: true, token, email, referral_code: aff.referral_code });

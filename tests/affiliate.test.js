@@ -153,24 +153,20 @@ describe('commission calculation', () => {
 });
 
 describe('tier resolution', () => {
-  test('Starter (0 referrals)', () => {
-    assert.equal(resolveTier(0, DEFAULT_TIERS).name, 'Starter');
+  test('single flat Partner tier (0 referrals)', () => {
+    assert.equal(resolveTier(0, DEFAULT_TIERS).name, 'Partner');
     assert.equal(resolveTier(0, DEFAULT_TIERS).rate, 0.30);
   });
-  test('Growth (25 referrals)', () => {
-    assert.equal(resolveTier(25, DEFAULT_TIERS).name, 'Growth');
-    assert.equal(resolveTier(50, DEFAULT_TIERS).rate, 0.35);
-  });
-  test('Elite (100+ referrals)', () => {
-    assert.equal(resolveTier(100, DEFAULT_TIERS).name, 'Elite');
-    assert.equal(resolveTier(500, DEFAULT_TIERS).rate, 0.40);
-    assert.equal(resolveTier(500, DEFAULT_TIERS).cookieDays, 120);
+  test('same Partner rate at any volume (flat model, no ladder)', () => {
+    assert.equal(resolveTier(25, DEFAULT_TIERS).name, 'Partner');
+    assert.equal(resolveTier(500, DEFAULT_TIERS).rate, 0.30);
+    assert.equal(resolveTier(500, DEFAULT_TIERS).cookieDays, 90);
   });
   test('falls back to DEFAULT_TIERS when none provided', () => {
-    assert.equal(resolveTier(0, null).name, 'Starter');
-    // Empty array => DEFAULT_TIERS used, so 100 referrals resolve to Elite.
-    assert.equal(resolveTier(100, []).name, 'Elite');
-    assert.equal(resolveTier(100, []).rate, 0.40);
+    assert.equal(resolveTier(0, null).name, 'Partner');
+    // Empty array => DEFAULT_TIERS used (single flat tier).
+    assert.equal(resolveTier(100, []).name, 'Partner');
+    assert.equal(resolveTier(100, []).rate, 0.30);
   });
 });
 
@@ -214,11 +210,10 @@ describe('sha256 hashing', () => {
 });
 
 describe('config constants', () => {
-  test('tiers are ascending by referrals and rate', () => {
-    for (let i = 1; i < DEFAULT_TIERS.length; i++) {
-      assert.ok(DEFAULT_TIERS[i].minReferrals > DEFAULT_TIERS[i - 1].minReferrals);
-      assert.ok(DEFAULT_TIERS[i].rate > DEFAULT_TIERS[i - 1].rate);
-    }
+  test('tiers are a single flat Partner rate (no ladder)', () => {
+    assert.equal(DEFAULT_TIERS.length, 1);
+    assert.equal(DEFAULT_TIERS[0].name, 'Partner');
+    assert.equal(DEFAULT_TIERS[0].rate, 0.30);
   });
   test('payout hold is 30 days', () => {
     assert.equal(PAYOUT_HOLD_DAYS, 30);
