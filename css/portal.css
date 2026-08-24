@@ -355,3 +355,128 @@
   .portal-stat-value { font-size: 28px; }
   .portal-section { padding: 22px 18px; }
 }
+
+/* ============================================================
+   DASHBOARD REDESIGN — balance card, quick stats, charts, funnel
+   ============================================================ */
+
+/* Balance + quick stats hero row */
+.portal-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(min(100%, 360px), 1.1fr) minmax(min(100%, 360px), 1.4fr);
+  gap: var(--portal-gap);
+  margin-bottom: var(--portal-gap);
+  width: 100%;
+}
+.portal-balance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 30px 28px;
+  background: linear-gradient(160deg, rgba(224,122,95,0.10), var(--theme-card-bg, #151122) 62%);
+  border: 1px solid rgba(224,122,95,0.22);
+  position: relative;
+  overflow: hidden;
+}
+.portal-balance-card::after {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(244,162,97,0.18), transparent 70%);
+  pointer-events: none;
+}
+.portal-balance-label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--theme-text-muted, #a0aec0);
+}
+.portal-balance-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 44px; font-weight: 800; color: #fff;
+  background: var(--theme-primary-grad, linear-gradient(135deg, #e07a5f, #f4a261, #a78bfa));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+.portal-balance-meta {
+  display: flex; gap: 28px; flex-wrap: wrap; margin-top: 10px;
+}
+.portal-balance-meta-label {
+  display: block; font-size: 11px; color: var(--theme-text-muted, #a0aec0);
+}
+.portal-balance-meta-val {
+  display: block; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; font-weight: 700; color: #fff;
+}
+.portal-balance-actions {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px;
+}
+.portal-balance-actions .portal-request-payout-btn { padding: 12px 26px; font-size: 13px; }
+.portal-payout-min-note { font-size: 12px; color: var(--theme-text-muted, #a0aec0); }
+.portal-payout-status { font-size: 12px; min-height: 16px; margin-top: 10px; }
+
+.portal-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: var(--portal-gap);
+}
+.portal-quick-stats .portal-stat-card { padding: 22px 20px; }
+
+/* Charts grid */
+.portal-charts-grid { margin-bottom: var(--portal-gap); }
+.portal-chart-card { padding: 24px 22px; display: flex; flex-direction: column; }
+.portal-chart-head {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+}
+.portal-chart-head .portal-section-title { margin: 0; }
+.portal-chart-legend { font-size: 11px; color: var(--theme-text-muted, #a0aec0); display: flex; align-items: center; gap: 6px; }
+.portal-legend-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+  background: linear-gradient(180deg, #f4a261, #e07a5f);
+}
+.portal-chart-wrap { width: 100%; }
+.portal-chart-empty { font-size: 13px; color: var(--theme-text-muted, #a0aec0); text-align: center; padding: 30px 0; }
+
+/* Funnel */
+.portal-funnel { display: flex; flex-direction: column; gap: 16px; padding: 8px 0 4px; }
+.portal-funnel-row { display: flex; flex-direction: column; gap: 6px; }
+.portal-funnel-bar-wrap {
+  height: 30px; background: rgba(255,255,255,0.04); border-radius: 8px;
+  overflow: hidden; border: 1px solid rgba(255,255,255,0.05);
+}
+.portal-funnel-bar { height: 100%; border-radius: 8px; transition: width 0.5s ease; min-width: 2px; }
+.portal-funnel-meta { display: flex; justify-content: space-between; align-items: center; }
+.portal-funnel-label { font-size: 12px; color: var(--theme-text-muted, #a0aec0); font-weight: 600; }
+.portal-funnel-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #fff; }
+
+/* Tools + tables grids */
+.portal-tools-grid, .portal-tables-grid { margin-bottom: var(--portal-gap); }
+
+/* Set / reset password toggle button */
+.portal-forgot-btn {
+  margin-top: 8px; background: none; border: none; cursor: pointer;
+  font-size: 12px; color: var(--theme-accent, #f4a261);
+  font-family: 'Inter', sans-serif; padding: 4px 0;
+}
+.portal-forgot-btn:hover { text-decoration: underline; }
+.portal-setpw-form { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); }
+
+/* Signup payout block (apply page) */
+.aff-signup-payout { margin: 8px 0 4px; }
+.aff-signup-payout-title {
+  font-size: 12px; color: var(--theme-text-muted, #a0aec0);
+  font-weight: 600; margin: 0 0 10px;
+}
+.aff-signup-payout-methods {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;
+}
+.aff-signin-link {
+  font-size: 12px; color: var(--theme-text-muted, #a0aec0); margin-top: 10px;
+}
+.aff-signin-link a { color: var(--theme-accent, #f4a261); text-decoration: none; font-weight: 600; }
+
+/* Hero grid collapses to one column on narrow screens */
+@media (max-width: 820px) {
+  .portal-hero-grid { grid-template-columns: 1fr; }
+}

@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS affiliates (
   id              TEXT PRIMARY KEY,        -- aff_<random>
   user_email      TEXT UNIQUE NOT NULL,     -- login identity + payout contact
+  password_hash   TEXT,                     -- 'pbkdf2$iter$saltB64$hashB64' (null = legacy, pre-password)
   display_name    TEXT,
   referral_code   TEXT UNIQUE NOT NULL,    -- short code used in ?via=/&ref= links
   -- Commission model: 'percentage' (recurring % of each payment) or 'flat'
@@ -172,3 +173,9 @@ UPDATE affiliates SET payout_min = 25.0 WHERE payout_min <> 25.0 AND (notes IS N
 -- are left untouched (status 'suspended' is distinct from 'pending').
 UPDATE affiliates SET status = 'active', approved_at = datetime('now')
  WHERE status = 'pending' AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');
+
+-- Add the password_hash column to the existing affiliates table. SQLite/D1 has no
+-- ADD COLUMN IF NOT EXISTS, so this errors harmlessly if the column already exists
+-- (the deploy pipeline ignores the error). password_hash is nullable: legacy
+-- accounts start NULL and must set one via the portal set-password flow.
+ALTER TABLE affiliates ADD COLUMN password_hash TEXT;

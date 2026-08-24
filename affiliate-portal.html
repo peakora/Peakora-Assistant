@@ -46,11 +46,22 @@
   <div class="container">
     <div class="portal-login-card">
       <h1 class="portal-login-title">Partner Portal Login</h1>
-      <p class="portal-login-sub">Sign in with the email you applied with to access your dashboard.</p>
+      <p class="portal-login-sub">Sign in with your email and password to access your dashboard.</p>
       <form class="portal-login-form" onsubmit="return portalLogin(event)">
         <input type="email" id="login-email" placeholder="Your affiliate email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
         <button type="submit" class="btn-hero-primary portal-login-btn" id="login-btn">Sign In</button>
         <p class="portal-login-note" id="login-note">Not a partner yet? <a href="affiliate.html#apply">Apply here</a>.</p>
+        <button type="button" class="portal-forgot-btn" onclick="toggleSetPassword()">Set / reset password</button>
+      </form>
+
+      <!-- SET / RESET PASSWORD FORM (shown on demand) -->
+      <form class="portal-login-form portal-setpw-form" id="setpw-form" style="display:none;" onsubmit="return portalSetPassword(event)">
+        <input type="email" id="setpw-email" placeholder="Your affiliate email" required>
+        <input type="password" id="setpw-current" placeholder="Current password (leave blank for first-time setup)">
+        <input type="password" id="setpw-new" placeholder="New password (min 8 chars)" required minlength="8">
+        <button type="submit" class="btn-hero-primary portal-login-btn" id="setpw-btn">Set Password</button>
+        <p class="portal-login-note" id="setpw-note"></p>
       </form>
     </div>
   </div>
@@ -67,112 +78,150 @@
       <button class="aff-btn-ghost portal-logout-btn" onclick="portalLogout()">Sign Out</button>
     </div>
 
-    <!-- STATS -->
-    <div class="dash-grid-equal portal-stats-grid">
-      <div class="dash-card portal-stat-card">
-        <span class="portal-stat-label">Total Clicks</span>
-        <span class="portal-stat-value" id="stat-clicks">0</span>
-      </div>
-      <div class="dash-card portal-stat-card">
-        <span class="portal-stat-label">Conversions</span>
-        <span class="portal-stat-value" id="stat-conversions">0</span>
-        <span class="portal-stat-sub" id="stat-active-refs">0 active referrals</span>
-      </div>
-      <div class="dash-card portal-stat-card portal-stat-pending">
-        <span class="portal-stat-label">Pending Balance</span>
-        <span class="portal-stat-value" id="stat-pending">$0.00</span>
-      </div>
-      <div class="dash-card portal-stat-card">
-        <span class="portal-stat-label">Paid Balance</span>
-        <span class="portal-stat-value" id="stat-paid">$0.00</span>
-      </div>
-    </div>
-
-    <!-- REFERRAL LINK GENERATOR -->
-    <div class="dash-card portal-section">
-      <h2 class="portal-section-title">Your Referral Link</h2>
-      <p class="portal-section-sub">Generate a tracked link. Add UTM params for campaign-level tracking.</p>
-      <div class="portal-link-builder">
-        <div class="portal-link-row">
-          <label>Target page (optional)</label>
-          <input type="text" id="link-target" placeholder="https://peakora.life (leave blank for homepage)">
+    <!-- PRIMARY BALANCE CARD + QUICK STATS -->
+    <div class="portal-hero-grid">
+      <div class="dash-card portal-balance-card">
+        <span class="portal-balance-label">Available balance</span>
+        <span class="portal-balance-value" id="stat-available">$0.00</span>
+        <div class="portal-balance-meta">
+          <div class="portal-balance-meta-item">
+            <span class="portal-balance-meta-label">Pending (on hold)</span>
+            <span class="portal-balance-meta-val" id="stat-pending">$0.00</span>
+          </div>
+          <div class="portal-balance-meta-item">
+            <span class="portal-balance-meta-label">Lifetime paid</span>
+            <span class="portal-balance-meta-val" id="stat-paid">$0.00</span>
+          </div>
         </div>
-        <div class="portal-link-row portal-utm-row">
-          <input type="text" id="utm-source" placeholder="utm_source (e.g. newsletter)">
-          <input type="text" id="utm-medium" placeholder="utm_medium (e.g. email)">
-          <input type="text" id="utm-campaign" placeholder="utm_campaign (e.g. launch)">
+        <div class="portal-balance-actions">
+          <button class="btn-hero-primary portal-request-payout-btn" id="request-payout-btn" onclick="requestPayout()">Request Payout</button>
+          <span class="portal-payout-min-note" id="payout-min-note">Min payout $25</span>
         </div>
-        <button class="btn-hero-primary portal-generate-btn" onclick="generateLink()">Generate Link</button>
-      </div>
-      <div class="portal-link-output" id="link-output" style="display:none;">
-        <input type="text" id="link-value" readonly>
-        <button class="aff-btn-ghost portal-copy-btn" onclick="copyLink()">Copy</button>
-      </div>
-      <p class="portal-code-note">Your referral code: <strong id="referral-code-display"></strong></p>
-    </div>
-
-    <!-- PAYOUT METHOD -->
-    <div class="dash-card portal-section">
-      <h2 class="portal-section-title">Payout Method</h2>
-      <p class="portal-section-sub">Choose how you want to receive your commissions.</p>
-      <div class="portal-payout-form">
-        <div class="portal-payout-methods" id="payout-methods">
-          <label class="portal-payout-option">
-            <input type="radio" name="payout-method" value="paypal"> PayPal
-          </label>
-          <label class="portal-payout-option">
-            <input type="radio" name="payout-method" value="wise"> Wise
-          </label>
-          <label class="portal-payout-option">
-            <input type="radio" name="payout-method" value="bank"> Bank Transfer
-          </label>
-          <label class="portal-payout-option">
-            <input type="radio" name="payout-method" value="usdc"> USDC (crypto)
-          </label>
-        </div>
-        <div class="portal-payout-fields" id="payout-fields"></div>
-        <button class="btn-hero-primary portal-save-payout" onclick="savePayout()">Save Payout Method</button>
         <p class="portal-payout-status" id="payout-status"></p>
       </div>
-      <button class="aff-btn-ghost portal-request-payout-btn" id="request-payout-btn" onclick="requestPayout()">Request Payout</button>
-    </div>
 
-    <!-- COMMISSION HISTORY -->
-    <div class="dash-card portal-section">
-      <h2 class="portal-section-title">Commission History</h2>
-      <div class="portal-table-wrap">
-        <table class="portal-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Customer</th>
-              <th>Plan</th>
-              <th>Gross</th>
-              <th>Commission</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="commissions-body"></tbody>
-        </table>
+      <div class="portal-quick-stats">
+        <div class="dash-card portal-stat-card">
+          <span class="portal-stat-label">Total Clicks</span>
+          <span class="portal-stat-value" id="stat-clicks">0</span>
+        </div>
+        <div class="dash-card portal-stat-card">
+          <span class="portal-stat-label">Conversions</span>
+          <span class="portal-stat-value" id="stat-conversions">0</span>
+          <span class="portal-stat-sub" id="stat-active-refs">0 active referrals</span>
+        </div>
+        <div class="dash-card portal-stat-card">
+          <span class="portal-stat-label">Conv. Rate</span>
+          <span class="portal-stat-value" id="stat-convrate">0%</span>
+          <span class="portal-stat-sub">clicks to paid</span>
+        </div>
+        <div class="dash-card portal-stat-card">
+          <span class="portal-stat-label">Commission</span>
+          <span class="portal-stat-value" id="stat-rate">50%</span>
+          <span class="portal-stat-sub">recurring</span>
+        </div>
       </div>
     </div>
 
-    <!-- PAYOUT HISTORY -->
-    <div class="dash-card portal-section">
-      <h2 class="portal-section-title">Payout History</h2>
-      <div class="portal-table-wrap">
-        <table class="portal-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Method</th>
-              <th>Status</th>
-              <th>Reference</th>
-            </tr>
-          </thead>
-          <tbody id="payouts-body"></tbody>
-        </table>
+    <!-- EARNINGS CHART + CONVERSION FUNNEL -->
+    <div class="dash-grid-2 portal-charts-grid">
+      <div class="dash-card portal-section portal-chart-card">
+        <div class="portal-chart-head">
+          <h2 class="portal-section-title">Earnings (last 6 months)</h2>
+          <span class="portal-chart-legend"><span class="portal-legend-dot"></span> Commission accrued</span>
+        </div>
+        <div class="portal-chart-wrap" id="earnings-chart"></div>
+        <p class="portal-chart-empty" id="earnings-empty" style="display:none;">No commission data yet. Share your link to start earning.</p>
+      </div>
+      <div class="dash-card portal-section portal-chart-card">
+        <h2 class="portal-section-title">Referral Funnel</h2>
+        <div class="portal-funnel" id="portal-funnel"></div>
+      </div>
+    </div>
+
+    <!-- REFERRAL LINK + PAYOUT METHOD -->
+    <div class="dash-grid-2 portal-tools-grid">
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Your Referral Link</h2>
+        <p class="portal-section-sub">Generate a tracked link. Add UTM params for campaign-level tracking.</p>
+        <div class="portal-link-builder">
+          <div class="portal-link-row">
+            <label>Target page (optional)</label>
+            <input type="text" id="link-target" placeholder="https://peakora.life (leave blank for homepage)">
+          </div>
+          <div class="portal-link-row portal-utm-row">
+            <input type="text" id="utm-source" placeholder="utm_source (e.g. newsletter)">
+            <input type="text" id="utm-medium" placeholder="utm_medium (e.g. email)">
+            <input type="text" id="utm-campaign" placeholder="utm_campaign (e.g. launch)">
+          </div>
+          <button class="btn-hero-primary portal-generate-btn" onclick="generateLink()">Generate Link</button>
+        </div>
+        <div class="portal-link-output" id="link-output" style="display:none;">
+          <input type="text" id="link-value" readonly>
+          <button class="aff-btn-ghost portal-copy-btn" onclick="copyLink()">Copy</button>
+        </div>
+        <p class="portal-code-note">Your referral code: <strong id="referral-code-display"></strong></p>
+      </div>
+
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Payout Method</h2>
+        <p class="portal-section-sub">Choose how you want to receive your commissions.</p>
+        <div class="portal-payout-form">
+          <div class="portal-payout-methods" id="payout-methods">
+            <label class="portal-payout-option">
+              <input type="radio" name="payout-method" value="paypal"> PayPal
+            </label>
+            <label class="portal-payout-option">
+              <input type="radio" name="payout-method" value="wise"> Wise
+            </label>
+            <label class="portal-payout-option">
+              <input type="radio" name="payout-method" value="bank"> Bank Transfer
+            </label>
+            <label class="portal-payout-option">
+              <input type="radio" name="payout-method" value="usdc"> USDC (crypto)
+            </label>
+          </div>
+          <div class="portal-payout-fields" id="payout-fields"></div>
+          <button class="btn-hero-primary portal-save-payout" onclick="savePayout()">Save Payout Method</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMISSION + PAYOUT HISTORY -->
+    <div class="dash-grid-2 portal-tables-grid">
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Commission History</h2>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Plan</th>
+                <th>Commission</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="commissions-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Payout History</h2>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="payouts-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -204,7 +253,10 @@
   // Auto-fill email from query (?email=) on first arrival after apply.
   (function () {
     var q = new URLSearchParams(window.location.search).get('email');
-    if (q) { document.getElementById('login-email').value = q; }
+    if (q) {
+      document.getElementById('login-email').value = q;
+      document.getElementById('setpw-email').value = q;
+    }
   })();
 
   function authHeaders() {
@@ -219,7 +271,8 @@
   function portalLogin(e) {
     e.preventDefault();
     var email = (document.getElementById('login-email').value || '').trim().toLowerCase();
-    if (!email) return false;
+    var password = document.getElementById('login-password').value || '';
+    if (!email || !password) return false;
     var btn = document.getElementById('login-btn');
     var note = document.getElementById('login-note');
     btn.disabled = true; btn.textContent = 'Signing in...';
@@ -227,7 +280,7 @@
     fetch(AFFILIATE_API + '/affiliate/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email })
+      body: JSON.stringify({ email: email, password: password })
     }).then(function (r) { return r.json(); }).then(function (d) {
       btn.disabled = false; btn.textContent = 'Sign In';
       if (d.success && d.token) {
@@ -235,12 +288,64 @@
         localStorage.setItem('peakora_aff_token', portalToken);
         localStorage.setItem('peakora_aff_email', portalEmail);
         showDashboard();
+      } else if (d.needs_password) {
+        // Legacy account has no password yet: prompt a one-time set.
+        note.innerHTML = '<span style="color:#facc15;">' + (d.error || '') + '</span> Use "Set / reset password" below to create one.';
+        toggleSetPassword(true);
       } else {
         note.innerHTML = '<span style="color:#fb7185;">' + (d.error || 'Login failed.') + '</span> Not a partner yet? <a href="affiliate.html#apply">Apply here</a>.';
       }
     }).catch(function () {
       btn.disabled = false; btn.textContent = 'Sign In';
       note.innerHTML = '<span style="color:#fb7185;">Network error. Try again.</span>';
+    });
+    return false;
+  }
+
+  function toggleSetPassword(forceShow) {
+    var f = document.getElementById('setpw-form');
+    var show = (forceShow === true) ? true : (f.style.display === 'none');
+    f.style.display = show ? 'block' : 'none';
+    if (show) {
+      // Pre-fill email from the login field for convenience.
+      var em = document.getElementById('login-email').value;
+      if (em) document.getElementById('setpw-email').value = em;
+      document.getElementById('setpw-note').textContent = '';
+    }
+  }
+
+  function portalSetPassword(e) {
+    e.preventDefault();
+    var email = (document.getElementById('setpw-email').value || '').trim().toLowerCase();
+    var current = document.getElementById('setpw-current').value || '';
+    var next = document.getElementById('setpw-new').value || '';
+    if (!email || !next || next.length < 8) {
+      document.getElementById('setpw-note').innerHTML = '<span style="color:#fb7185;">Enter your email and a new password of at least 8 characters.</span>';
+      return false;
+    }
+    var btn = document.getElementById('setpw-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    var headers = { 'Content-Type': 'application/json' };
+    if (portalToken && portalEmail === email) {
+      headers['x-affiliate-token'] = portalToken;
+      headers['x-affiliate-email'] = portalEmail;
+    }
+    fetch(AFFILIATE_API + '/affiliate/set-password', {
+      method: 'POST', headers: headers,
+      body: JSON.stringify({ email: email, current_password: current, new_password: next })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      btn.disabled = false; btn.textContent = 'Set Password';
+      if (d.success && d.token) {
+        portalToken = d.token; portalEmail = email;
+        localStorage.setItem('peakora_aff_token', portalToken);
+        localStorage.setItem('peakora_aff_email', portalEmail);
+        showDashboard();
+      } else {
+        document.getElementById('setpw-note').innerHTML = '<span style="color:#fb7185;">' + (d.error || 'Could not set password.') + '</span>';
+      }
+    }).catch(function () {
+      btn.disabled = false; btn.textContent = 'Set Password';
+      document.getElementById('setpw-note').innerHTML = '<span style="color:#fb7185;">Network error.</span>';
     });
     return false;
   }
@@ -282,9 +387,33 @@
     document.getElementById('stat-active-refs').textContent = (d.active_referrals || 0) + ' active referrals';
     document.getElementById('stat-pending').textContent = '$' + (d.totals.pending_balance || 0).toFixed(2);
     document.getElementById('stat-paid').textContent = '$' + (d.totals.paid_balance || 0).toFixed(2);
+    document.getElementById('stat-available').textContent = '$' + (d.totals.available_balance || 0).toFixed(2);
+
+    // Conversion rate (clicks -> paid conversions)
+    var clicks = d.totals.clicks || 0;
+    var convs = d.totals.conversions || 0;
+    var convRate = clicks > 0 ? (convs / clicks * 100) : 0;
+    document.getElementById('stat-convrate').textContent = convRate.toFixed(1) + '%';
+
+    // Commission rate display
+    var rate = d.affiliate.commission_type === 'flat'
+      ? '$' + Number(d.affiliate.commission_rate).toFixed(2)
+      : (Math.round(Number(d.affiliate.commission_rate) * 100)) + '%';
+    document.getElementById('stat-rate').textContent = rate;
+
+    // Payout min note
+    var pmin = d.affiliate.payout_min || 25;
+    document.getElementById('payout-min-note').textContent = 'Min payout $' + Number(pmin).toFixed(0);
+
     document.getElementById('referral-code-display').textContent = d.affiliate.referral_code;
 
-    // Commissions table
+    // Earnings bar chart (last 6 months, by created_at month)
+    renderEarningsChart(d.recent_commissions || []);
+
+    // Conversion funnel
+    renderFunnel(clicks, convs, d.active_referrals || 0);
+
+    // Commissions table (dropped gross column for density)
     var cb = document.getElementById('commissions-body');
     cb.innerHTML = '';
     (d.recent_commissions || []).forEach(function (c) {
@@ -292,16 +421,15 @@
       tr.innerHTML = '<td>' + fmtDate(c.created_at) + '</td>' +
         '<td>' + maskEmail(c.customer_email) + '</td>' +
         '<td>' + (c.plan || '-') + '</td>' +
-        '<td>$' + Number(c.gross_amount).toFixed(2) + '</td>' +
         '<td>$' + Number(c.commission_amount).toFixed(2) + '</td>' +
         '<td><span class="portal-status portal-status-' + c.status + '">' + c.status + '</span></td>';
       cb.appendChild(tr);
     });
     if (!d.recent_commissions || !d.recent_commissions.length) {
-      cb.innerHTML = '<tr><td colspan="6" class="portal-empty">No commissions yet. Share your link to start earning.</td></tr>';
+      cb.innerHTML = '<tr><td colspan="5" class="portal-empty">No commissions yet. Share your link to start earning.</td></tr>';
     }
 
-    // Payouts table
+    // Payouts table (dropped reference column for density)
     var pb = document.getElementById('payouts-body');
     pb.innerHTML = '';
     (d.recent_payouts || []).forEach(function (p) {
@@ -309,12 +437,11 @@
       tr.innerHTML = '<td>' + fmtDate(p.created_at) + '</td>' +
         '<td>$' + Number(p.amount).toFixed(2) + '</td>' +
         '<td>' + (p.payout_method || '-') + '</td>' +
-        '<td><span class="portal-status portal-status-' + p.status + '">' + p.status + '</span></td>' +
-        '<td>' + (p.transaction_reference || '-') + '</td>';
+        '<td><span class="portal-status portal-status-' + p.status + '">' + p.status + '</span></td>';
       pb.appendChild(tr);
     });
     if (!d.recent_payouts || !d.recent_payouts.length) {
-      pb.innerHTML = '<tr><td colspan="5" class="portal-empty">No payouts yet.</td></tr>';
+      pb.innerHTML = '<tr><td colspan="4" class="portal-empty">No payouts yet.</td></tr>';
     }
 
     // Pre-select payout method
@@ -322,6 +449,85 @@
       var radio = document.querySelector('input[name="payout-method"][value="' + d.affiliate.payout_method + '"]');
       if (radio) { radio.checked = true; renderPayoutFields(d.affiliate.payout_method); }
     }
+  }
+
+  // ── Earnings chart (inline SVG bar chart, no deps) ──────────────────────────
+  function renderEarningsChart(commissions) {
+    var wrap = document.getElementById('earnings-chart');
+    var empty = document.getElementById('earnings-empty');
+    if (!commissions.length) {
+      wrap.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    // Bucket commission amounts by YYYY-MM, last 6 months incl. current.
+    var months = [];
+    var now = new Date();
+    for (var i = 5; i >= 0; i--) {
+      var dt = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ key: dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0'), label: dt.toLocaleString('en-US', { month: 'short' }), total: 0 });
+    }
+    var idx = {};
+    months.forEach(function (m) { idx[m.key] = m; });
+    commissions.forEach(function (c) {
+      if (!c.created_at) return;
+      var key = String(c.created_at).slice(0, 7); // YYYY-MM
+      if (idx[key]) idx[key].total += Number(c.commission_amount) || 0;
+    });
+
+    var W = 560, H = 200, padL = 8, padB = 28, padT = 12, padR = 8;
+    var chartW = W - padL - padR;
+    var chartH = H - padT - padB;
+    var max = Math.max.apply(null, months.map(function (m) { return m.total; }));
+    if (max <= 0) max = 1;
+    var niceMax = Math.ceil(max * 1.15);
+    var barW = chartW / months.length * 0.55;
+    var gap = chartW / months.length;
+
+    var bars = '';
+    months.forEach(function (m, i) {
+      var h = (m.total / niceMax) * chartH;
+      var x = padL + i * gap + (gap - barW) / 2;
+      var y = padT + chartH - h;
+      var rect = '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="4" fill="url(#portalBarGrad)" />';
+      var val = m.total > 0 ? '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (y - 5).toFixed(1) + '" text-anchor="middle" font-size="10" fill="#a0aec0" font-family="Inter">$' + m.total.toFixed(0) + '</text>' : '';
+      var lbl = '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="#a0aec0" font-family="Inter">' + m.label + '</text>';
+      bars += rect + val + lbl;
+    });
+    var grid = '';
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + (chartH / 4) * g;
+      grid += '<line x1="' + padL + '" y1="' + gy.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + gy.toFixed(1) + '" stroke="rgba(255,255,255,0.05)" stroke-width="1" />';
+    }
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto;">' +
+      '<defs><linearGradient id="portalBarGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#f4a261"/><stop offset="100%" stop-color="#e07a5f" stop-opacity="0.55"/>' +
+      '</linearGradient></defs>' + grid + bars + '</svg>';
+    wrap.innerHTML = svg;
+  }
+
+  // ── Funnel (clicks -> conversions -> active referrals) ──────────────────────
+  function renderFunnel(clicks, conversions, activeRefs) {
+    var wrap = document.getElementById('portal-funnel');
+    var rows = [
+      { label: 'Clicks', value: clicks, color: 'rgba(244,162,97,0.85)' },
+      { label: 'Conversions', value: conversions, color: 'rgba(167,139,250,0.85)' },
+      { label: 'Active referrals', value: activeRefs, color: 'rgba(52,211,153,0.85)' }
+    ];
+    var max = Math.max(clicks, conversions, activeRefs, 1);
+    var html = '';
+    rows.forEach(function (r) {
+      var pct = max > 0 ? (r.value / max * 100) : 0;
+      html += '<div class="portal-funnel-row">' +
+        '<div class="portal-funnel-bar-wrap">' +
+          '<div class="portal-funnel-bar" style="width:' + pct.toFixed(1) + '%; background:' + r.color + ';"></div>' +
+        '</div>' +
+        '<div class="portal-funnel-meta"><span class="portal-funnel-label">' + r.label + '</span><span class="portal-funnel-value">' + r.value + '</span></div>' +
+      '</div>';
+    });
+    wrap.innerHTML = html;
   }
 
   // ── Link generator ────────────────────────────────────────────────────────

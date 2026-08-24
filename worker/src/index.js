@@ -16,7 +16,8 @@
  * Affiliate program (see affiliate.js):
  *   GET  /affiliate/click          — record a referral click (returns 1x1 GIF)
  *   POST /affiliate/apply          — partner application
- *   POST /affiliate/login          — partner portal login (returns signed token)
+ *   POST /affiliate/login          — partner portal login (email + password -> signed token)
+ *   POST /affiliate/set-password   — set/change password (legacy one-time or authenticated)
  *   GET  /affiliate/dashboard      — partner portal aggregate (token auth)
  *   POST /affiliate/link           — generate a tracked referral link (token auth)
  *   POST /affiliate/payout-setup   — set payout method/details (token auth)
@@ -25,6 +26,7 @@
  *   POST /affiliate/admin/approve        — approve a partner (admin token)
  *   POST /affiliate/admin/reject         — suspend/reject a partner (admin token)
  *   POST /affiliate/admin/adjust-commission — set custom rate (admin token)
+ *   POST /affiliate/admin/set-password  — set/reset a partner password (admin token)
  *   GET  /affiliate/admin/ledger         — commission ledger (admin token)
  *   POST /affiliate/admin/fulfill-payout — mark a payout sent (admin token)
  *   GET  /affiliate/admin/export.csv     — export commission ledger CSV (admin token)
@@ -37,10 +39,11 @@
 
 import {
   handleAffiliateClick, handleAffiliateApply, handleAffiliateLogin,
-  handleAffiliateDashboard, handleAffiliateLink, handleAffiliatePayoutSetup,
-  handleAffiliateRequestPayout,
+  handleAffiliateSetPassword, handleAffiliateDashboard, handleAffiliateLink,
+  handleAffiliatePayoutSetup, handleAffiliateRequestPayout,
   handleAdminListAffiliates, handleAdminApproveAffiliate, handleAdminRejectAffiliate,
-  handleAdminAdjustCommission, handleAdminCommissionLedger, handleAdminFulfillPayout,
+  handleAdminAdjustCommission, handleAdminSetAffiliatePassword,
+  handleAdminCommissionLedger, handleAdminFulfillPayout,
   handleAdminExportCsv, processAffiliateAttribution
 } from './affiliate.js';
 
@@ -370,6 +373,8 @@ export default {
         response = await handleAffiliateApply(request, env);
       } else if (path === '/affiliate/login' && method === 'POST') {
         response = await handleAffiliateLogin(request, env);
+      } else if (path === '/affiliate/set-password' && method === 'POST') {
+        response = await handleAffiliateSetPassword(request, env);
       } else if (path === '/affiliate/dashboard' && method === 'GET') {
         response = await handleAffiliateDashboard(request, env);
       } else if (path === '/affiliate/link' && method === 'POST') {
@@ -392,6 +397,9 @@ export default {
       } else if (path === '/affiliate/admin/adjust-commission' && method === 'POST') {
         if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminAdjustCommission(request, env);
+      } else if (path === '/affiliate/admin/set-password' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminSetAffiliatePassword(request, env);
       } else if (path === '/affiliate/admin/ledger' && method === 'GET') {
         if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminCommissionLedger(request, env);

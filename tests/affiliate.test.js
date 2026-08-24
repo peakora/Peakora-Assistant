@@ -11,6 +11,7 @@ import {
   parseReferralToken, calculateCommission, resolveTier, genReferralCode,
   genId, normalizeEmail, sha256Hex, DEFAULT_TIERS, PAYOUT_HOLD_DAYS,
   PRICE_SNAPSHOT, PAYOUT_METHODS,
+  hashPassword, verifyPassword, validPassword, validatePayout,
   processAffiliateAttribution
 } from '../worker/src/affiliate.js';
 
@@ -374,5 +375,65 @@ describe('processAffiliateAttribution', () => {
     const result = await processAffiliateAttribution(env, rec);
     assert.equal(result.action, 'no_attribution');
     assert.equal(db.commissions.length, 0);
+  });
+});
+
+// ── Tests: password hashing + payout validation ──────────────────────────────
+describe('password hashing', () => {
+  test('hash + verify roundtrip succeeds', async () => {
+    const stored = await hashPassword('hunter222');
+    assert.match(stored, /^pbkdf2\$\d+\$[^$]+\$[^$]+$/);
+    assert.equal(await verifyPassword('hunter222', stored), true);
+  });
+  test('wrong password fails verification', async () => {
+    const stored = await hashPassword('correct-horse');
+    assert.equal(await verifyPassword('nope', stored), false);
+  });
+  test('two hashes of the same password differ (random salt)', async () => {
+    const a = await hashPassword('samepass1');
+    const b = await hashPassword('samepass1');
+    assert.notEqual(a, b);
+    assert.equal(await verifyPassword('samepass1', a), true);
+    assert.equal(await verifyPassword('samepass1', b), true);
+  });
+  test('verify rejects null / malformed stored hashes', async () => {
+    assert.equal(await verifyPassword('x', null), false);
+    assert.equal(await verifyPassword('x', 'garbage'), false);
+    assert.equal(await verifyPassword('x', 'pbkdf2$xx$y'), false);
+  });
+  test('validPassword enforces min length 8', () => {
+    assert.equal(validPassword('short'), false);
+    assert.equal(validPassword('1234567'), false);
+    assert.equal(validPassword('12345678'), true);
+    assert.equal(validPassword('a'.repeat(201)), false);
+    assert.equal(validPassword('a'.repeat(200)), true);
+    assert.equal(validPassword(12345678), false);
+  });
+});
+
+describe('payout validation', () => {
+  test('paypal requires email', () => {
+    assert.equal(validatePayout('paypal', { email: 'a@b.com' }).ok, true);
+    assert.equal(validatePayout('paypal', {}).ok, false);
+  });
+  test('bank requires holder, account, swift, country', () => {
+    const ok = validatePayout('bank', {
+      account_holder: 'Jane', iban_or_account: 'GB29', swift_or_routing: 'NWBK', country: 'UK'
+    });
+    assert.equal(ok.ok, true);
+    assert.equal(validatePayout('bank', { account_holder: 'Jane' }).ok, false);
+  });
+  test('usdc requires wallet + network', () => {
+    assert.equal(validatePayout('usdc', { wallet_address: '0x1', network: 'Polygon' }).ok, true);
+    assert.equal(validatePayout('usdc', { wallet_address: '0x1' }).ok, false);
+  });
+  test('unsupported method rejected', () => {
+    assert.equal(validatePayout('crypto', {}).ok, false);
+  });
+  test('returns normalized details object', () => {
+    const r = validatePayout('wise', { email: 'a@b.com', extra: 'ignored' });
+    assert.equal(r.ok, true);
+    assert.equal(r.details.email, 'a@b.com');
+    assert.equal('extra' in r.details, true); // pass-through, not stripped
   });
 });

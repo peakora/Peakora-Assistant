@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/affiliate.css" />
+  <link rel="stylesheet" href="css/portal.css" />
 </head>
 
 <body>
@@ -360,9 +361,26 @@
             <input type="text" id="aff-platform" placeholder="Primary platform (Instagram, YouTube, blog, etc.)">
             <input type="text" id="aff-audience" placeholder="Approximate audience size">
           </div>
+          <div class="aff-form-row">
+            <input type="password" id="aff-password" placeholder="Create a password (min 8 chars)" required minlength="8">
+            <input type="password" id="aff-password2" placeholder="Confirm password" required minlength="8">
+          </div>
           <textarea id="aff-message" rows="3" placeholder="How do you plan to promote Peakora? (optional)"></textarea>
+
+          <div class="aff-signup-payout">
+            <p class="aff-signup-payout-title">Choose your payout method (optional, set later in your portal)</p>
+            <div class="aff-signup-payout-methods">
+              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="paypal"> PayPal</label>
+              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="wise"> Wise</label>
+              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="bank"> Bank Transfer</label>
+              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="usdc"> USDC</label>
+            </div>
+            <div class="portal-payout-fields" id="aff-payout-fields"></div>
+          </div>
+
           <button type="submit" class="btn-hero-primary aff-apply-submit">Submit Application</button>
           <p class="aff-form-note" id="aff-form-status">No fees, no obligations. You are approved instantly.</p>
+          <p class="aff-signin-link" id="aff-signin-link" style="display:none;">Already applied? <a href="affiliate-portal.html">Sign in to your portal</a>.</p>
         </form>
       </div>
     </div>
@@ -506,10 +524,41 @@
     return 'https://peakora-api.peakora.workers.dev';
   })();
 
+  // Payout field definitions (mirror the portal so the apply form is consistent).
+  var PAYOUT_FIELDS = {
+    paypal: [{ name: 'email', label: 'PayPal Email', placeholder: 'you@example.com' }],
+    wise: [{ name: 'email', label: 'Wise Email', placeholder: 'you@example.com' }],
+    bank: [
+      { name: 'account_holder', label: 'Account Holder Name', placeholder: 'Jane Doe' },
+      { name: 'iban_or_account', label: 'IBAN / Account Number', placeholder: 'GB29 NWBK...' },
+      { name: 'swift_or_routing', label: 'SWIFT/BIC or Routing Number', placeholder: 'NWBKGB2L' },
+      { name: 'country', label: 'Country', placeholder: 'United Kingdom' }
+    ],
+    usdc: [
+      { name: 'wallet_address', label: 'Wallet Address', placeholder: '0x...' },
+      { name: 'network', label: 'Network', placeholder: 'Polygon / Base / Ethereum' }
+    ]
+  };
+
+  function renderApplyPayoutFields(method) {
+    var fields = PAYOUT_FIELDS[method] || [];
+    var html = '';
+    fields.forEach(function (f) {
+      html += '<div class="portal-payout-field"><label>' + f.label + '</label>' +
+        '<input type="text" data-field="' + f.name + '" placeholder="' + (f.placeholder || '') + '"></div>';
+    });
+    document.getElementById('aff-payout-fields').innerHTML = html;
+  }
+  document.querySelectorAll('input[name="aff-payout-method"]').forEach(function (r) {
+    r.addEventListener('change', function () { renderApplyPayoutFields(r.value); });
+  });
+
   function submitAffiliateApp(e) {
     e.preventDefault();
     var name = (document.getElementById('aff-name').value || '').trim();
     var email = (document.getElementById('aff-email').value || '').trim();
+    var password = document.getElementById('aff-password').value || '';
+    var password2 = document.getElementById('aff-password2').value || '';
     var platform = (document.getElementById('aff-platform').value || '').trim();
     var audience = (document.getElementById('aff-audience').value || '').trim();
     var message = (document.getElementById('aff-message').value || '').trim();
@@ -520,6 +569,29 @@
       status.style.color = '#fb7185';
       return false;
     }
+    if (!password || password.length < 8) {
+      status.textContent = 'Please choose a password of at least 8 characters.';
+      status.style.color = '#fb7185';
+      return false;
+    }
+    if (password !== password2) {
+      status.textContent = 'The two passwords do not match.';
+      status.style.color = '#fb7185';
+      return false;
+    }
+
+    // Optional payout method at signup.
+    var payload = { name: name, email: email, password: password, platform: platform, audience: audience, message: message };
+    var chosen = document.querySelector('input[name="aff-payout-method"]:checked');
+    if (chosen) {
+      var details = {};
+      document.querySelectorAll('#aff-payout-fields input[data-field]').forEach(function (inp) {
+        details[inp.getAttribute('data-field')] = inp.value.trim();
+      });
+      payload.payout_method = chosen.value;
+      payload.payout_details = details;
+    }
+
     status.textContent = 'Submitting your application...';
     status.style.color = 'var(--theme-text-muted)';
     if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
@@ -527,15 +599,24 @@
     fetch(AFFILIATE_API + '/affiliate/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, email: email, platform: platform, audience: audience, message: message })
+      body: JSON.stringify(payload)
     }).then(function (r) {
       return r.json().then(function (d) { return { ok: r.ok, data: d }; });
     }).then(function (res) {
       if (res.ok && res.data.success) {
-        status.textContent = res.data.message || 'Application received. You are approved instantly, check your email for your referral link.';
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
+        // Already a partner: never hint at a new code. Show their stored code +
+        // a sign-in button so they reach the right portal account.
+        if (res.data.already_partner) {
+          status.innerHTML = (res.data.message || 'You are already a partner.') +
+            ' <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Sign in to your portal</a>.';
+          status.style.color = '#facc15';
+          document.getElementById('aff-signin-link').style.display = 'block';
+          return;
+        }
+        status.textContent = res.data.message || 'Application received. You are approved instantly.';
         status.style.color = '#34d399';
         document.querySelector('.aff-apply-form').reset();
-        if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
         if (res.data.status === 'active' && res.data.referral_code) {
           status.innerHTML += ' Your referral code is <strong>' + res.data.referral_code + '</strong>. <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Go to your portal</a>.';
         }

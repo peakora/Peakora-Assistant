@@ -22,9 +22,14 @@
 - Self-referral blocking: customer email/IP hashed and matched against affiliate's own record.
 - Webhook: `/dodo/webhook`, Standard Webhooks HMAC verified (webhook-id, webhook-timestamp, webhook-signature). Unsigned requests rejected with "Invalid signature".
 - Schema backfills (idempotent, run every deploy): commission_rate->0.50, payout_min->25, pending->active.
+- Partner auth is email + password (PBKDF2-SHA256, 100k iter, random salt stored as `password_hash` = `pbkdf2$iter$saltB64$hashB64`). `handleAffiliateLogin` verifies the password; the HMAC portal token (7d) is still issued after login. Legacy accounts with NULL `password_hash` are forced through a one-time `/affiliate/set-password` flow (closes the old email-only access hole). Admin can also set a partner password via `/affiliate/admin/set-password`. Apply now requires a password and optionally collects payout method + details at signup.
+- Apply is one-per-email: re-applying with an existing email returns `already_partner=true` + the stored referral code + a sign-in CTA (never a new/different code).
+- Dashboard returns `available_balance` (approved, post-hold) in addition to pending/paid; the portal shows a balance hero card, a 6-month SVG earnings bar chart, and a clicks->conversions->active funnel (no chart libs, pure inline SVG/CSS).
+- Admin panel uses ADMIN_TOKEN (Cloudflare secret), NOT email. The live token works (verified). Add `password_hash` column via schema.sql on next deploy (CREATE TABLE IF NOT EXISTS does not alter existing tables; the column add is handled by the schema run for fresh DBs - for the existing DB run the ALTER in schema.sql).
 
 ## Deploy gotcha
 - GitHub Actions Worker deploy sometimes fails in ~4s with `steps:[]` / `runner_id:0` (infra allocation, not code). Fallback: `cd worker && CLOUDFLARE_API_TOKEN=$TOKEN npx wrangler deploy && npx wrangler d1 execute peakora-db --remote --file=schema.sql`. Pages deploys independently from git.
+- The `affiliates.password_hash` column is new. CREATE TABLE IF NOT EXISTS will not add it to the existing table, so run a one-time `ALTER TABLE affiliates ADD COLUMN password_hash TEXT;` if the column is missing (D1 ignores the error if it already exists). Both existing real affiliates (peakora.network@gmail.com = BGJQFP, ibieruti@gmail.com = 3NZ2R8) have NULL password_hash and must set one via the portal set-password flow or admin set-password before they can log in.
 
 ## Style rules (mandatory)
 - NO labels/eyebrows/badges (no hero-eyebrow, aff-hero-badge, diff-eyebrow).

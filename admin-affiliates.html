@@ -233,6 +233,7 @@
               (a.status === 'pending' ? '<button class="admin-mini-btn admin-mini-approve" onclick="approveAff(\'' + a.id + '\')">Approve</button><button class="admin-mini-btn admin-mini-reject" onclick="rejectAff(\'' + a.id + '\')">Reject</button>' : '') +
               (a.status === 'active' ? '<button class="admin-mini-btn admin-mini-reject" onclick="rejectAff(\'' + a.id + '\')">Suspend</button>' : '') +
               '<button class="admin-mini-btn" onclick="openAdjust(\'' + a.id + '\',' + a.commission_rate + ',\'' + a.commission_type + '\')">Adjust</button>' +
+              '<button class="admin-mini-btn" onclick="setAffPassword(\'' + esc(a.user_email) + '\')">Set PW</button>' +
             '</td>';
           body.appendChild(tr);
         });
@@ -318,6 +319,13 @@
     postAdmin('/affiliate/admin/adjust-commission', {
       id: id, commission_rate: rateNum, commission_type: useFlat ? 'flat' : 'percentage'
     }).then(function (d) { if (d.success) loadAffiliates(); else alert(d.error || 'Failed'); });
+  }
+  function setAffPassword(email) {
+    var pw = prompt('Set a new password for ' + email + ' (min 8 chars):', '');
+    if (pw === null) return;
+    if (pw.length < 8) { alert('Password must be at least 8 characters.'); return; }
+    postAdmin('/affiliate/admin/set-password', { email: email, password: pw })
+      .then(function (d) { if (d.success) alert('Password set for ' + email + '.'); else alert(d.error || 'Failed'); });
   }
   function fulfillPayout(payId) {
     var ref = (document.getElementById('ref-' + payId) || {}).value || '';

@@ -75,6 +75,67 @@ export async function sha256Hex(text) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+const PBKDF2_ITER = 100000;
+
+function toB64(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+function fromB64(str) {
+  return Uint8Array.from(atob(str), c => c.charCodeAt(0));
+}
+
+/** Hash a password with PBKDF2-SHA256 + random salt. Returns 'pbkdf2$iter$saltB64$hashB64'. */
+export async function hashPassword(password) {
+  const saltBytes = new Uint8Array(16);
+  crypto.getRandomValues(saltBytes);
+  const salt = toB64(saltBytes);
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: saltBytes, iterations: PBKDF2_ITER, hash: 'SHA-256' }, key, 256);
+  const hash = toB64(bits);
+  return `pbkdf2${'$'}${PBKDF2_ITER}${'$'}${salt}${'$'}${hash}`;
+}
+
+/** Verify a password against a stored 'pbkdf2$iter$saltB64$hashB64' string. */
+export async function verifyPassword(password, stored) {
+  if (!stored) return false;
+  const parts = stored.split('$');
+  if (parts.length !== 4 || parts[0] !== 'pbkdf2') return false;
+  const iter = Number(parts[1]);
+  const salt = fromB64(parts[2]);
+  const expected = parts[3];
+  if (!Number.isFinite(iter) || iter <= 0) return false;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  const actual = toB64(bits);
+  return timingSafeStrEq(actual, expected);
+}
+
+function timingSafeStrEq(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/** Validate a password against minimum policy. */
+export function validPassword(pw) {
+  return typeof pw === 'string' && pw.length >= 8 && pw.length <= 200;
+}
+
+/** Validate payout method + details; returns {method, details} or throws via return of null+reason. */
+export function validatePayout(method, details) {
+  if (!PAYOUT_METHODS.includes(method)) return { ok: false, error: 'Unsupported payout method.' };
+  const obj = details && typeof details === 'object' ? details : {};
+  const required = {
+    paypal: ['email'], wise: ['email'], bank: ['account_holder', 'iban_or_account', 'swift_or_routing', 'country'],
+    usdc: ['wallet_address', 'network']
+  }[method] || [];
+  for (const f of required) {
+    if (!obj[f]) return { ok: false, error: `Missing payout field: ${f}` };
+  }
+  return { ok: true, method, details: obj };
+}
+
 /** Validate + normalize an email. Returns null if invalid. */
 export function normalizeEmail(raw) {
   if (!raw) return null;
@@ -233,20 +294,26 @@ export async function handleAffiliateApply(request, env) {
   const body = await readJson(request);
   const email = normalizeEmail(body.email);
   const name = String(body.name || '').trim().slice(0, 120);
+  const password = String(body.password || '');
   const platform = String(body.platform || '').trim().slice(0, 120);
   const audience = String(body.audience || '').trim().slice(0, 60);
   const message = String(body.message || '').trim().slice(0, 2000);
   if (!email) return json({ success: false, error: 'A valid email is required.' }, 400);
   if (!name) return json({ success: false, error: 'Your name is required.' }, 400);
+  if (!validPassword(password)) return json({ success: false, error: 'A password of at least 8 characters is required.' }, 400);
 
   const existing = await getAffiliateByEmail(env.DB, email);
   if (existing) {
+    // One account per email, ever. Surface the stored code + a sign-in CTA so the
+    // partner can reach their portal instead of re-applying (which used to confuse
+    // people by hinting at a different code).
     return json({
       success: true,
+      already_partner: true,
       status: existing.status,
       referral_code: existing.referral_code,
       message: existing.status === 'active'
-        ? 'You are already a partner. Sign in to your portal.'
+        ? 'You are already a partner. Sign in to your portal to access your dashboard.'
         : 'Your account is ' + existing.status + '. Contact us if you need help.'
     });
   }
@@ -260,18 +327,27 @@ export async function handleAffiliateApply(request, env) {
   }
   if (!referralCode) return json({ success: false, error: 'Could not allocate referral code. Please retry.' }, 500);
 
+  // Optional payout method collected at signup to reduce later friction.
+  let payoutMethod = null, payoutDetails = null;
+  if (body.payout_method) {
+    const pv = validatePayout(String(body.payout_method).toLowerCase(), body.payout_details);
+    if (!pv.ok) return json({ success: false, error: pv.error }, 400);
+    payoutMethod = pv.method; payoutDetails = JSON.stringify(pv.details);
+  }
+
   const id = genId('aff');
+  const passwordHash = await hashPassword(password);
   const notes = JSON.stringify({ platform, audience, message });
   // Every applicant is approved instantly so they can generate links and log in
   // right away, the way Calm and Gaia handle their programs. No review queue.
   const initialStatus = 'active';
   const tier = resolveTier(0, DEFAULT_TIERS);
   await env.DB.prepare(
-    `INSERT INTO affiliates (id, user_email, display_name, referral_code, status, commission_type, commission_rate, tier_config, payout_min, payout_schedule, notes, approved_at)
-     VALUES (?, ?, ?, ?, ?, 'percentage', ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO affiliates (id, user_email, password_hash, display_name, referral_code, status, commission_type, commission_rate, tier_config, payout_method, payout_details, payout_min, payout_schedule, notes, approved_at)
+     VALUES (?, ?, ?, ?, ?, ?, 'percentage', ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
-    id, email, name, referralCode, initialStatus,
-    tier.rate, JSON.stringify(DEFAULT_TIERS), tier.payoutMin, tier.payoutSchedule, notes,
+    id, email, passwordHash, name, referralCode, initialStatus,
+    tier.rate, JSON.stringify(DEFAULT_TIERS), payoutMethod, payoutDetails, tier.payoutMin, tier.payoutSchedule, notes,
     new Date().toISOString()
   ).run();
 
@@ -317,6 +393,7 @@ async function verifyPortalAuth(request, env) {
 export async function handleAffiliateLogin(request, env) {
   const body = await readJson(request);
   const email = normalizeEmail(body.email);
+  const password = String(body.password || '');
   if (!email) return json({ success: false, error: 'Valid email required.' }, 400);
   let aff = await getAffiliateByEmail(env.DB, email);
   if (!aff) return json({ success: false, error: 'No affiliate account found for that email.' }, 404);
@@ -329,8 +406,48 @@ export async function handleAffiliateLogin(request, env) {
     aff = await getAffiliateByEmail(env.DB, email);
   }
   if (aff.status !== 'active') return json({ success: false, error: `Account is ${aff.status}. Contact us if you need help.` }, 403);
+
+  // Legacy migration: accounts created before passwords existed have no hash.
+  // They must set a password once before they (or anyone else) can log in.
+  if (!aff.password_hash) {
+    return json({ success: false, needs_password: true, error: 'Please set a password for your account to continue.' });
+  }
+  if (!password) return json({ success: false, error: 'Password is required.' }, 400);
+  const ok = await verifyPassword(password, aff.password_hash);
+  if (!ok) return json({ success: false, error: 'Incorrect email or password.' }, 401);
+
   const token = await portalToken(email, env);
   return json({ success: true, token, email, referral_code: aff.referral_code });
+}
+
+/** One-time self-service password set for legacy accounts (no hash yet) OR an
+ *  authenticated password change for partners already holding a valid token.
+ *  This closes the email-only access hole: once a password exists, the email is
+ *  not enough to reach the dashboard. */
+export async function handleAffiliateSetPassword(request, env) {
+  const body = await readJson(request);
+  const email = normalizeEmail(body.email);
+  const newPassword = String(body.new_password || '');
+  const currentPassword = String(body.current_password || '');
+  if (!email) return json({ success: false, error: 'Valid email required.' }, 400);
+  if (!validPassword(newPassword)) return json({ success: false, error: 'New password must be at least 8 characters.' }, 400);
+  const aff = await getAffiliateByEmail(env.DB, email);
+  if (!aff) return json({ success: false, error: 'No affiliate account found for that email.' }, 404);
+
+  if (aff.password_hash) {
+    // Authenticated change: require the current password OR a valid portal token.
+    const tokenEmail = await verifyPortalAuth(request, env);
+    if (tokenEmail !== email) {
+      const ok = await verifyPassword(currentPassword, aff.password_hash);
+      if (!ok) return json({ success: false, error: 'Current password is incorrect.' }, 401);
+    }
+  }
+  // else: legacy account with no password -> allow the one-time set. This window
+  // only exists until a password is stored; afterwards it requires auth above.
+  const hash = await hashPassword(newPassword);
+  await env.DB.prepare('UPDATE affiliates SET password_hash = ? WHERE id = ?').bind(hash, aff.id).run();
+  const token = await portalToken(email, env);
+  return json({ success: true, token, email, referral_code: aff.referral_code, message: 'Password set. You are signed in.' });
 }
 
 /** Partner portal dashboard aggregate. */
@@ -347,10 +464,11 @@ export async function handleAffiliateDashboard(request, env) {
   // number that disagrees with the commissions it accrues.
   if (aff.commission_type === 'percentage') tier.rate = Number(aff.commission_rate) || tier.rate;
 
-  const [clicks, conversions, pending, paid, commissions, payouts] = await Promise.all([
+  const [clicks, conversions, pending, approved, paid, commissions, payouts] = await Promise.all([
     env.DB.prepare('SELECT COUNT(*) AS n FROM referral_clicks WHERE affiliate_id = ?').bind(aff.id).first(),
     env.DB.prepare(`SELECT COUNT(DISTINCT customer_email) AS n FROM commissions WHERE affiliate_id = ? AND status != 'refunded'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'pending'`).bind(aff.id).first(),
+    env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'approved'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'paid'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT * FROM commissions WHERE affiliate_id = ? ORDER BY created_at DESC LIMIT 50`).bind(aff.id).all(),
     env.DB.prepare(`SELECT * FROM payouts WHERE affiliate_id = ? ORDER BY created_at DESC LIMIT 50`).bind(aff.id).all()
@@ -374,6 +492,7 @@ export async function handleAffiliateDashboard(request, env) {
       clicks: clicks?.n || 0,
       conversions: conversions?.n || 0,
       pending_balance: round2(pending?.n || 0),
+      available_balance: round2(approved?.n || 0),
       paid_balance: round2(paid?.n || 0)
     },
     recent_commissions: commissions.results || [],
@@ -408,21 +527,12 @@ export async function handleAffiliatePayoutSetup(request, env) {
   const aff = await getAffiliateByEmail(env.DB, email);
   if (!aff) return json({ success: false, error: 'Not found' }, 404);
   const body = await readJson(request);
-  const method = String(body.method || '').toLowerCase();
-  if (!PAYOUT_METHODS.includes(method)) return json({ success: false, error: 'Unsupported payout method.' }, 400);
-  const details = body.details && typeof body.details === 'object' ? body.details : {};
-  // Minimal per-method field validation (no secrets stored beyond payout contact).
-  const required = {
-    paypal: ['email'], wise: ['email'], bank: ['account_holder', 'iban_or_account', 'swift_or_routing', 'country'],
-    usdc: ['wallet_address', 'network']
-  }[method] || [];
-  for (const f of required) {
-    if (!details[f]) return json({ success: false, error: `Missing payout field: ${f}` }, 400);
-  }
+  const pv = validatePayout(String(body.method || '').toLowerCase(), body.details);
+  if (!pv.ok) return json({ success: false, error: pv.error }, 400);
   await env.DB.prepare(
     'UPDATE affiliates SET payout_method = ?, payout_details = ? WHERE id = ?'
-  ).bind(method, JSON.stringify(details), aff.id).run();
-  return json({ success: true, payout_method: method });
+  ).bind(pv.method, JSON.stringify(pv.details), aff.id).run();
+  return json({ success: true, payout_method: pv.method });
 }
 
 /** Partner portal: request a payout (creates a pending payout request). */
@@ -499,6 +609,20 @@ export async function handleAdminAdjustCommission(request, env) {
   await env.DB.prepare(
     'UPDATE affiliates SET commission_type = ?, commission_rate = ? WHERE id = ?'
   ).bind(type, type === 'flat' ? rate : rate, id).run();
+  return json({ success: true });
+}
+
+/** Admin: set/reset a partner's password (bootstrap legacy accounts or resets). */
+export async function handleAdminSetAffiliatePassword(request, env) {
+  const body = await readJson(request);
+  const email = normalizeEmail(body.email);
+  const password = String(body.password || '');
+  if (!email) return json({ success: false, error: 'Affiliate email required.' }, 400);
+  if (!validPassword(password)) return json({ success: false, error: 'Password must be at least 8 characters.' }, 400);
+  const aff = await getAffiliateByEmail(env.DB, email);
+  if (!aff) return json({ success: false, error: 'Affiliate not found.' }, 404);
+  const hash = await hashPassword(password);
+  await env.DB.prepare('UPDATE affiliates SET password_hash = ? WHERE id = ?').bind(hash, aff.id).run();
   return json({ success: true });
 }
 
