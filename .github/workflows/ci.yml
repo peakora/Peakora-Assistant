@@ -27,11 +27,15 @@ jobs:
 
       - name: Verify site entry points exist
         run: |
-          test -f index.html && echo "entry points OK"
+          test -f index.html && test -f affiliate.html && test -f affiliate-portal.html && test -f admin-affiliates.html && test -f affiliate.js && echo "entry points OK"
 
       - name: Verify Worker syntax
         run: |
-          test -f worker/wrangler.toml && test -f worker/src/index.js && echo "worker OK"
+          node --check worker/src/index.js && node --check worker/src/affiliate.js && test -f worker/wrangler.toml && echo "worker OK"
+
+      - name: Run affiliate engine tests
+        run: |
+          node --test tests/affiliate.test.js
 
       - name: Ensure no real secrets committed
         run: |

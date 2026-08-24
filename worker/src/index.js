@@ -13,11 +13,36 @@
  *   POST /push-unsubscribe         — remove web push subscription
  *   POST /push-broadcast           — admin push broadcast (admin token)
  *
+ * Affiliate program (see affiliate.js):
+ *   GET  /affiliate/click          — record a referral click (returns 1x1 GIF)
+ *   POST /affiliate/apply          — partner application
+ *   POST /affiliate/login          — partner portal login (returns signed token)
+ *   GET  /affiliate/dashboard      — partner portal aggregate (token auth)
+ *   POST /affiliate/link           — generate a tracked referral link (token auth)
+ *   POST /affiliate/payout-setup   — set payout method/details (token auth)
+ *   POST /affiliate/request-payout — request a payout of approved balance (token auth)
+ *   GET  /affiliate/admin/list           — list affiliates (admin token)
+ *   POST /affiliate/admin/approve        — approve a partner (admin token)
+ *   POST /affiliate/admin/reject         — suspend/reject a partner (admin token)
+ *   POST /affiliate/admin/adjust-commission — set custom rate (admin token)
+ *   GET  /affiliate/admin/ledger         — commission ledger (admin token)
+ *   POST /affiliate/admin/fulfill-payout — mark a payout sent (admin token)
+ *   GET  /affiliate/admin/export.csv     — export commission ledger CSV (admin token)
+ *
  * D1 binding: env.DB
  * KV binding:  env.AUTH (future: session tokens)
  */
 
 // ── Dodo webhook verification (Standard Webhooks, Web Crypto API) ──────────
+
+import {
+  handleAffiliateClick, handleAffiliateApply, handleAffiliateLogin,
+  handleAffiliateDashboard, handleAffiliateLink, handleAffiliatePayoutSetup,
+  handleAffiliateRequestPayout,
+  handleAdminListAffiliates, handleAdminApproveAffiliate, handleAdminRejectAffiliate,
+  handleAdminAdjustCommission, handleAdminCommissionLedger, handleAdminFulfillPayout,
+  handleAdminExportCsv, processAffiliateAttribution
+} from './affiliate.js';
 
 async function verifyDodoWebhook(rawBody, headers, secret) {
   if (!secret) return false;
@@ -64,6 +89,22 @@ function requireAdmin(request, env) {
 
 // ── Dodo event mapping ────────────────────────────────────────────────────
 
+/** Resolve the gross amount paid in a Dodo event (across event shapes). */
+function resolveGrossAmount(data, sub) {
+  const candidates = [
+    data.amount, data.amount_paid, data.total, data.price,
+    sub.amount, sub.amount_paid, sub.total,
+    data.payment && data.payment.amount, data.invoice && data.invoice.amount_paid,
+    data.amount_total, data.value
+  ];
+  for (const c of candidates) {
+    const n = Number(c);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  // Fall back to known plan prices (env-agnostic) so attribution still accrues.
+  return null;
+}
+
 function mapDodoEvent(payload, env) {
   const type = payload.type || payload.event_type || '';
   const data = payload.data || payload;
@@ -87,6 +128,7 @@ function mapDodoEvent(payload, env) {
     transactionId: sub.id || data.subscription_id || data.payment_id || data.id || ('DODO-' + Date.now().toString().slice(-6)),
     eventType: type,
     method: data.payment_method || sub.payment_method || 'Dodo Payments',
+    grossAmount: resolveGrossAmount(data, sub),
     updatedAt: new Date().toISOString()
   };
 }
@@ -115,11 +157,12 @@ const ALLOWED_ORIGINS = [
 
 function cors(response, request) {
   const origin = request ? (request.headers.get('Origin') || '') : '';
+  // Affiliate portal + local dev run on the same origins; allow echo for same-site.
   const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   response.headers.set('Access-Control-Allow-Origin', allowOrigin);
   response.headers.set('Vary', 'Origin');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, x-admin-token, x-affiliate-token, x-affiliate-email');
   response.headers.set('Access-Control-Max-Age', '86400');
   return response;
 }
@@ -167,7 +210,17 @@ async function handleDodoWebhook(request, env) {
        updated_at=excluded.updated_at`
   ).bind(rec.email, rec.status, rec.plan, rec.transactionId, rec.eventType, rec.method, rec.productId, rec.updatedAt).run();
 
-  return json({ success: true, event_type: rec.eventType, status: rec.status, email: rec.email });
+  // Affiliate attribution: accrue/reverse commission for this verified payment.
+  // Best-effort — a failure here must never break payment recording.
+  let affiliateResult = null;
+  try {
+    affiliateResult = await processAffiliateAttribution(env, rec);
+    if (affiliateResult) console.log(`[Affiliate] ${affiliateResult.action} | txn=${rec.transactionId}`);
+  } catch (e) {
+    console.warn('[Affiliate] attribution error (non-blocking):', e.message);
+  }
+
+  return json({ success: true, event_type: rec.eventType, status: rec.status, email: rec.email, affiliate: affiliateResult });
 }
 
 async function handleSubscriptionStatus(request, env) {
@@ -309,6 +362,45 @@ export default {
         response = await handlePushSubscribe(request, env);
       } else if (path === '/push-unsubscribe' && method === 'POST') {
         response = await handlePushUnsubscribe(request, env);
+
+      /* ── Affiliate program: public + partner routes ── */
+      } else if (path === '/affiliate/click' && method === 'GET') {
+        response = await handleAffiliateClick(request, env);
+      } else if (path === '/affiliate/apply' && method === 'POST') {
+        response = await handleAffiliateApply(request, env);
+      } else if (path === '/affiliate/login' && method === 'POST') {
+        response = await handleAffiliateLogin(request, env);
+      } else if (path === '/affiliate/dashboard' && method === 'GET') {
+        response = await handleAffiliateDashboard(request, env);
+      } else if (path === '/affiliate/link' && method === 'POST') {
+        response = await handleAffiliateLink(request, env);
+      } else if (path === '/affiliate/payout-setup' && method === 'POST') {
+        response = await handleAffiliatePayoutSetup(request, env);
+      } else if (path === '/affiliate/request-payout' && method === 'POST') {
+        response = await handleAffiliateRequestPayout(request, env);
+
+      /* ── Affiliate program: admin routes (ADMIN_TOKEN) ── */
+      } else if (path === '/affiliate/admin/list' && method === 'GET') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminListAffiliates(request, env);
+      } else if (path === '/affiliate/admin/approve' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminApproveAffiliate(request, env);
+      } else if (path === '/affiliate/admin/reject' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminRejectAffiliate(request, env);
+      } else if (path === '/affiliate/admin/adjust-commission' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminAdjustCommission(request, env);
+      } else if (path === '/affiliate/admin/ledger' && method === 'GET') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminCommissionLedger(request, env);
+      } else if (path === '/affiliate/admin/fulfill-payout' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminFulfillPayout(request, env);
+      } else if (path === '/affiliate/admin/export.csv' && method === 'GET') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminExportCsv(request, env);
       } else {
         response = json({ success: false, error: 'Not found', path }, 404);
       }

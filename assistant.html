@@ -57,6 +57,7 @@
     </div>
   </div>
 
+  <script src="affiliate.js"></script>
   <script>
     /* BASIC USAGE TRACKING SYSTEM */
     const PeakoraTracker = {
@@ -2110,7 +2111,7 @@
               <div style="position:absolute; top:-60px; right:-60px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow), transparent 70%); pointer-events:none;"></div>
               <div class="dash-card-title" style="display:flex; align-items:center; gap:8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--theme-accent);"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                Peakora Partners — Earn While You Share
+                Affiliate Program — Earn While You Share
               </div>
               <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.6;">
                 Love Peakora? Share it and earn 30% recurring commission on every subscriber you bring — for as long as they stay. No audience minimum, 90-day cookie window, real-time tracking.
@@ -2650,16 +2651,19 @@
 
       try {
         const config = await loadDodoConfig();
-        const link = plan === 'yearly' ? config.yearlyLink : config.monthlyLink;
+        let link = plan === 'yearly' ? config.yearlyLink : config.monthlyLink;
         if (!link) throw new Error('Payment link not configured');
+        if (email) link += (link.indexOf('?') === -1 ? '?' : '&') + 'email=' + encodeURIComponent(email);
 
-        let url = link;
-        if (email) url += '&email=' + encodeURIComponent(email);
+        // Attach affiliate referral token so attribution survives the redirect.
+        if (window.PeakoraAffiliate) {
+          link = window.PeakoraAffiliate.attachToUrl(link);
+        }
 
         if (window.PeakoraTracker) {
           window.PeakoraTracker.track('dodo_checkout_redirect', { plan, price });
         }
-        window.location.href = url;
+        window.location.href = link;
       } catch (err) {
         console.error('[Dodo Checkout] failed:', err);
         const content = document.getElementById('dodo-checkout-content');

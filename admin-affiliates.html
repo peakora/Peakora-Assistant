@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Affiliate Admin — Peakora Management Panel</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/affiliate.css" />
+  <link rel="stylesheet" href="css/portal.css" />
+</head>
+
+<body>
+
+<div id="top"></div>
+
+<header class="header">
+  <div class="container header-inner">
+    <a href="index.html" class="brand">
+      <img src="assets/peakora-logo.png" alt="Peakora logo" class="brand-logo">
+    </a>
+    <nav class="nav" id="mainNav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="affiliate.html" class="nav-link">Affiliate Program</a>
+      <a href="affiliate-portal.html" class="nav-link">Partner Portal</a>
+      <a href="admin-affiliates.html" class="nav-link nav-link-active">Admin</a>
+    </nav>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Navigation Menu">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+  </div>
+</header>
+
+<!-- TOKEN GATE -->
+<section class="portal-login-section" id="admin-gate">
+  <div class="container">
+    <div class="portal-login-card">
+      <h1 class="portal-login-title">Affiliate Admin</h1>
+      <p class="portal-login-sub">Enter your admin token to manage the affiliate program.</p>
+      <form class="portal-login-form" onsubmit="return adminAuth(event)">
+        <input type="password" id="admin-token-input" placeholder="Admin token" required>
+        <button type="submit" class="btn-hero-primary portal-login-btn" id="admin-auth-btn">Unlock Panel</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL -->
+<section class="portal-dash" id="admin-panel" style="display:none;">
+  <div class="container">
+    <div class="portal-dash-head">
+      <div>
+        <h1 class="portal-dash-title">Affiliate Management</h1>
+        <p class="portal-dash-sub">Approve partners, adjust commissions, review the ledger, and fulfill payouts.</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="aff-btn-ghost" onclick="refreshAll()">Refresh</button>
+        <a class="aff-btn-ghost" id="export-link" href="#" target="_blank">Export CSV</a>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab admin-tab-active" onclick="switchTab('partners', this)">Partners</button>
+      <button class="admin-tab" onclick="switchTab('ledger', this)">Commission Ledger</button>
+      <button class="admin-tab" onclick="switchTab('payouts', this)">Payouts</button>
+    </div>
+
+    <!-- PARTNERS TAB -->
+    <div class="admin-tab-panel" id="tab-partners">
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Affiliate Applications & Partners</h2>
+        <p class="portal-section-sub">Approve pending applications or suspend active partners.</p>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Applied</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Code</th>
+                <th>Status</th>
+                <th>Rate</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="affiliates-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEDGER TAB -->
+    <div class="admin-tab-panel" id="tab-ledger" style="display:none;">
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Commission Ledger</h2>
+        <p class="portal-section-sub">Every accrued commission across all partners.</p>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Affiliate</th>
+                <th>Customer</th>
+                <th>Plan</th>
+                <th>Gross</th>
+                <th>Commission</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYOUTS TAB -->
+    <div class="admin-tab-panel" id="tab-payouts" style="display:none;">
+      <div class="dash-card portal-section">
+        <h2 class="portal-section-title">Payout Requests</h2>
+        <p class="portal-section-sub">Fulfill pending payout requests and record the transaction reference.</p>
+        <div class="portal-table-wrap">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>Requested</th>
+                <th>Partner</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Fulfill</th>
+              </tr>
+            </thead>
+            <tbody id="payouts-admin-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom" style="border:none;">
+      <span>&copy; 2026 Peakora. All rights reserved.</span>
+      <span style="opacity:0.7;">Affiliate Admin</span>
+    </div>
+  </div>
+</footer>
+
+<script src="affiliate.js"></script>
+<script src="script.js"></script>
+<script>
+  var AFFILIATE_API = (function () {
+    var host = window.location.hostname || '';
+    if (host.indexOf('localhost') !== -1 || host.indexOf('127.0.0.1') !== -1) return 'http://localhost:3000';
+    return 'https://peakora-api.peakora.workers.dev';
+  })();
+
+  var adminToken = sessionStorage.getItem('peakora_admin_token') || '';
+
+  function adminHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'x-admin-token': adminToken
+    };
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function adminAuth(e) {
+    e.preventDefault();
+    var token = document.getElementById('admin-token-input').value.trim();
+    if (!token) return false;
+    adminToken = token;
+    sessionStorage.setItem('peakora_admin_token', token);
+    // Test by listing affiliates.
+    fetch(AFFILIATE_API + '/affiliate/admin/list?' + 'token=' + encodeURIComponent(token))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.success) { showPanel(); }
+        else { alert('Invalid admin token.'); sessionStorage.removeItem('peakora_admin_token'); adminToken = ''; }
+      }).catch(function () { alert('Network error.'); });
+    return false;
+  }
+
+  function showPanel() {
+    document.getElementById('admin-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('export-link').href = AFFILIATE_API + '/affiliate/admin/export.csv?token=' + encodeURIComponent(adminToken);
+    refreshAll();
+  }
+
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    document.querySelectorAll('.admin-tab').forEach(function (t) { t.classList.remove('admin-tab-active'); });
+    btn.classList.add('admin-tab-active');
+    document.querySelectorAll('.admin-tab-panel').forEach(function (p) { p.style.display = 'none'; });
+    document.getElementById('tab-' + name).style.display = 'block';
+    if (name === 'ledger') loadLedger();
+    if (name === 'payouts') loadPayouts();
+  }
+
+  // ── Load data ──────────────────────────────────────────────────────────────
+  function refreshAll() {
+    loadAffiliates();
+    loadLedger();
+    loadPayouts();
+  }
+
+  function loadAffiliates() {
+    fetch(AFFILIATE_API + '/affiliate/admin/list?token=' + encodeURIComponent(adminToken))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success) return;
+        var body = document.getElementById('affiliates-body');
+        body.innerHTML = '';
+        (d.affiliates || []).forEach(function (a) {
+          var notes = a.notes ? JSON.parse(a.notes) : {};
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + fmtDate(a.applied_at) + '</td>' +
+            '<td>' + esc(a.display_name || '-') + (notes.platform ? '<br><small style="opacity:.6">' + esc(notes.platform) + '</small>' : '') + '</td>' +
+            '<td>' + esc(a.user_email) + '</td>' +
+            '<td><code>' + esc(a.referral_code) + '</code></td>' +
+            '<td><span class="portal-status portal-status-' + a.status + '">' + a.status + '</span></td>' +
+            '<td>' + (a.commission_type === 'flat' ? '$' + a.commission_rate : (a.commission_rate * 100) + '%') + '</td>' +
+            '<td class="admin-actions">' +
+              (a.status === 'pending' ? '<button class="admin-mini-btn admin-mini-approve" onclick="approveAff(\'' + a.id + '\')">Approve</button><button class="admin-mini-btn admin-mini-reject" onclick="rejectAff(\'' + a.id + '\')">Reject</button>' : '') +
+              (a.status === 'active' ? '<button class="admin-mini-btn admin-mini-reject" onclick="rejectAff(\'' + a.id + '\')">Suspend</button>' : '') +
+              '<button class="admin-mini-btn" onclick="openAdjust(\'' + a.id + '\',' + a.commission_rate + ',\'' + a.commission_type + '\')">Adjust</button>' +
+            '</td>';
+          body.appendChild(tr);
+        });
+        if (!d.affiliates || !d.affiliates.length) {
+          body.innerHTML = '<tr><td colspan="7" class="portal-empty">No affiliates yet.</td></tr>';
+        }
+      });
+  }
+
+  function loadLedger() {
+    fetch(AFFILIATE_API + '/affiliate/admin/ledger?token=' + encodeURIComponent(adminToken))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success) return;
+        var body = document.getElementById('ledger-body');
+        body.innerHTML = '';
+        (d.commissions || []).forEach(function (c) {
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + fmtDate(c.created_at) + '</td>' +
+            '<td>' + esc(c.referral_code) + ' <br><small style="opacity:.6">' + esc(c.affiliate_email) + '</small></td>' +
+            '<td>' + maskEmail(c.customer_email) + '</td>' +
+            '<td>' + (c.plan || '-') + '</td>' +
+            '<td>$' + Number(c.gross_amount).toFixed(2) + '</td>' +
+            '<td>$' + Number(c.commission_amount).toFixed(2) + '</td>' +
+            '<td><span class="portal-status portal-status-' + c.status + '">' + c.status + '</span></td>';
+          body.appendChild(tr);
+        });
+        if (!d.commissions || !d.commissions.length) {
+          body.innerHTML = '<tr><td colspan="7" class="portal-empty">No commissions accrued yet.</td></tr>';
+        }
+      });
+  }
+
+  function loadPayouts() {
+    // We re-use the ledger of payouts from the affiliates list is not available;
+    // fetch the commission ledger's distinct payout_ids by listing partners'
+    // payouts. Simpler: query the ledger and pull payout_id rows.
+    fetch(AFFILIATE_API + '/affiliate/admin/ledger?token=' + encodeURIComponent(adminToken))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success) return;
+        var body = document.getElementById('payouts-admin-body');
+        body.innerHTML = '';
+        var seen = {};
+        (d.commissions || []).forEach(function (c) {
+          if (!c.payout_id) return;
+          if (seen[c.payout_id]) return;
+          seen[c.payout_id] = true;
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + fmtDate(c.paid_at || c.created_at) + '</td>' +
+            '<td>' + esc(c.referral_code) + ' <br><small style="opacity:.6">' + esc(c.affiliate_email) + '</small></td>' +
+            '<td>$' + Number(c.commission_amount).toFixed(2) + '</td>' +
+            '<td>-</td>' +
+            '<td><span class="portal-status portal-status-' + (c.status === 'paid' ? 'paid' : 'pending') + '">' + (c.status === 'paid' ? 'paid' : 'pending') + '</span></td>' +
+            '<td><input type="text" placeholder="txn ref" id="ref-' + c.payout_id + '" style="width:100px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;font-size:11px;"><button class="admin-mini-btn admin-mini-approve" onclick="fulfillPayout(\'' + c.payout_id + '\')">Fulfill</button></td>';
+          body.appendChild(tr);
+        });
+        if (Object.keys(seen).length === 0) {
+          body.innerHTML = '<tr><td colspan="6" class="portal-empty">No payout requests yet.</td></tr>';
+        }
+      });
+  }
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+  function approveAff(id) {
+    if (!confirm('Approve this affiliate partner?')) return;
+    postAdmin('/affiliate/admin/approve', { id: id }).then(function (d) {
+      if (d.success) loadAffiliates(); else alert(d.error || 'Failed');
+    });
+  }
+  function rejectAff(id) {
+    if (!confirm('Reject / suspend this affiliate?')) return;
+    postAdmin('/affiliate/admin/reject', { id: id }).then(function (d) {
+      if (d.success) loadAffiliates(); else alert(d.error || 'Failed');
+    });
+  }
+  function openAdjust(id, rate, type) {
+    var newRate = prompt('Commission rate (percentage 0-100, or flat $ amount):', String(rate * 100));
+    if (newRate === null) return;
+    var useFlat = confirm('Flat $ per conversion (OK = flat, Cancel = percentage)?');
+    var rateNum = Number(newRate) / 100;
+    if (useFlat) rateNum = Number(newRate);
+    postAdmin('/affiliate/admin/adjust-commission', {
+      id: id, commission_rate: rateNum, commission_type: useFlat ? 'flat' : 'percentage'
+    }).then(function (d) { if (d.success) loadAffiliates(); else alert(d.error || 'Failed'); });
+  }
+  function fulfillPayout(payId) {
+    var ref = (document.getElementById('ref-' + payId) || {}).value || '';
+    postAdmin('/affiliate/admin/fulfill-payout', { id: payId, transaction_reference: ref })
+      .then(function (d) { if (d.success) loadPayouts(); else alert(d.error || 'Failed'); });
+  }
+
+  function postAdmin(path, body) {
+    return fetch(AFFILIATE_API + path + '?token=' + encodeURIComponent(adminToken), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function fmtDate(iso) {
+    if (!iso) return '-';
+    try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch (e) { return iso; }
+  }
+  function maskEmail(e) {
+    if (!e) return '-';
+    var at = e.indexOf('@'); if (at < 1) return e;
+    return e.substring(0, Math.min(2, at)) + '***' + e.substring(at);
+  }
+  function esc(s) {
+    var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML;
+  }
+
+  // Auto-unlock if token exists in session.
+  if (adminToken) showPanel();
+</script>
+<style>
+  .admin-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .admin-tab {
+    padding:10px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.04); color:#fff; font-size:13px; font-weight:600;
+    font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:all .25s ease;
+  }
+  .admin-tab:hover { border-color:var(--theme-accent,#f4a261); }
+  .admin-tab-active {
+    background:var(--theme-primary-grad,linear-gradient(135deg,#e07a5f,#f4a261,#a78bfa));
+    border-color:transparent;
+  }
+  .admin-actions { display:flex; gap:6px; flex-wrap:wrap; }
+  .admin-mini-btn {
+    padding:6px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.05); color:#fff; font-size:11px; font-weight:600;
+    cursor:pointer; transition:all .2s ease;
+  }
+  .admin-mini-btn:hover { border-color:var(--theme-accent,#f4a261); }
+  .admin-mini-approve { color:#34d399; }
+  .admin-mini-reject { color:#fb7185; }
+</style>
+
+</body>
+</html>
