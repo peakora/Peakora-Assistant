@@ -166,3 +166,9 @@ UPDATE affiliates
 
 -- Backfill the current payout minimum onto existing affiliates.
 UPDATE affiliates SET payout_min = 25.0 WHERE payout_min <> 25.0 AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');
+
+-- Auto-activate any account still pending from before the open-enrollment
+-- policy (every applicant is now approved instantly). Admin-suspended accounts
+-- are left untouched (status 'suspended' is distinct from 'pending').
+UPDATE affiliates SET status = 'active', approved_at = datetime('now')
+ WHERE status = 'pending' AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');
