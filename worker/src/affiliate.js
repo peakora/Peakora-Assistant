@@ -271,7 +271,7 @@ export async function handleAffiliateApply(request, env) {
      VALUES (?, ?, ?, ?, ?, 'percentage', ?, ?, ?, ?, ?, ?)`
   ).bind(
     id, email, name, referralCode, initialStatus,
-    tier.rate, JSON.stringify(DEFAULT_TIERS), tier.payout_min, tier.payoutSchedule, notes,
+    tier.rate, JSON.stringify(DEFAULT_TIERS), tier.payoutMin, tier.payoutSchedule, notes,
     new Date().toISOString()
   ).run();
 
@@ -365,9 +365,10 @@ export async function handleAffiliateDashboard(request, env) {
       id: aff.id, display_name: aff.display_name, email: aff.user_email,
       referral_code: aff.referral_code, status: aff.status,
       commission_type: aff.commission_type, commission_rate: aff.commission_rate,
-      payout_method: aff.payout_method, payout_schedule: aff.payout_schedule
+      payout_method: aff.payout_method, payout_schedule: aff.payout_schedule,
+      payout_min: aff.payout_min
     },
-    tier: { name: tier.name, rate: tier.rate, cookie_days: tier.cookie_days, payout_min: tier.payout_min },
+    tier: { name: tier.name, rate: tier.rate, cookie_days: tier.cookieDays, payout_min: tier.payoutMin, payout_schedule: tier.payoutSchedule },
     active_referrals: activeRefs,
     totals: {
       clicks: clicks?.n || 0,
