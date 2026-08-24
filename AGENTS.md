@@ -1,3 +1,36 @@
+# Peakora Affiliate Engine — Session Notes
+
+## Architecture (Cloudflare stack)
+- Worker: `worker/src/index.js` (router) + `worker/src/affiliate.js` (engine) + `worker/src/dodo.js` (billing). Deployed via `wrangler deploy` or `.github/workflows/deploy-worker.yml`.
+- D1 schema: `worker/schema.sql` (idempotent CREATE TABLE IF NOT EXISTS + backfill UPDATEs, runs on every deploy).
+- Pages: static marketing + portal HTML (`affiliate.html`, `affiliate-portal.html`, `index.html`, `admin-affiliates.html`). Auto-deploys from git via Cloudflare Pages.
+- Tests: `tests/affiliate.test.js` (29 tests, real code paths, no mocks). Run: `node --test tests/affiliate.test.js`.
+
+## Affiliate program config (as of 2026-08-24)
+- Commission: flat 50% recurring (price $9.99/mo, $95.88/yr).
+- Payout min: $25, monthly schedule, 30-day hold window on each commission.
+- Auto-approval: every applicant is `status='active'` instantly on apply + login safety net.
+- Master admin: peakora.network@gmail.com.
+- Payout methods: PayPal, Wise, bank, USDC (stored in `payout_details` JSON).
+- DEFAULT_TIERS = [{ minReferrals:0, rate:0.50, name:'Partner', cookieDays:90, payoutMin:25, payoutSchedule:'monthly' }].
+
+## Key implementation notes
+- `calculateCommission` uses the stored `commission_rate` column, NOT `tier_config`. The dashboard overrides `tier.rate` with the stored rate for percentage affiliates so the portal never shows a number that disagrees with the commission amounts.
+- `decorateAffiliate`: tier_config falls back to DEFAULT_TIERS when null; payout_min is read from the column (backfilled to 25).
+- Self-referral blocking: customer email/IP hashed and matched against affiliate's own record.
+- Webhook: `/dodo/webhook`, Standard Webhooks HMAC verified (webhook-id, webhook-timestamp, webhook-signature). Unsigned requests rejected with "Invalid signature".
+- Schema backfills (idempotent, run every deploy): commission_rate->0.50, payout_min->25, pending->active.
+
+## Deploy gotcha
+- GitHub Actions Worker deploy sometimes fails in ~4s with `steps:[]` / `runner_id:0` (infra allocation, not code). Fallback: `cd worker && CLOUDFLARE_API_TOKEN=$TOKEN npx wrangler deploy && npx wrangler d1 execute peakora-db --remote --file=schema.sql`. Pages deploys independently from git.
+
+## Style rules (mandatory)
+- NO labels/eyebrows/badges (no hero-eyebrow, aff-hero-badge, diff-eyebrow).
+- NO em-dashes — use plain hyphens or restructure.
+- No emoji anywhere.
+
+---
+
 # Peakora Dark Luxury Wellness — Master Style System & Guidelines
 
 This document details the complete **Dark Luxury Wellness** visual design system, CSS variables, utility classes, and dynamic theme architecture. Use this specification as the master style setup for all applet components and pop-up modals.
