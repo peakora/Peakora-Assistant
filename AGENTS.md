@@ -275,7 +275,7 @@ emoji anywhere (chat, code, copy, commits).
 
 ### Session start — recall (NEVER SKIP)
 1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text):
-   `https://raw.githubusercontent.com/peakora/peakora-cortex/master/MEMORY.md`
+   `The hub is PRIVATE, so `raw.githubusercontent` 404s. Fetch via the GitHub`
 2. Read this repo's `AGENTS.md` in full.
 3. Best-effort Cognee recall (semantic layer, may be empty on the free tier):
    use `skills/cognee-memory/cognee_client.py` from the hub —
