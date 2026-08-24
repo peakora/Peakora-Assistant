@@ -133,9 +133,9 @@ describe('referral token parsing', () => {
 });
 
 describe('commission calculation', () => {
-  test('percentage recurring: 30% of $9.99 = $3.00', () => {
-    const aff = { commission_type: 'percentage', commission_rate: 0.30 };
-    assert.equal(calculateCommission(aff, 9.99), 3.00);
+  test('percentage recurring: 50% of $9.99 = $5.00', () => {
+    const aff = { commission_type: 'percentage', commission_rate: 0.50 };
+    assert.equal(calculateCommission(aff, 9.99), 5.00);
   });
   test('percentage recurring: 40% of $95.88 = $38.35', () => {
     const aff = { commission_type: 'percentage', commission_rate: 0.40 };
@@ -155,18 +155,18 @@ describe('commission calculation', () => {
 describe('tier resolution', () => {
   test('single flat Partner tier (0 referrals)', () => {
     assert.equal(resolveTier(0, DEFAULT_TIERS).name, 'Partner');
-    assert.equal(resolveTier(0, DEFAULT_TIERS).rate, 0.30);
+    assert.equal(resolveTier(0, DEFAULT_TIERS).rate, 0.50);
   });
   test('same Partner rate at any volume (flat model, no ladder)', () => {
     assert.equal(resolveTier(25, DEFAULT_TIERS).name, 'Partner');
-    assert.equal(resolveTier(500, DEFAULT_TIERS).rate, 0.30);
+    assert.equal(resolveTier(500, DEFAULT_TIERS).rate, 0.50);
     assert.equal(resolveTier(500, DEFAULT_TIERS).cookieDays, 90);
   });
   test('falls back to DEFAULT_TIERS when none provided', () => {
     assert.equal(resolveTier(0, null).name, 'Partner');
     // Empty array => DEFAULT_TIERS used (single flat tier).
     assert.equal(resolveTier(100, []).name, 'Partner');
-    assert.equal(resolveTier(100, []).rate, 0.30);
+    assert.equal(resolveTier(100, []).rate, 0.50);
   });
 });
 
@@ -213,7 +213,8 @@ describe('config constants', () => {
   test('tiers are a single flat Partner rate (no ladder)', () => {
     assert.equal(DEFAULT_TIERS.length, 1);
     assert.equal(DEFAULT_TIERS[0].name, 'Partner');
-    assert.equal(DEFAULT_TIERS[0].rate, 0.30);
+    assert.equal(DEFAULT_TIERS[0].rate, 0.50);
+    assert.equal(DEFAULT_TIERS[0].payoutMin, 25);
   });
   test('payout hold is 30 days', () => {
     assert.equal(PAYOUT_HOLD_DAYS, 30);
@@ -236,7 +237,7 @@ describe('processAffiliateAttribution', () => {
     const env = { DB: db };
     const affiliate = {
       id: 'aff_1', user_email: 'partner@peakora.life', referral_code: 'ABCD12',
-      status: 'active', commission_type: 'percentage', commission_rate: 0.30,
+      status: 'active', commission_type: 'percentage', commission_rate: 0.50,
       cookie_days: 90
     };
     db.affiliates.push(affiliate);
@@ -251,11 +252,11 @@ describe('processAffiliateAttribution', () => {
     };
     const result = await processAffiliateAttribution(env, rec);
     assert.equal(result.action, 'accrued');
-    assert.equal(result.amount, 3.00);
+    assert.equal(result.amount, 5.00);
     assert.equal(result.affiliateId, 'aff_1');
     const com = db.commissions[0];
     assert.ok(com, 'commission row persisted');
-    assert.equal(com.commission_amount, 3.00);
+    assert.equal(com.commission_amount, 5.00);
     assert.equal(com.status, 'pending');
     assert.ok(com.hold_until_date);
   });
@@ -265,7 +266,7 @@ describe('processAffiliateAttribution', () => {
     const env = { DB: db };
     const affiliate = {
       id: 'aff_2', user_email: 'self@peakora.life', referral_code: 'SELF12',
-      status: 'active', commission_type: 'percentage', commission_rate: 0.30,
+      status: 'active', commission_type: 'percentage', commission_rate: 0.50,
       cookie_days: 90
     };
     db.affiliates.push(affiliate);

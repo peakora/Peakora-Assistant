@@ -76,15 +76,15 @@ CREATE TABLE IF NOT EXISTS affiliates (
   -- Commission model: 'percentage' (recurring % of each payment) or 'flat'
   -- (fixed $ per qualifying conversion). Default recurring percentage.
   commission_type TEXT NOT NULL DEFAULT 'percentage',
-  commission_rate REAL NOT NULL DEFAULT 0.30,  -- 0.30 = 30%
-  status          TEXT NOT NULL DEFAULT 'pending',  -- pending|active|suspended
+  commission_rate REAL NOT NULL DEFAULT 0.50,  -- 0.50 = 50%
+  status          TEXT NOT NULL DEFAULT 'active',  -- active|suspended (auto-approve; no pending gate)
   -- JSON: { method: 'paypal'|'wise'|'bank'|'usdc', details: {...} }
   payout_method   TEXT,
   payout_details  TEXT,
   -- Tier breakpoints (active referrals) for auto-escalation. JSON array.
   tier_config     TEXT,
   cookie_days     INTEGER NOT NULL DEFAULT 90,
-  payout_min      REAL NOT NULL DEFAULT 50.0,
+  payout_min      REAL NOT NULL DEFAULT 25.0,
   -- Legacy payout schedule: 'monthly'|'weekly'. Elite => weekly.
   payout_schedule TEXT NOT NULL DEFAULT 'monthly',
   applied_at      TEXT NOT NULL DEFAULT (datetime('now')),

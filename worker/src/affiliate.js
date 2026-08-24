@@ -23,12 +23,12 @@
  *  the admin panel (custom deals for high-volume partners). Kept as an array
  *  so resolveTier() and tier_config stay backward compatible. */
 export const DEFAULT_TIERS = [
-  { minReferrals: 0, rate: 0.30, name: 'Partner', cookieDays: 90, payoutMin: 50, payoutSchedule: 'monthly' }
+  { minReferrals: 0, rate: 0.50, name: 'Partner', cookieDays: 90, payoutMin: 25, payoutSchedule: 'monthly' }
 ];
 
-/** Master account email — auto-approved on apply so the owner can log into the
- *  affiliate portal and test immediately, mirroring the master-account bypass
- *  convention used across all Peakora repos. */
+/** Auto-approval: every applicant is approved instantly on apply, so they can
+ *  generate links and log in right away (same as Calm/Gaia-style programs).
+ *  The master email is still special-cased only as a safety net. */
 const MASTER_EMAIL = 'peakora.network@gmail.com';
 
 /** Days a commission stays pending before it is auto-approved (payout hold). */
@@ -244,10 +244,10 @@ export async function handleAffiliateApply(request, env) {
     return json({
       success: true,
       status: existing.status,
-      referral_code: existing.status === 'active' ? existing.referral_code : null,
+      referral_code: existing.referral_code,
       message: existing.status === 'active'
-        ? 'You are already an approved partner. Sign in to your portal.'
-        : 'Your application is already under review.'
+        ? 'You are already a partner. Sign in to your portal.'
+        : 'Your account is ' + existing.status + '. Contact us if you need help.'
     });
   }
 
@@ -262,24 +262,23 @@ export async function handleAffiliateApply(request, env) {
 
   const id = genId('aff');
   const notes = JSON.stringify({ platform, audience, message });
-  // Master account auto-approves so the owner can test the portal immediately.
-  const initialStatus = email === MASTER_EMAIL ? 'active' : 'pending';
+  // Every applicant is approved instantly so they can generate links and log in
+  // right away, the way Calm and Gaia handle their programs. No review queue.
+  const initialStatus = 'active';
   await env.DB.prepare(
     `INSERT INTO affiliates (id, user_email, display_name, referral_code, status, tier_config, notes, approved_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     id, email, name, referralCode, initialStatus,
     JSON.stringify(DEFAULT_TIERS), notes,
-    initialStatus === 'active' ? new Date().toISOString() : null
+    new Date().toISOString()
   ).run();
 
   return json({
     success: true,
     status: initialStatus,
-    referral_code: initialStatus === 'active' ? referralCode : null,
-    message: initialStatus === 'active'
-      ? 'Welcome back, Ala. Your partner account is active — sign in to your portal.'
-      : 'Application received. We review every application personally — expect a response within 48 hours.'
+    referral_code: referralCode,
+    message: 'You are approved. Sign in to grab your referral link and start sharing.'
   });
 }
 
@@ -320,15 +319,15 @@ export async function handleAffiliateLogin(request, env) {
   if (!email) return json({ success: false, error: 'Valid email required.' }, 400);
   let aff = await getAffiliateByEmail(env.DB, email);
   if (!aff) return json({ success: false, error: 'No affiliate account found for that email.' }, 404);
-  // Master account auto-activates on login if still pending (so the owner can
-  // test even if an earlier application was submitted as pending).
-  if (email === MASTER_EMAIL && aff.status === 'pending') {
+  // Safety net: if a legacy account is still pending (from before auto-approval),
+  // activate it on login. New accounts are active from the moment they apply.
+  if (aff.status === 'pending') {
     await env.DB.prepare(
       `UPDATE affiliates SET status = 'active', approved_at = ? WHERE id = ?`
     ).bind(new Date().toISOString(), aff.id).run();
     aff = await getAffiliateByEmail(env.DB, email);
   }
-  if (aff.status !== 'active') return json({ success: false, error: `Account is ${aff.status}. Awaiting approval.` }, 403);
+  if (aff.status !== 'active') return json({ success: false, error: `Account is ${aff.status}. Contact us if you need help.` }, 403);
   const token = await portalToken(email, env);
   return json({ success: true, token, email, referral_code: aff.referral_code });
 }
