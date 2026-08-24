@@ -181,8 +181,8 @@ async function handleDodoConfig(_request, env) {
     provider: 'dodo',
     environment: env.DODO_ENVIRONMENT || 'test_mode',
     configured: true,
-    monthlyPrice: '$4.99',
-    yearlyPrice: '$47.99',
+    monthlyPrice: '$9.99',
+    yearlyPrice: '$95.88',
     merchantOfRecord: 'Dodo Payments',
     monthlyLink: env.DODO_MONTHLY_PAYMENT_LINK,
     yearlyLink: env.DODO_YEARLY_PAYMENT_LINK

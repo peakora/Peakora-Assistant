@@ -1008,7 +1008,7 @@
             <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora+ Tier</h3>
-                <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$4.99/mo</span>
+                <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$9.99/mo</span>
               </div>
               <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Adaptive Week, dynamic themes & color spaces, mood-reactive auto themes, past plan archiving, and the organic soundscape synthesizer.</p>
             </div>
@@ -2068,8 +2068,8 @@
                   <h2 style="margin:0; font-size:20px; font-weight:800; color:var(--theme-heading, #ffffff);">The Deep Reset</h2>
                 </div>
                 <div style="display:flex; align-items:baseline; gap:6px; margin:8px 0 4px;">
-                  <span style="font-size:30px; font-weight:800; background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent;">$4.99</span>
-                  <span style="font-size:12px; color:var(--theme-text-muted);">/mo &nbsp;or&nbsp; <strong style="color:var(--theme-text-main);">$47.99/yr</strong> (save 20%)</span>
+                  <span style="font-size:30px; font-weight:800; background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent;">$9.99</span>
+                  <span style="font-size:12px; color:var(--theme-text-muted);">/mo &nbsp;or&nbsp; <strong style="color:var(--theme-text-main);">$95.88/yr</strong> (save 20%)</span>
                 </div>
                 <div style="font-size:11px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                   <span class="sub-status-indicator" style="font-size:10px; font-weight:800; padding:4px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${isPlus ? 'background:rgba(244,162,97,0.2); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.45);' : 'background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);'}">
@@ -2087,7 +2087,7 @@
                 </div>
                 <div style="margin-top:auto;">
                   <button class="btn primary" style="width:100%; font-size:13px; font-weight:800; padding:13px; box-shadow:0 8px 22px var(--theme-accent-glow);" onclick="openPlanSelectionModal()">
-                    ${isPlus ? 'Manage Membership & Billing' : 'Go Peakora+ — $4.99/mo'}
+                    ${isPlus ? 'Manage Membership & Billing' : 'Go Peakora+ — $9.99/mo'}
                   </button>
                   <div style="margin-top:10px; display:flex; justify-content:center; gap:14px; font-size:10px; color:var(--theme-text-muted); flex-wrap:wrap;">
                     <span>7-day money-back guarantee</span>
@@ -2606,7 +2606,7 @@
 
     function openDodoCheckout(planType) {
       const plan = planType === 'yearly' ? 'yearly' : 'monthly';
-      const price = plan === 'yearly' ? '$47.99/yr' : '$4.99/mo';
+      const price = plan === 'yearly' ? '$95.88/yr' : '$9.99/mo';
       const modal = document.getElementById('dodo-checkout-modal');
       const content = document.getElementById('dodo-checkout-content');
       const userEmail = localStorage.getItem('peakora_user_email') || '';
@@ -2617,7 +2617,7 @@
           <div style="text-align:center;">
             <h3 style="margin:0 0 6px; font-size:18px; color:var(--theme-heading, #ffffff);">Peakora+ Checkout</h3>
             <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 18px;">
-              ${plan === 'yearly' ? 'Annual plan — $47.99/yr (save 20%)' : 'Monthly plan — $4.99/mo'}
+              ${plan === 'yearly' ? 'Annual plan — $95.88/yr (save 20%)' : 'Monthly plan — $9.99/mo'}
             </p>
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:12px; padding:14px; margin-bottom:16px;">
               <label style="display:block; font-size:11px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
@@ -4315,8 +4315,8 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <h3 style="margin:0; font-size:16px; color:#ffffff;">Peakora+ Membership</h3>
             <div style="text-align:right;">
-              <span style="font-size:14px; font-weight:700; color:var(--theme-accent, #f4a261);">$4.99 / month</span>
-              <div style="font-size:10px; color:var(--theme-text-muted);">or $47.99 / year (Save 20%)</div>
+              <span style="font-size:14px; font-weight:700; color:var(--theme-accent, #f4a261);">$9.99 / month</span>
+              <div style="font-size:10px; color:var(--theme-text-muted);">or $95.88 / year (Save 20%)</div>
             </div>
           </div>
           <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Complete visual customizability, 7-day plan history archive, synthesized soundscapes, & adaptive planning.</p>
@@ -4331,10 +4331,10 @@
           
           <div style="display:flex; gap:8px; margin-top:14px;">
             <button class="btn primary" style="flex:1; font-size:12px; font-weight:600; background:var(--theme-primary-grad);" onclick="openDodoCheckout('monthly')">
-              Activate Monthly ($4.99/mo)
+              Activate Monthly ($9.99/mo)
             </button>
             <button class="btn secondary" style="flex:1; font-size:12px; font-weight:600; border-color:var(--theme-accent, #f4a261); color:var(--theme-accent, #f4a261);" onclick="openDodoCheckout('yearly')">
-              Activate Yearly ($47.99/yr)
+              Activate Yearly ($95.88/yr)
             </button>
           </div>
           

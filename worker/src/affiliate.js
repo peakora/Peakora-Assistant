@@ -28,7 +28,7 @@ export const PAYOUT_HOLD_DAYS = 30;
 
 /** Price snapshot — used only for fraud/earnings sanity checks, not billing.
  *  Authoritative price lives in the Dodo product config (wrangler vars). */
-export const PRICE_SNAPSHOT = { monthly: 4.99, yearly: 47.99 };
+export const PRICE_SNAPSHOT = { monthly: 9.99, yearly: 95.88 };
 
 export const PAYOUT_METHODS = ['paypal', 'wise', 'bank', 'usdc'];
 
@@ -141,7 +141,7 @@ function decorateAffiliate(row) {
 /**
  * Compute the commission amount for a single verified payment.
  * @param {object} affiliate - decorated affiliate row
- * @param {number} grossAmount - gross payment (e.g. 4.99 or 47.99)
+ * @param {number} grossAmount - gross payment (e.g. 9.99 or 95.88)
  * @returns {number}
  */
 export function calculateCommission(affiliate, grossAmount) {

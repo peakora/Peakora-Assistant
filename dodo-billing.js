@@ -9,8 +9,8 @@
  *   DODO_PAYMENTS_API_KEY        — test-mode secret API key (server-side only)
  *   DODO_PAYMENTS_LIVE_API_KEY   — live-mode secret API key (used when live_mode)
  *   DODO_PAYMENTS_ENVIRONMENT    — "test_mode" | "live_mode"  (default test_mode)
- *   DODO_MONTHLY_PRODUCT_ID      — pdt_... for the $4.99/mo plan
- *   DODO_YEARLY_PRODUCT_ID       — pdt_... for the $47.99/yr plan
+ *   DODO_MONTHLY_PRODUCT_ID      — pdt_... for the $9.99/mo plan
+ *   DODO_YEARLY_PRODUCT_ID       — pdt_... for the $95.88/yr plan
  *   DODO_PAYMENTS_WEBHOOK_SECRET — Standard Webhooks signing secret
  *   APP_PUBLIC_URL               — public base URL for return_url / cancel_url
  */
@@ -50,8 +50,8 @@ export function dodoPublicConfig() {
     provider: 'dodo',
     environment: c.environment,
     configured: c.configured && Boolean(c.monthlyProductId && c.yearlyProductId),
-    monthlyPrice: '$4.99',
-    yearlyPrice: '$47.99',
+    monthlyPrice: '$9.99',
+    yearlyPrice: '$95.88',
     merchantOfRecord: 'Dodo Payments'
   };
 }

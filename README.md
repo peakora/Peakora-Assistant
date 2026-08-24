@@ -66,7 +66,7 @@ This repository holds the public marketing site, the full assistant/dashboard PW
 ## Repository structure
 
 ```
-peakora-site/
+peakora-assistant/
 ├── index.html              # Marketing landing page (entry point)
 ├── assistant.html          # Full assistant dashboard PWA
 ├── assistant-home.html     # Assistant home view
@@ -166,13 +166,13 @@ Peakora uses a documented "Dark Luxury Wellness" design system: deep-midnight gl
 ### Docker
 The repo ships a minimal, non-root `Dockerfile`:
 ```bash
-docker build -t peakora-site .
+docker build -t peakora-assistant .
 docker run -p 3000:3000 \
   -e ADMIN_TOKEN=... \
   -e DODO_PAYMENTS_API_KEY=... \
   -e DODO_PAYMENTS_WEBHOOK_SECRET=... \
   -e VAPID_SUBJECT=mailto:you@example.com \
-  peakora-site
+  peakora-assistant
 ```
 The container writes its JSON "database" to `/app/data` (owned by the `node` user). Mount a volume at `/app/data` to persist state across restarts.
 

@@ -133,13 +133,13 @@ describe('referral token parsing', () => {
 });
 
 describe('commission calculation', () => {
-  test('percentage recurring: 30% of $4.99 = $1.50', () => {
+  test('percentage recurring: 30% of $9.99 = $3.00', () => {
     const aff = { commission_type: 'percentage', commission_rate: 0.30 };
-    assert.equal(calculateCommission(aff, 4.99), 1.50);
+    assert.equal(calculateCommission(aff, 9.99), 3.00);
   });
-  test('percentage recurring: 40% of $47.99 = $19.20', () => {
+  test('percentage recurring: 40% of $95.88 = $38.35', () => {
     const aff = { commission_type: 'percentage', commission_rate: 0.40 };
-    assert.equal(calculateCommission(aff, 47.99), 19.20);
+    assert.equal(calculateCommission(aff, 95.88), 38.35);
   });
   test('flat: fixed amount regardless of gross', () => {
     const aff = { commission_type: 'flat', commission_rate: 5 };
@@ -229,8 +229,8 @@ describe('config constants', () => {
     }
   });
   test('price snapshot matches known prices', () => {
-    assert.equal(PRICE_SNAPSHOT.monthly, 4.99);
-    assert.equal(PRICE_SNAPSHOT.yearly, 47.99);
+    assert.equal(PRICE_SNAPSHOT.monthly, 9.99);
+    assert.equal(PRICE_SNAPSHOT.yearly, 95.88);
   });
 });
 
@@ -252,15 +252,15 @@ describe('processAffiliateAttribution', () => {
 
     const rec = {
       email: 'newbie@example.com', transactionId: 'DODO-001',
-      eventType: 'subscription_created', grossAmount: 4.99, plan: 'monthly'
+      eventType: 'subscription_created', grossAmount: 9.99, plan: 'monthly'
     };
     const result = await processAffiliateAttribution(env, rec);
     assert.equal(result.action, 'accrued');
-    assert.equal(result.amount, 1.50);
+    assert.equal(result.amount, 3.00);
     assert.equal(result.affiliateId, 'aff_1');
     const com = db.commissions[0];
     assert.ok(com, 'commission row persisted');
-    assert.equal(com.commission_amount, 1.50);
+    assert.equal(com.commission_amount, 3.00);
     assert.equal(com.status, 'pending');
     assert.ok(com.hold_until_date);
   });
