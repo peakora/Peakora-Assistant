@@ -13,6 +13,8 @@
 - Master admin: peakora.network@gmail.com.
 - Payout methods: PayPal, Wise, bank, USDC (stored in `payout_details` JSON).
 - DEFAULT_TIERS = [{ minReferrals:0, rate:0.50, name:'Partner', cookieDays:90, payoutMin:25, payoutSchedule:'monthly' }].
+- ADMIN_TOKEN: `pk_admin_FBdp5752p9J3AbIRs752Sw9v3Pb6MEgi4gNUyPVsWOI` (Cloudflare secret, set via `wrangler secret put`). Admin panel at /admin-affiliates.
+- DB: 2 real affiliates (both Ala), all test accounts cleaned out.
 
 ## Key implementation notes
 - `calculateCommission` uses the stored `commission_rate` column, NOT `tier_config`. The dashboard overrides `tier.rate` with the stored rate for percentage affiliates so the portal never shows a number that disagrees with the commission amounts.
