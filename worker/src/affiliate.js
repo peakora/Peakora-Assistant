@@ -342,6 +342,10 @@ export async function handleAffiliateDashboard(request, env) {
 
   const activeRefs = await countActiveReferrals(env.DB, aff.id);
   const tier = resolveTier(activeRefs, aff.tier_config);
+  // The stored commission_rate is the value that actually determines payouts.
+  // Surface it as the tier rate so the portal never shows a stale tier_config
+  // number that disagrees with the commissions it accrues.
+  if (aff.commission_type === 'percentage') tier.rate = Number(aff.commission_rate) || tier.rate;
 
   const [clicks, conversions, pending, paid, commissions, payouts] = await Promise.all([
     env.DB.prepare('SELECT COUNT(*) AS n FROM referral_clicks WHERE affiliate_id = ?').bind(aff.id).first(),
