@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="assets/social profile image.png" alt="Peakora Assistant" width="200">
+</p>
+
+<h1 align="center">Peakora Assistant</h1>
+
 # Peakora — peakora.life
 
 > Gentle guidance. Real momentum.
