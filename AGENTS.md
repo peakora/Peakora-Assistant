@@ -13,7 +13,7 @@
 - Master admin: peakora.network@gmail.com.
 - Payout methods: PayPal, Wise, bank, USDC (stored in `payout_details` JSON).
 - DEFAULT_TIERS = [{ minReferrals:0, rate:0.50, name:'Partner', cookieDays:90, payoutMin:25, payoutSchedule:'monthly' }].
-- ADMIN_TOKEN: `pk_admin_FBdp5752p9J3AbIRs752Sw9v3Pb6MEgi4gNUyPVsWOI` (Cloudflare secret, set via `wrangler secret put`). Admin panel at /admin-affiliates.
+- ADMIN_TOKEN: (Cloudflare secret, set via `wrangler secret put`). The live deployed token is the source of truth; do NOT paste the stale `pk_admin_...` value from older notes. Admin panel at /admin-affiliates. The panel also accepts a signed-in admin partner (the master account) via Google/email sign-in, so the raw token is optional.
 - DB: 2 real affiliates (both Ala), all test accounts cleaned out.
 
 ## Key implementation notes
@@ -33,8 +33,11 @@
 
 ## Style rules (mandatory)
 - NO labels/eyebrows/badges (no hero-eyebrow, aff-hero-badge, diff-eyebrow).
-- NO em-dashes — use plain hyphens or restructure.
+- NO em-dashes - use plain hyphens or restructure.
 - No emoji anywhere.
+
+## Workflow rules (mandatory)
+- Big prompts: when a partner request bundles many distinct tasks, divide it into manageable chunks (PROMPT A, PROMPT B, ...) and confirm the split before executing. Do not try to do everything in one pass; finish and verify one chunk before starting the next.
 
 ---
 

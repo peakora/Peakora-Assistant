@@ -23,14 +23,18 @@
  *   POST /affiliate/link           — generate a tracked referral link (token auth)
  *   POST /affiliate/payout-setup   — set payout method/details (token auth)
  *   POST /affiliate/request-payout — request a payout of approved balance (token auth)
- *   GET  /affiliate/admin/list           — list affiliates (admin token)
- *   POST /affiliate/admin/approve        — approve a partner (admin token)
- *   POST /affiliate/admin/reject         — suspend/reject a partner (admin token)
- *   POST /affiliate/admin/adjust-commission — set custom rate (admin token)
- *   POST /affiliate/admin/set-password  — set/reset a partner password (admin token)
- *   GET  /affiliate/admin/ledger         — commission ledger (admin token)
- *   POST /affiliate/admin/fulfill-payout — mark a payout sent (admin token)
- *   GET  /affiliate/admin/export.csv     — export commission ledger CSV (admin token)
+ *   GET  /affiliate/google/start     — redirect to Google OAuth consent
+ *   GET  /affiliate/google/callback  — Google OAuth callback (find-or-create, issue token)
+ *   GET  /affiliate/admin/verify          — confirm a signed-in partner is admin
+ *   GET  /affiliate/admin/list           — list affiliates (admin token or signed-in admin)
+ *   POST /affiliate/admin/approve        — approve a partner (admin)
+ *   POST /affiliate/admin/reject         — suspend/reject a partner (admin)
+ *   POST /affiliate/admin/delete         — permanently delete a partner (admin)
+ *   POST /affiliate/admin/adjust-commission — set custom rate (admin)
+ *   POST /affiliate/admin/set-password  — set/reset a partner password (admin)
+ *   GET  /affiliate/admin/ledger         — commission ledger (admin)
+ *   POST /affiliate/admin/fulfill-payout — mark a payout sent (admin)
+ *   GET  /affiliate/admin/export.csv     — export commission ledger CSV (admin)
  *
  * D1 binding: env.DB
  * KV binding:  env.AUTH (future: session tokens)
@@ -42,7 +46,9 @@ import {
   handleAffiliateClick, handleAffiliateApply, handleAffiliateLogin,
   handleAffiliateSetPassword, handleAffiliateDashboard, handleAffiliateLink,
   handleAffiliatePayoutSetup, handleAffiliateRequestPayout,
+  handleAffiliateGoogleStart, handleAffiliateGoogleCallback,
   handleAdminListAffiliates, handleAdminApproveAffiliate, handleAdminRejectAffiliate,
+  handleAdminDeleteAffiliate, handleAdminVerifyPartner, verifyAdminPartner,
   handleAdminAdjustCommission, handleAdminSetAffiliatePassword,
   handleAdminCommissionLedger, handleAdminFulfillPayout,
   handleAdminExportCsv, processAffiliateAttribution
@@ -89,6 +95,15 @@ function requireAdmin(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get('token') || request.headers.get('x-admin-token') || '';
   return timingSafeCompare(token, env.ADMIN_TOKEN);
+}
+
+/** Admin gate that ALSO accepts a signed-in admin partner (master account)
+ *  presenting their portal token. This lets Ala unlock the panel by signing in
+ *  with Google/email instead of pasting the raw ADMIN_TOKEN. */
+async function requireAdminOrPartner(request, env) {
+  if (requireAdmin(request, env)) return true;
+  const aff = await verifyAdminPartner(request, env);
+  return !!aff;
 }
 
 // ── Dodo event mapping ────────────────────────────────────────────────────
@@ -385,30 +400,41 @@ export default {
       } else if (path === '/affiliate/request-payout' && method === 'POST') {
         response = await handleAffiliateRequestPayout(request, env);
 
-      /* ── Affiliate program: admin routes (ADMIN_TOKEN) ── */
+      /* ── Affiliate program: Google sign-in ── */
+      } else if (path === '/affiliate/google/start' && method === 'GET') {
+        response = await handleAffiliateGoogleStart(request, env);
+      } else if (path === '/affiliate/google/callback' && method === 'GET') {
+        response = await handleAffiliateGoogleCallback(request, env);
+
+      /* ── Affiliate program: admin routes (ADMIN_TOKEN or signed-in admin) ── */
+      } else if (path === '/affiliate/admin/verify' && method === 'GET') {
+        response = await handleAdminVerifyPartner(request, env);
       } else if (path === '/affiliate/admin/list' && method === 'GET') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminListAffiliates(request, env);
       } else if (path === '/affiliate/admin/approve' && method === 'POST') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminApproveAffiliate(request, env);
       } else if (path === '/affiliate/admin/reject' && method === 'POST') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminRejectAffiliate(request, env);
+      } else if (path === '/affiliate/admin/delete' && method === 'POST') {
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleAdminDeleteAffiliate(request, env);
       } else if (path === '/affiliate/admin/adjust-commission' && method === 'POST') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminAdjustCommission(request, env);
       } else if (path === '/affiliate/admin/set-password' && method === 'POST') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminSetAffiliatePassword(request, env);
       } else if (path === '/affiliate/admin/ledger' && method === 'GET') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminCommissionLedger(request, env);
       } else if (path === '/affiliate/admin/fulfill-payout' && method === 'POST') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminFulfillPayout(request, env);
       } else if (path === '/affiliate/admin/export.csv' && method === 'GET') {
-        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleAdminExportCsv(request, env);
       } else {
         response = json({ success: false, error: 'Not found', path }, 404);

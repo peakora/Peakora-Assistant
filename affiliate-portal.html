@@ -47,7 +47,20 @@
   <div class="container">
     <div class="portal-login-card">
       <h1 class="portal-login-title">Partner Portal Login</h1>
-      <p class="portal-login-sub">Sign in with your email and password to access your dashboard.</p>
+      <p class="portal-login-sub">Sign in to access your dashboard, referral link, and payouts.</p>
+
+      <!-- GOOGLE SIGN-IN -->
+      <button type="button" class="aff-google-btn" onclick="googleSignIn()">
+        <svg class="aff-google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+      <div class="aff-auth-divider"><span>or</span></div>
+
       <form class="portal-login-form" onsubmit="return portalLogin(event)">
         <input type="email" id="login-email" placeholder="Your affiliate email" required>
         <input type="password" id="login-password" placeholder="Password" required>
@@ -257,6 +270,61 @@
     if (q) {
       document.getElementById('login-email').value = q;
       document.getElementById('setpw-email').value = q;
+    }
+  })();
+
+  // Google sign-in: hand off to the Worker, which redirects to Google consent
+  // and back to this page with the credentials in a URL fragment.
+  function googleSignIn() {
+    window.location.href = AFFILIATE_API + '/affiliate/google/start';
+  }
+
+  // If an admin came from the admin panel's "Sign in with Google" button and
+  // has no session yet, start Google sign-in immediately. After the callback,
+  // the consumeGoogleCallback IIFE below redirects admins to the admin panel.
+  (function adminRedirect() {
+    var then = new URLSearchParams(window.location.search).get('then');
+    if (then === 'admin' && !portalToken) {
+      googleSignIn();
+    }
+  })();
+
+  // Consume a Google callback redirect. The Worker passes credentials via a
+  // URL fragment (#google_login=...) so they never reach a server log. On a
+  // failed sign-in it sets ?google_error=1 instead.
+  (function consumeGoogleCallback() {
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get('google_error')) {
+      var reason = qs.get('reason');
+      var note = document.getElementById('login-note');
+      note.innerHTML = '<span style="color:#fb7185;">Google sign-in failed' +
+        (reason ? ': ' + decodeURIComponent(reason) : '') + '.</span> Try again or use email and password.';
+      // Clean the query so the error does not persist on refresh.
+      window.history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+    var hash = window.location.hash || '';
+    var marker = '#google_login=';
+    if (hash.indexOf(marker) === 0) {
+      try {
+        var payload = JSON.parse(decodeURIComponent(hash.slice(marker.length)));
+        if (payload && payload.token && payload.email) {
+          portalToken = payload.token;
+          portalEmail = payload.email;
+          localStorage.setItem('peakora_aff_token', portalToken);
+          localStorage.setItem('peakora_aff_email', portalEmail);
+          if (payload.referral_code) localStorage.setItem('peakora_aff_code', payload.referral_code);
+          localStorage.setItem('peakora_aff_admin', payload.is_admin ? '1' : '0');
+          // An admin signing in via Google goes straight to the admin panel.
+          if (payload.is_admin) {
+            window.history.replaceState(null, '', window.location.pathname);
+            window.location.href = 'admin-affiliates.html';
+            return;
+          }
+        }
+      } catch (e) {}
+      // Strip the fragment so credentials do not linger in the URL bar.
+      window.history.replaceState(null, '', window.location.pathname);
     }
   })();
 

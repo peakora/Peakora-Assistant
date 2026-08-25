@@ -43,7 +43,20 @@
   <div class="container">
     <div class="portal-login-card">
       <h1 class="portal-login-title">Affiliate Admin</h1>
-      <p class="portal-login-sub">Enter your admin token to manage the affiliate program.</p>
+      <p class="portal-login-sub">Sign in with your admin account, or enter the admin token to manage the program.</p>
+
+      <!-- ADMIN SIGN-IN (Google / email) -->
+      <button type="button" class="aff-google-btn" onclick="adminGoogleSignIn()">
+        <svg class="aff-google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+        </svg>
+        <span>Sign in with Google (Admin)</span>
+      </button>
+      <div class="aff-auth-divider"><span>or</span></div>
+
       <form class="portal-login-form" onsubmit="return adminAuth(event)">
         <input type="password" id="admin-token-input" placeholder="Admin token" required>
         <button type="submit" class="btn-hero-primary portal-login-btn" id="admin-auth-btn">Unlock Panel</button>
@@ -166,11 +179,23 @@
 
   var adminToken = sessionStorage.getItem('peakora_admin_token') || '';
 
+  // Partner token (admin account) from the portal sign-in / Google callback.
+  var partnerToken = localStorage.getItem('peakora_aff_token') || '';
+  var partnerEmail = localStorage.getItem('peakora_aff_email') || '';
+
   function adminHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'x-admin-token': adminToken
-    };
+    var h = { 'Content-Type': 'application/json' };
+    if (adminToken) h['x-admin-token'] = adminToken;
+    if (partnerToken && partnerEmail) {
+      h['x-affiliate-token'] = partnerToken;
+      h['x-affiliate-email'] = partnerEmail;
+    }
+    return h;
+  }
+
+  function adminQueryToken() {
+    // Prefer the raw admin token for query-string auth (export CSV link).
+    return adminToken || '';
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
@@ -190,10 +215,41 @@
     return false;
   }
 
+  // Admin sign-in via Google: the Worker callback lands on the portal, which
+  // redirects admins here. We then verify the stored partner token is an admin.
+  function adminGoogleSignIn() {
+    // If a partner session already exists, verify it is an admin first.
+    if (partnerToken && partnerEmail) {
+      tryAdminPartnerUnlock();
+      return;
+    }
+    // Otherwise send the admin to the portal's Google sign-in, which bounces
+    // admins back here after a successful Google login.
+    window.location.href = 'affiliate-portal.html?then=admin';
+  }
+
+  function tryAdminPartnerUnlock() {
+    fetch(AFFILIATE_API + '/affiliate/admin/verify', {
+      headers: { 'x-affiliate-token': partnerToken, 'x-affiliate-email': partnerEmail }
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.success) { adminToken = ''; showPanel(); }
+      else { alert('This account is not an admin. Sign in with the admin account or use the admin token.'); }
+    }).catch(function () { alert('Network error.'); });
+  }
+
   function showPanel() {
     document.getElementById('admin-gate').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
-    document.getElementById('export-link').href = AFFILIATE_API + '/affiliate/admin/export.csv?token=' + encodeURIComponent(adminToken);
+    var exportLink = document.getElementById('export-link');
+    if (adminToken) {
+      exportLink.href = AFFILIATE_API + '/affiliate/admin/export.csv?token=' + encodeURIComponent(adminToken);
+    } else {
+      // Partner-token admin: fetch the CSV with the auth header and trigger a
+      // download (no query-string token is available for a direct link).
+      exportLink.removeAttribute('href');
+      exportLink.style.opacity = '0.6';
+      exportLink.title = 'Export uses your signed-in admin session';
+    }
     refreshAll();
   }
 
@@ -235,6 +291,7 @@
               (a.status === 'active' ? '<button class="admin-mini-btn admin-mini-reject" onclick="rejectAff(\'' + a.id + '\')">Suspend</button>' : '') +
               '<button class="admin-mini-btn" onclick="openAdjust(\'' + a.id + '\',' + a.commission_rate + ',\'' + a.commission_type + '\')">Adjust</button>' +
               '<button class="admin-mini-btn" onclick="setAffPassword(\'' + esc(a.user_email) + '\')">Set PW</button>' +
+              '<button class="admin-mini-btn admin-mini-reject" onclick="deleteAff(\'' + a.id + '\')">Delete</button>' +
             '</td>';
           body.appendChild(tr);
         });
@@ -311,6 +368,13 @@
       if (d.success) loadAffiliates(); else alert(d.error || 'Failed');
     });
   }
+  function deleteAff(id) {
+    if (!confirm('Permanently delete this affiliate and all their clicks, commissions, and payouts? This cannot be undone.')) return;
+    postAdmin('/affiliate/admin/delete', { id: id }).then(function (d) {
+      if (d.success) { loadAffiliates(); loadLedger(); }
+      else alert(d.error || 'Failed');
+    });
+  }
   function openAdjust(id, rate, type) {
     var newRate = prompt('Commission rate (percentage 0-100, or flat $ amount):', String(rate * 100));
     if (newRate === null) return;
@@ -358,7 +422,8 @@
   }
 
   // Auto-unlock if token exists in session.
-  if (adminToken) showPanel();
+  if (adminToken) { showPanel(); }
+  else if (partnerToken && partnerEmail) { tryAdminPartnerUnlock(); }
 </script>
 <style>
   .admin-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }

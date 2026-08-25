@@ -347,41 +347,56 @@
     <div class="aff-apply-card">
       <div class="aff-apply-glow"></div>
       <div class="aff-apply-content">
-        <h2 class="aff-apply-title">Become a Peakora Partner Today</h2>
+        <h2 class="aff-apply-title">Join the Peakora Partner Program</h2>
         <p class="aff-apply-sub">
-          Join a wellness affiliate program that respects your audience and rewards your reach.
-          Apply in under two minutes. You are approved instantly.
+          Create your account or sign in. You are approved instantly and can start sharing your referral link right away.
         </p>
 
-        <form class="aff-apply-form" onsubmit="return submitAffiliateApp(event)">
+        <!-- AUTH TABS -->
+        <div class="aff-auth-tabs" role="tablist">
+          <button class="aff-auth-tab aff-auth-tab-active" id="tab-signup" type="button" onclick="switchAuthTab('signup')">Sign Up</button>
+          <button class="aff-auth-tab" id="tab-signin" type="button" onclick="switchAuthTab('signin')">Sign In</button>
+        </div>
+
+        <!-- GOOGLE SIGN-IN (shared by both tabs) -->
+        <button type="button" class="aff-google-btn" onclick="googleSignIn()">
+          <svg class="aff-google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+        <div class="aff-auth-divider"><span>or</span></div>
+
+        <!-- SIGN UP FORM -->
+        <form class="aff-apply-form aff-auth-form" id="signup-form" onsubmit="return submitAffiliateApp(event)">
           <div class="aff-form-row">
             <input type="text" id="aff-name" placeholder="Full name" required>
             <input type="email" id="aff-email" placeholder="Email address" required>
           </div>
           <div class="aff-form-row">
-            <input type="text" id="aff-platform" placeholder="Primary platform (Instagram, YouTube, blog, etc.)">
-            <input type="text" id="aff-audience" placeholder="Approximate audience size">
-          </div>
-          <div class="aff-form-row">
             <input type="password" id="aff-password" placeholder="Create a password (min 8 chars)" required minlength="8">
             <input type="password" id="aff-password2" placeholder="Confirm password" required minlength="8">
           </div>
-          <textarea id="aff-message" rows="3" placeholder="How do you plan to promote Peakora? (optional)"></textarea>
-
-          <div class="aff-signup-payout">
-            <p class="aff-signup-payout-title">Choose your payout method (optional, set later in your portal)</p>
-            <div class="aff-signup-payout-methods">
-              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="paypal"> PayPal</label>
-              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="wise"> Wise</label>
-              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="bank"> Bank Transfer</label>
-              <label class="portal-payout-option"><input type="radio" name="aff-payout-method" value="usdc"> USDC</label>
-            </div>
-            <div class="portal-payout-fields" id="aff-payout-fields"></div>
+          <div class="aff-form-row">
+            <input type="text" id="aff-platform" placeholder="Primary platform (optional)">
+            <input type="text" id="aff-audience" placeholder="Audience size (optional)">
           </div>
-
-          <button type="submit" class="btn-hero-primary aff-apply-submit">Submit Application</button>
+          <textarea id="aff-message" rows="3" placeholder="How do you plan to promote Peakora? (optional)"></textarea>
+          <button type="submit" class="btn-hero-primary aff-apply-submit">Create Account</button>
           <p class="aff-form-note" id="aff-form-status">No fees, no obligations. You are approved instantly.</p>
           <p class="aff-signin-link" id="aff-signin-link" style="display:none;">Already applied? <a href="affiliate-portal.html">Sign in to your portal</a>.</p>
+        </form>
+
+        <!-- SIGN IN FORM -->
+        <form class="aff-apply-form aff-auth-form" id="signin-form" style="display:none;" onsubmit="return affiliateSignIn(event)">
+          <input type="email" id="signin-email" placeholder="Email address" required>
+          <input type="password" id="signin-password" placeholder="Password" required>
+          <button type="submit" class="btn-hero-primary aff-apply-submit" id="signin-btn">Sign In</button>
+          <p class="aff-form-note" id="signin-status">Access your partner dashboard, referral link, and payouts.</p>
+          <p class="aff-signin-link"><a href="affiliate-portal.html">Use the full portal sign-in page</a></p>
         </form>
       </div>
     </div>
@@ -516,7 +531,7 @@
     recalc();
   })();
 
-  // Affiliate application form, POSTs to the real affiliate engine.
+  // Affiliate application + auth, POSTs to the real affiliate engine.
   var AFFILIATE_API = (function () {
     var host = window.location.hostname || '';
     if (host.indexOf('localhost') !== -1 || host.indexOf('127.0.0.1') !== -1) {
@@ -525,34 +540,37 @@
     return 'https://peakora-api.peakora.workers.dev';
   })();
 
-  // Payout field definitions (mirror the portal so the apply form is consistent).
-  var PAYOUT_FIELDS = {
-    paypal: [{ name: 'email', label: 'PayPal Email', placeholder: 'you@example.com' }],
-    wise: [{ name: 'email', label: 'Wise Email', placeholder: 'you@example.com' }],
-    bank: [
-      { name: 'account_holder', label: 'Account Holder Name', placeholder: 'Jane Doe' },
-      { name: 'iban_or_account', label: 'IBAN / Account Number', placeholder: 'GB29 NWBK...' },
-      { name: 'swift_or_routing', label: 'SWIFT/BIC or Routing Number', placeholder: 'NWBKGB2L' },
-      { name: 'country', label: 'Country', placeholder: 'United Kingdom' }
-    ],
-    usdc: [
-      { name: 'wallet_address', label: 'Wallet Address', placeholder: '0x...' },
-      { name: 'network', label: 'Network', placeholder: 'Polygon / Base / Ethereum' }
-    ]
-  };
-
-  function renderApplyPayoutFields(method) {
-    var fields = PAYOUT_FIELDS[method] || [];
-    var html = '';
-    fields.forEach(function (f) {
-      html += '<div class="portal-payout-field"><label>' + f.label + '</label>' +
-        '<input type="text" data-field="' + f.name + '" placeholder="' + (f.placeholder || '') + '"></div>';
-    });
-    document.getElementById('aff-payout-fields').innerHTML = html;
+  // Persist a successful partner login so the portal opens straight to the
+  // dashboard without re-entering credentials (7-day server token). Uses the
+  // same localStorage keys as the portal so the session carries across pages.
+  function rememberPartner(token, email, referralCode, isAdmin) {
+    try {
+      localStorage.setItem('peakora_aff_token', token);
+      localStorage.setItem('peakora_aff_email', email);
+      if (referralCode) localStorage.setItem('peakora_aff_code', referralCode);
+      localStorage.setItem('peakora_aff_admin', isAdmin ? '1' : '0');
+    } catch (e) {}
   }
-  document.querySelectorAll('input[name="aff-payout-method"]').forEach(function (r) {
-    r.addEventListener('change', function () { renderApplyPayoutFields(r.value); });
-  });
+
+  // Switch between the Sign Up and Sign In tabs.
+  function switchAuthTab(which) {
+    var signup = document.getElementById('signup-form');
+    var signin = document.getElementById('signin-form');
+    var tabUp = document.getElementById('tab-signup');
+    var tabIn = document.getElementById('tab-signin');
+    if (which === 'signin') {
+      signup.style.display = 'none'; signin.style.display = 'block';
+      tabIn.classList.add('aff-auth-tab-active'); tabUp.classList.remove('aff-auth-tab-active');
+    } else {
+      signup.style.display = 'block'; signin.style.display = 'none';
+      tabUp.classList.add('aff-auth-tab-active'); tabIn.classList.remove('aff-auth-tab-active');
+    }
+  }
+
+  // Google sign-in: the Worker builds the consent URL and redirects the browser.
+  function googleSignIn() {
+    window.location.href = AFFILIATE_API + '/affiliate/google/start';
+  }
 
   function submitAffiliateApp(e) {
     e.preventDefault();
@@ -564,7 +582,7 @@
     var audience = (document.getElementById('aff-audience').value || '').trim();
     var message = (document.getElementById('aff-message').value || '').trim();
     var status = document.getElementById('aff-form-status');
-    var btn = document.querySelector('.aff-apply-submit');
+    var btn = document.querySelector('#signup-form .aff-apply-submit');
     if (!name || !email) {
       status.textContent = 'Please enter your name and email.';
       status.style.color = '#fb7185';
@@ -581,21 +599,11 @@
       return false;
     }
 
-    // Optional payout method at signup.
     var payload = { name: name, email: email, password: password, platform: platform, audience: audience, message: message };
-    var chosen = document.querySelector('input[name="aff-payout-method"]:checked');
-    if (chosen) {
-      var details = {};
-      document.querySelectorAll('#aff-payout-fields input[data-field]').forEach(function (inp) {
-        details[inp.getAttribute('data-field')] = inp.value.trim();
-      });
-      payload.payout_method = chosen.value;
-      payload.payout_details = details;
-    }
 
-    status.textContent = 'Submitting your application...';
+    status.textContent = 'Creating your account...';
     status.style.color = 'var(--theme-text-muted)';
-    if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
 
     fetch(AFFILIATE_API + '/affiliate/apply', {
       method: 'POST',
@@ -604,10 +612,8 @@
     }).then(function (r) {
       return r.json().then(function (d) { return { ok: r.ok, data: d }; });
     }).then(function (res) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
       if (res.ok && res.data.success) {
-        if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
-        // Already a partner: never hint at a new code. Show their stored code +
-        // a sign-in button so they reach the right portal account.
         if (res.data.already_partner) {
           status.innerHTML = (res.data.message || 'You are already a partner.') +
             ' <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Sign in to your portal</a>.';
@@ -615,21 +621,78 @@
           document.getElementById('aff-signin-link').style.display = 'block';
           return;
         }
-        status.textContent = res.data.message || 'Application received. You are approved instantly.';
+        status.textContent = res.data.message || 'Account created. You are approved instantly.';
         status.style.color = '#34d399';
-        document.querySelector('.aff-apply-form').reset();
+        document.querySelector('#signup-form').reset();
         if (res.data.status === 'active' && res.data.referral_code) {
-          status.innerHTML += ' Your referral code is <strong>' + res.data.referral_code + '</strong>. <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Go to your portal</a>.';
+          status.innerHTML += ' Your referral code is <strong>' + res.data.referral_code + '</strong>.';
+          fetch(AFFILIATE_API + '/affiliate/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password })
+          }).then(function (r) { return r.json(); }).then(function (d) {
+            if (d.success) {
+              rememberPartner(d.token, d.email, d.referral_code, d.is_admin);
+              setTimeout(function () { window.location.href = 'affiliate-portal.html'; }, 900);
+            } else {
+              status.innerHTML += ' <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Go to your portal</a>.';
+            }
+          }).catch(function () {
+            status.innerHTML += ' <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Go to your portal</a>.';
+          });
         }
       } else {
         status.textContent = (res.data && res.data.error) || 'Something went wrong. Please try again.';
         status.style.color = '#fb7185';
-        if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
       }
     }).catch(function () {
       status.textContent = 'Network error, please check your connection and try again.';
       status.style.color = '#fb7185';
-      if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
+    });
+    return false;
+  }
+
+  // Sign In tab: email + password. On success, remember + redirect to portal.
+  function affiliateSignIn(e) {
+    e.preventDefault();
+    var email = (document.getElementById('signin-email').value || '').trim();
+    var password = document.getElementById('signin-password').value || '';
+    var status = document.getElementById('signin-status');
+    var btn = document.getElementById('signin-btn');
+    if (!email || !password) {
+      status.textContent = 'Enter your email and password.';
+      status.style.color = '#fb7185';
+      return false;
+    }
+    status.textContent = 'Signing you in...';
+    status.style.color = 'var(--theme-text-muted)';
+    if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+    fetch(AFFILIATE_API + '/affiliate/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
+      if (d.success) {
+        rememberPartner(d.token, d.email, d.referral_code, d.is_admin);
+        status.textContent = 'Signed in. Opening your dashboard...';
+        status.style.color = '#34d399';
+        setTimeout(function () { window.location.href = 'affiliate-portal.html'; }, 600);
+      } else if (d.use_google) {
+        status.textContent = 'This account uses Google sign-in. Please continue with Google above.';
+        status.style.color = '#facc15';
+      } else if (d.needs_password) {
+        status.innerHTML = 'Please set a password first. <a href="affiliate-portal.html">Set password in the portal</a>.';
+        status.style.color = '#facc15';
+      } else {
+        status.textContent = d.error || 'Could not sign in. Check your details.';
+        status.style.color = '#fb7185';
+      }
+    }).catch(function () {
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
+      status.textContent = 'Network error, please try again.';
+      status.style.color = '#fb7185';
     });
     return false;
   }

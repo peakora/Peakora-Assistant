@@ -71,7 +71,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS affiliates (
   id              TEXT PRIMARY KEY,        -- aff_<random>
   user_email      TEXT UNIQUE NOT NULL,     -- login identity + payout contact
-  password_hash   TEXT,                     -- 'pbkdf2$iter$saltB64$hashB64' (null = legacy, pre-password)
+  password_hash   TEXT,                     -- 'pbkdf2$iter$saltB64$hashB64' (null = Google-only or legacy)
+  google_sub      TEXT,                     -- Google account subject id (for Google sign-in accounts)
+  is_admin        INTEGER NOT NULL DEFAULT 0, -- 1 = program admin (master account)
   display_name    TEXT,
   referral_code   TEXT UNIQUE NOT NULL,    -- short code used in ?via=/&ref= links
   -- Commission model: 'percentage' (recurring % of each payment) or 'flat'
@@ -174,8 +176,14 @@ UPDATE affiliates SET payout_min = 25.0 WHERE payout_min <> 25.0 AND (notes IS N
 UPDATE affiliates SET status = 'active', approved_at = datetime('now')
  WHERE status = 'pending' AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');
 
--- Add the password_hash column to the existing affiliates table. SQLite/D1 has no
--- ADD COLUMN IF NOT EXISTS, so this errors harmlessly if the column already exists
--- (the deploy pipeline ignores the error). password_hash is nullable: legacy
--- accounts start NULL and must set one via the portal set-password flow.
+-- Add columns to the existing affiliates table. SQLite/D1 has no ADD COLUMN IF
+-- NOT EXISTS, so each errors harmlessly if the column already exists (the deploy
+-- pipeline ignores the error). password_hash is nullable: Google-only accounts
+-- and legacy accounts start NULL. google_sub links a Google sign-in account.
+-- is_admin flags the program owner so the admin panel can unlock via sign-in.
 ALTER TABLE affiliates ADD COLUMN password_hash TEXT;
+ALTER TABLE affiliates ADD COLUMN google_sub TEXT;
+ALTER TABLE affiliates ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;
+
+-- Mark the program owner as admin. Idempotent on every deploy.
+UPDATE affiliates SET is_admin = 1 WHERE user_email = 'peakora.network@gmail.com';

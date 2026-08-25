@@ -29,7 +29,7 @@ export const DEFAULT_TIERS = [
 
 /** Auto-approval: every applicant is approved instantly on apply, so they can
  *  generate links and log in right away (same as Calm/Gaia-style programs).
- *  The master email is still special-cased only as a safety net. */
+ *  The master email is the program admin (is_admin = 1). */
 const MASTER_EMAIL = 'peakora.network@gmail.com';
 
 /** Days a commission stays pending before it is auto-approved (payout hold). */
@@ -202,7 +202,8 @@ function decorateAffiliate(row) {
   return {
     ...row,
     tier_config: row.tier_config ? JSON.parse(row.tier_config) : DEFAULT_TIERS,
-    payout_details: row.payout_details ? JSON.parse(row.payout_details) : null
+    payout_details: row.payout_details ? JSON.parse(row.payout_details) : null,
+    is_admin: Number(row.is_admin) === 1 || row.user_email === MASTER_EMAIL
   };
 }
 
@@ -328,13 +329,9 @@ export async function handleAffiliateApply(request, env) {
   }
   if (!referralCode) return json({ success: false, error: 'Could not allocate referral code. Please retry.' }, 500);
 
-  // Optional payout method collected at signup to reduce later friction.
-  let payoutMethod = null, payoutDetails = null;
-  if (body.payout_method) {
-    const pv = validatePayout(String(body.payout_method).toLowerCase(), body.payout_details);
-    if (!pv.ok) return json({ success: false, error: pv.error }, 400);
-    payoutMethod = pv.method; payoutDetails = JSON.stringify(pv.details);
-  }
+  // Payout method is NOT collected at signup — partners set it later in the
+  // portal once they have earnings. Signup stays frictionless: name + email +
+  // password (or Google). Payout setup lives in the portal payout-setup route.
 
   const id = genId('aff');
   const passwordHash = await hashPassword(password);
@@ -343,12 +340,13 @@ export async function handleAffiliateApply(request, env) {
   // right away, the way Calm and Gaia handle their programs. No review queue.
   const initialStatus = 'active';
   const tier = resolveTier(0, DEFAULT_TIERS);
+  const isAdmin = email === MASTER_EMAIL ? 1 : 0;
   await env.DB.prepare(
-    `INSERT INTO affiliates (id, user_email, password_hash, display_name, referral_code, status, commission_type, commission_rate, tier_config, payout_method, payout_details, payout_min, payout_schedule, notes, approved_at)
-     VALUES (?, ?, ?, ?, ?, ?, 'percentage', ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO affiliates (id, user_email, password_hash, is_admin, display_name, referral_code, status, commission_type, commission_rate, tier_config, payout_min, payout_schedule, notes, approved_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'percentage', ?, ?, ?, ?, ?, ?)`
   ).bind(
-    id, email, passwordHash, name, referralCode, initialStatus,
-    tier.rate, JSON.stringify(DEFAULT_TIERS), payoutMethod, payoutDetails, tier.payoutMin, tier.payoutSchedule, notes,
+    id, email, passwordHash, isAdmin, name, referralCode, initialStatus,
+    tier.rate, JSON.stringify(DEFAULT_TIERS), tier.payoutMin, tier.payoutSchedule, notes,
     new Date().toISOString()
   ).run();
 
@@ -356,6 +354,7 @@ export async function handleAffiliateApply(request, env) {
     success: true,
     status: initialStatus,
     referral_code: referralCode,
+    is_admin: isAdmin === 1,
     message: 'You are approved. Sign in to grab your referral link and start sharing.'
   });
 }
@@ -391,6 +390,17 @@ async function verifyPortalAuth(request, env) {
   return ok ? email : null;
 }
 
+/** Verify a partner portal token and return the affiliate if they are an admin.
+ *  Used to unlock the admin panel via sign-in (Google or email) instead of the
+ *  raw ADMIN_TOKEN. Exposed for the router. */
+export async function verifyAdminPartner(request, env) {
+  const email = await verifyPortalAuth(request, env);
+  if (!email) return null;
+  const aff = await getAffiliateByEmail(env.DB, email);
+  if (!aff || !aff.is_admin || aff.status !== 'active') return null;
+  return aff;
+}
+
 export async function handleAffiliateLogin(request, env) {
   const body = await readJson(request);
   const email = normalizeEmail(body.email);
@@ -411,6 +421,11 @@ export async function handleAffiliateLogin(request, env) {
   // Legacy migration: accounts created before passwords existed have no hash.
   // They must set a password once before they (or anyone else) can log in.
   if (!aff.password_hash) {
+    // Google-only accounts have no password. Steer them to Google sign-in
+    // instead of the dead-end set-password flow.
+    if (aff.google_sub) {
+      return json({ success: false, use_google: true, error: 'This account uses Google sign-in. Please continue with Google.' });
+    }
     return json({ success: false, needs_password: true, error: 'Please set a password for your account to continue.' });
   }
   if (!password) return json({ success: false, error: 'Password is required.' }, 400);
@@ -418,7 +433,7 @@ export async function handleAffiliateLogin(request, env) {
   if (!ok) return json({ success: false, error: 'Incorrect email or password.' }, 401);
 
   const token = await portalToken(email, env);
-  return json({ success: true, token, email, referral_code: aff.referral_code });
+  return json({ success: true, token, email, referral_code: aff.referral_code, is_admin: aff.is_admin });
 }
 
 /** One-time self-service password set for legacy accounts (no hash yet) OR an
@@ -449,6 +464,143 @@ export async function handleAffiliateSetPassword(request, env) {
   await env.DB.prepare('UPDATE affiliates SET password_hash = ? WHERE id = ?').bind(hash, aff.id).run();
   const token = await portalToken(email, env);
   return json({ success: true, token, email, referral_code: aff.referral_code, message: 'Password set. You are signed in.' });
+}
+
+// ── Google sign-in (OAuth Authorization Code flow, server-side verified) ───
+//
+// Flow: frontend "Continue with Google" -> GET /affiliate/google/start builds a
+// Google consent URL (client_id + redirect_uri + scope email+profile + state
+// nonce) and 302-redirects the browser there. Google calls back to
+// /affiliate/google/callback?code=&state=. The Worker exchanges the code for
+// tokens (using GOOGLE_CLIENT_SECRET), fetches Google's authoritative userinfo
+// (verified email + name + google subject id), then find-or-creates the
+// affiliate and issues the same HMAC portal token used by email/password login.
+// The token is passed back to the Pages portal via a URL fragment (never sent
+// to a server on subsequent loads). No Firebase, no refresh tokens, no sessions.
+
+const GOOGLE_OAUTH_BASE = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo';
+
+/** Build the public Google consent URL and redirect the browser to it.
+ *  The redirect_uri is fixed to this Worker's /affiliate/google/callback. */
+export function buildGoogleConsentUrl(env, state) {
+  const clientId = env.GOOGLE_CLIENT_ID || '';
+  const redirect = `${env.APP_PUBLIC_URL_API || 'https://peakora-api.peakora.workers.dev'}/affiliate/google/callback`;
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirect,
+    response_type: 'code',
+    scope: 'openid email profile',
+    include_granted_scopes: 'true',
+    state: state,
+    prompt: 'select_account'
+  });
+  return `${GOOGLE_OAUTH_BASE}?${params.toString()}`;
+}
+
+export async function handleAffiliateGoogleStart(request, env) {
+  if (!env.GOOGLE_CLIENT_ID) return json({ success: false, error: 'Google sign-in is not configured.' }, 503);
+  const state = genId('gsta').slice(4); // opaque nonce
+  const url = buildGoogleConsentUrl(env, state);
+  return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': 'no-store' } });
+}
+
+/** Exchange an authorization code for Google tokens, then fetch verified
+ *  userinfo. Returns { sub, email, email_verified, name } or null. */
+export async function exchangeGoogleCode(env, code) {
+  const clientId = env.GOOGLE_CLIENT_ID || '';
+  const clientSecret = env.GOOGLE_CLIENT_SECRET || '';
+  const redirect = `${env.APP_PUBLIC_URL_API || 'https://peakora-api.peakora.workers.dev'}/affiliate/google/callback`;
+  const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirect,
+      grant_type: 'authorization_code'
+    }).toString()
+  });
+  if (!tokenRes.ok) return null;
+  const tokens = await tokenRes.json();
+  const access = tokens.access_token;
+  if (!access) return null;
+  const infoRes = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: `Bearer ${access}` } });
+  if (!infoRes.ok) return null;
+  const info = await infoRes.json();
+  if (!info.email || String(info.email_verified) !== 'true') return null;
+  return { sub: String(info.sub || ''), email: String(info.email).toLowerCase(), email_verified: true, name: String(info.name || info.given_name || '') };
+}
+
+/** Find-or-create an affiliate from a verified Google profile. Google-only
+ *  accounts have no password (password_hash stays null) — they always sign in
+ *  via Google. If an email/password account already exists, Google sign-in
+ *  links to it (links google_sub) and logs it in. */
+export async function findOrCreateGoogleAffiliate(env, profile) {
+  let aff = await getAffiliateByEmail(env.DB, profile.email);
+  if (aff) {
+    if (aff.status !== 'active') return { error: `Account is ${aff.status}. Contact us if you need help.`, status: 403 };
+    // Link the Google subject id if not already stored.
+    if (profile.sub && !aff.google_sub) {
+      await env.DB.prepare('UPDATE affiliates SET google_sub = ? WHERE id = ?').bind(profile.sub, aff.id).run();
+    }
+    // Keep display name fresh only if the account never set one.
+    if (!aff.display_name && profile.name) {
+      await env.DB.prepare('UPDATE affiliates SET display_name = ? WHERE id = ?').bind(profile.name.slice(0, 120), aff.id).run();
+    }
+    // Safety net: activate a stale pending account on successful Google login.
+    if (aff.status === 'pending') {
+      await env.DB.prepare("UPDATE affiliates SET status = 'active', approved_at = ? WHERE id = ?").bind(new Date().toISOString(), aff.id).run();
+    }
+    return { aff: await getAffiliateByEmail(env.DB, profile.email) };
+  }
+  // No account yet: create one. Generate a unique referral code.
+  let referralCode = '';
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = genReferralCode();
+    const clash = await env.DB.prepare('SELECT 1 FROM affiliates WHERE referral_code = ?').bind(candidate).first();
+    if (!clash) { referralCode = candidate; break; }
+  }
+  if (!referralCode) return { error: 'Could not allocate referral code. Please retry.', status: 500 };
+  const id = genId('aff');
+  const isAdmin = profile.email === MASTER_EMAIL ? 1 : 0;
+  const tier = resolveTier(0, DEFAULT_TIERS);
+  await env.DB.prepare(
+    `INSERT INTO affiliates (id, user_email, password_hash, google_sub, is_admin, display_name, referral_code, status, commission_type, commission_rate, tier_config, payout_min, payout_schedule, notes, approved_at)
+     VALUES (?, ?, NULL, ?, ?, ?, ?, 'active', 'percentage', ?, ?, ?, ?, '{}', ?)`
+  ).bind(
+    id, profile.email, profile.sub, isAdmin, (profile.name || '').slice(0, 120), referralCode,
+    tier.rate, JSON.stringify(DEFAULT_TIERS), tier.payoutMin, tier.payoutSchedule,
+    new Date().toISOString()
+  ).run();
+  return { aff: await getAffiliateByEmail(env.DB, profile.email) };
+}
+
+export async function handleAffiliateGoogleCallback(request, env) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get('code') || '';
+  const error = url.searchParams.get('error') || '';
+  const portalUrl = env.APP_PUBLIC_URL || 'https://peakora-assistant.pages.dev';
+  const failRedirect = `${portalUrl}/affiliate-portal.html?google_error=1`;
+  if (error) return new Response(null, { status: 302, headers: { Location: failRedirect, 'Cache-Control': 'no-store' } });
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+    return new Response(null, { status: 302, headers: { Location: `${failRedirect}&reason=not_configured`, 'Cache-Control': 'no-store' } });
+  }
+  const profile = await exchangeGoogleCode(env, code);
+  if (!profile) return new Response(null, { status: 302, headers: { Location: failRedirect, 'Cache-Control': 'no-store' } });
+  const result = await findOrCreateGoogleAffiliate(env, profile);
+  if (result.error) {
+    return new Response(null, { status: 302, headers: { Location: `${failRedirect}&reason=${encodeURIComponent(result.error)}`, 'Cache-Control': 'no-store' } });
+  }
+  const aff = result.aff;
+  const token = await portalToken(aff.user_email, env);
+  // Pass credentials to the portal via a URL fragment so they never reach a
+  // server log on later navigations. The portal JS reads + clears it.
+  const payload = encodeURIComponent(JSON.stringify({ token, email: aff.user_email, referral_code: aff.referral_code, is_admin: aff.is_admin }));
+  const okRedirect = `${portalUrl}/affiliate-portal.html#google_login=${payload}`;
+  return new Response(null, { status: 302, headers: { Location: okRedirect, 'Cache-Control': 'no-store' } });
 }
 
 /** Partner portal dashboard aggregate. */
@@ -485,7 +637,8 @@ export async function handleAffiliateDashboard(request, env) {
       referral_code: aff.referral_code, status: aff.status,
       commission_type: aff.commission_type, commission_rate: aff.commission_rate,
       payout_method: aff.payout_method, payout_schedule: aff.payout_schedule,
-      payout_min: aff.payout_min
+      payout_min: aff.payout_min, is_admin: aff.is_admin,
+      google_only: !aff.password_hash && !!aff.google_sub
     },
     tier: { name: tier.name, rate: tier.rate, cookie_days: tier.cookieDays, payout_min: tier.payoutMin, payout_schedule: tier.payoutSchedule },
     active_referrals: activeRefs,
@@ -599,6 +752,32 @@ export async function handleAdminRejectAffiliate(request, env) {
     "UPDATE affiliates SET status = 'suspended', suspended_at = datetime('now') WHERE id = ?"
   ).bind(id).run();
   return json({ success: true });
+}
+
+/** Admin: permanently delete an affiliate and their dependent rows. Refuses to
+ *  delete the master/admin account so the panel can never lock itself out. */
+export async function handleAdminDeleteAffiliate(request, env) {
+  const body = await readJson(request);
+  const id = String(body.id || '');
+  if (!id) return json({ success: false, error: 'Affiliate id required.' }, 400);
+  const aff = await getAffiliateById(env.DB, id);
+  if (!aff) return json({ success: false, error: 'Affiliate not found.' }, 404);
+  if (aff.is_admin || aff.user_email === MASTER_EMAIL) {
+    return json({ success: false, error: 'The admin account cannot be deleted.' }, 403);
+  }
+  await env.DB.prepare('DELETE FROM commissions WHERE affiliate_id = ?').bind(id).run();
+  await env.DB.prepare('DELETE FROM referral_clicks WHERE affiliate_id = ?').bind(id).run();
+  await env.DB.prepare('DELETE FROM payouts WHERE affiliate_id = ?').bind(id).run();
+  await env.DB.prepare('DELETE FROM affiliates WHERE id = ?').bind(id).run();
+  return json({ success: true });
+}
+
+/** Admin panel sign-in check: confirms a partner portal token belongs to the
+ *  admin account, so the panel can unlock via Google/email sign-in. */
+export async function handleAdminVerifyPartner(request, env) {
+  const aff = await verifyAdminPartner(request, env);
+  if (!aff) return json({ success: false, error: 'Not an admin account.' }, 403);
+  return json({ success: true, email: aff.user_email, referral_code: aff.referral_code });
 }
 
 export async function handleAdminAdjustCommission(request, env) {

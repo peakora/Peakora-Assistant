@@ -2165,8 +2165,28 @@ header .brand img.brand-logo:hover,
   color: var(--theme-text-muted, #a0aec0);
   margin-top: 28px;
 }
+
+/* Compact pricing CTA on the landing page (full plans live on pricing.html) */
+.pricing-cta-section {
+  padding: 72px 0;
+  background: radial-gradient(circle at 50% 0%, rgba(224, 122, 95, 0.08), transparent 55%);
+}
+.pricing-cta-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+.pricing-cta-inner .section-lead { margin: 16px auto 28px; max-width: 480px; }
+
+/* Standalone pricing page hero (uses the same cards as the old section) */
+.pricing-hero {
+  padding: 96px 0 80px;
+  background: radial-gradient(circle at 50% 0%, rgba(224, 122, 95, 0.08), transparent 55%);
+  min-height: 60vh;
+}
 @media (max-width: 640px) {
   .pricing-section { padding: 56px 0 48px; }
+  .pricing-hero { padding: 64px 0 48px; }
   .pricing-price { font-size: 38px; }
   .pricing-card { padding: 28px 22px; }
 }
