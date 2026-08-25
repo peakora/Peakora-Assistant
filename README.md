@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/peakora-logo.png" alt="Peakora" width="200">
+  <img src="assets/social profile image.png" alt="Peakora Assistant" width="200">
 </p>
 
 <h1 align="center">Peakora Assistant</h1>
