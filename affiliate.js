@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
 /**
  * Peakora Affiliate Tracker — lightweight client-side attribution.
  *
