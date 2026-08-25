@@ -4,8 +4,6 @@
 
 <h1 align="center">Peakora Assistant</h1>
 
-# Peakora — peakora.life
-
 > Gentle guidance. Real momentum.
 
 Peakora is a dark-luxury wellness and personal-growth companion web app. It shapes a gentle, realistic **7-day reset** plan around a person's energy, schedule, and current headspace — small daily steps, no streaks to break, nothing to feel guilty about. The app pairs a conversational assistant with a dashboard of mood logging, guided breathing, Solfeggio soundscapes, and analytics, all delivered as an installable, offline-capable Progressive Web App.
