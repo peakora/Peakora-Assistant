@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
 name = "peakora-api"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
