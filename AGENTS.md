@@ -310,8 +310,7 @@ Copy and save the exact prompt below when generating new components or entire ap
 
 This repo consumes the central skills hub: **github.com/peakora/peakora-cortex**
 (branch: master). The hub holds the master system blueprint, the shared skills,
-and the cross-repo memory layers. User preference: call the owner **Ala**. No
-emoji anywhere (chat, code, copy, commits).
+and the cross-repo memory layers. User preference: call the owner **Ala** (never "user" or "users"). We are partners. No emoji anywhere (chat, code, copy, commits).
 
 ### Session start — recall (NEVER SKIP)
 1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text).
