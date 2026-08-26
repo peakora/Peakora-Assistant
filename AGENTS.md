@@ -35,6 +35,7 @@
 - NO labels/eyebrows/badges (no hero-eyebrow, aff-hero-badge, diff-eyebrow).
 - NO em-dashes - use plain hyphens or restructure.
 - No emoji anywhere.
+- Insights charts: pure inline SVG (no chart libs). The Mood Pattern card is a "mood river" SVG (quadratic trend path + gradient area + glow dots). Do NOT reintroduce absolute-positioned bubble divs positioned from clientWidth/clientHeight - they collapse to a stacked pile when rendered before the container has a measured width (the original stacking-on-start bug).
 
 ## Workflow rules (mandatory)
 - Big prompts: when a partner request bundles many distinct tasks, divide it into manageable chunks (PROMPT A, PROMPT B, ...) and confirm the split before executing. Do not try to do everything in one pass; finish and verify one chunk before starting the next.
