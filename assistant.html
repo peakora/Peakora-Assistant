@@ -315,124 +315,114 @@
       return PLACEHOLDER_WEEK;
     }
 
+    // Mood energy score per family (0-100). Used for the river height.
+    const MOOD_ENERGY = { heavy: 22, anxious: 45, neutral: 55, hopeful: 74, energized: 92 };
+
+    // Render the week as a flowing SVG "mood river": each day is a gradient
+    // pillar whose height follows that day's energy, joined by a smooth trend
+    // path. Pure SVG - no absolute-positioned divs, so it never collapses to a
+    // single stacked pile the way the old bubbles did when the container had
+    // no measured width at first paint.
     function renderMoodBubbles() {
-      const canvas = document.getElementById("mood-bubble-canvas");
+      const host = document.getElementById("mood-bubble-canvas");
       const summaryEl = document.getElementById("mood-summary-text");
-      if (!canvas || !summaryEl) return;
+      if (!host || !summaryEl) return;
 
       const data = getLast7CheckinsOrPlaceholder();
-      canvas.innerHTML = "";
+      host.innerHTML = "";
 
       if (!data.length) {
         summaryEl.textContent = "You haven't checked in yet this week.";
         return;
       }
 
-      const width = canvas.clientWidth || 320;
-      const height = canvas.clientHeight || 200;
-      const count = data.length;
+      const W = 320, H = 150;
+      const padL = 14, padR = 14, padT = 16, padB = 26;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+      const n = data.length;
 
-      const padX = 28;
-      const xStep = count > 1 ? (width - padX * 2) / (count - 1) : 0;
-      const yBase = height / 2;
-
-      const families = [];
-      const feelingsSequence = [];
-      const points = [];
-
-      data.forEach((item, index) => {
-        const feeling = item.feeling || item.mood || "";
+      const points = data.map((item, i) => {
+        const feeling = (item.feeling || item.mood || "").toLowerCase() || "steady";
         const family = getMoodFamily(feeling);
-        const color = getMoodColor(family);
-        const size = getMoodSize(feeling) * 1.3;
-
-        families.push(family);
-        feelingsSequence.push((feeling || "").toLowerCase() || "...");
-
-        const x = padX + xStep * index;
-        const drift = (index % 2 === 0 ? -1 : 1) * (6 + (index % 3));
-        const y = yBase + drift;
-        points.push({ x, y, size, color, family, feeling, date: item.date });
-
-        const bubble = document.createElement("div");
-        bubble.className = "mood-bubble";
-        bubble.style.width = size + "px";
-        bubble.style.height = size + "px";
-        bubble.style.left = x - size / 2 + "px";
-        bubble.style.top = y - size / 2 + "px";
-        bubble.style.background =
-          "radial-gradient(circle at 30% 30%, " + color + ", #f58b5c)";
-        bubble.style.animationDelay = index * 0.12 + "s";
-        bubble.setAttribute("role", "img");
+        const energy = MOOD_ENERGY[family] != null ? MOOD_ENERGY[family] : 50;
+        const cx = padL + (n > 1 ? (innerW * i) / (n - 1) : innerW / 2);
+        const cy = padT + innerH - (energy / 100) * innerH;
         const dayLabel = item.date
           ? new Date(item.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" })
-          : "Day " + (index + 1);
-        bubble.setAttribute("aria-label", dayLabel + ": " + (feeling || "no label"));
-        bubble.tabIndex = 0;
-
-        const tooltip = document.createElement("span");
-        tooltip.className = "mood-bubble-tip";
-        tooltip.textContent = dayLabel + " - " + (feeling || "no label");
-        bubble.appendChild(tooltip);
-
-        canvas.appendChild(bubble);
+          : "Day " + (i + 1);
+        return { cx, cy, energy, family, color: getMoodColor(family), feeling, dayLabel, date: item.date, i };
       });
 
-      // Connecting timeline line so the week reads as a sequence, not random dots.
-      if (points.length > 1) {
-        const svgNs = "http://www.w3.org/2000/svg";
-        const line = document.createElementNS(svgNs, "svg");
-        line.setAttribute("class", "mood-bubble-line");
-        line.setAttribute("viewBox", "0 0 " + width + " " + height);
-        line.setAttribute("preserveAspectRatio", "none");
-        const path = document.createElementNS(svgNs, "path");
-        const d = points.map((p, i) => (i === 0 ? "M" : "L") + p.x + " " + p.y).join(" ");
-        path.setAttribute("d", d);
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", "rgba(244,162,97,0.4)");
-        path.setAttribute("stroke-width", "2");
-        path.setAttribute("stroke-dasharray", "4,4");
-        line.appendChild(path);
-        canvas.insertBefore(line, canvas.firstChild);
-      }
-
-      const familyCounts = families.reduce((acc, f) => {
-        acc[f] = (acc[f] || 0) + 1;
-        return acc;
-      }, {});
-      let dominantFamily = "neutral";
-      let maxCount = 0;
-      Object.keys(familyCounts).forEach((f) => {
-        if (familyCounts[f] > maxCount) {
-          maxCount = familyCounts[f];
-          dominantFamily = f;
+      // Smooth trend path (Catmull-Rom-ish via quadratic midpoints).
+      let pathD = "";
+      if (points.length === 1) {
+        pathD = "M " + points[0].cx + " " + points[0].cy;
+      } else {
+        pathD = "M " + points[0].cx + " " + points[0].cy;
+        for (let i = 0; i < points.length - 1; i++) {
+          const p0 = points[i], p1 = points[i + 1];
+          const mx = (p0.cx + p1.cx) / 2, my = (p0.cy + p1.cy) / 2;
+          pathD += " Q " + p0.cx + " " + p0.cy + " " + mx + " " + my;
         }
-      });
+        const last = points[points.length - 1];
+        pathD += " Q " + last.cx + " " + last.cy + " " + last.cx + " " + last.cy;
+      }
+      // Filled area under the trend line.
+      const baseY = padT + innerH;
+      const areaD = pathD + " L " + points[points.length - 1].cx + " " + baseY +
+        " L " + points[0].cx + " " + baseY + " Z";
 
-      const summaryColor = getMoodColor(dominantFamily);
-      const summaryBubble = document.createElement("div");
-      summaryBubble.className = "week-summary-bubble";
-      summaryBubble.style.background =
-        "radial-gradient(circle at 30% 30%, " + summaryColor + ", #f58b5c)";
-      summaryBubble.title = "Dominant pattern: " + dominantFamily;
-      canvas.appendChild(summaryBubble);
+      const defs = '<defs>' +
+        '<linearGradient id="moodRiverArea" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="#f4a261" stop-opacity="0.42"/>' +
+        '<stop offset="100%" stop-color="#a78bfa" stop-opacity="0.06"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="moodRiverStroke" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0%" stop-color="#e07a5f"/>' +
+        '<stop offset="50%" stop-color="#f4a261"/>' +
+        '<stop offset="100%" stop-color="#a78bfa"/>' +
+        '</linearGradient></defs>';
 
-      // Legend so colors mean something, not just look pretty.
-      const usedFamilies = Object.keys(familyCounts);
-      const legend = document.createElement("div");
-      legend.className = "mood-pattern-legend";
-      legend.innerHTML = usedFamilies.map((f) => {
-        const c = getMoodColor(f);
-        return '<span class="mood-pattern-legend-item"><span class="mood-pattern-legend-dot" style="background:' + c + ';"></span>' +
-          f.charAt(0).toUpperCase() + f.slice(1) + ' (' + familyCounts[f] + ')</span>';
+      const gridLines = [0.25, 0.5, 0.75].map(f => {
+        const y = padT + innerH * (1 - f);
+        return '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>';
       }).join("");
-      canvas.appendChild(legend);
 
-      const pct = Math.round((maxCount / count) * 100);
+      const dots = points.map((p) => {
+        const r = 5;
+        return '<g class="mood-river-pt" tabindex="0" role="img">' +
+          '<title>' + p.dayLabel + ' - ' + p.feeling + ' (' + p.energy + '/100)</title>' +
+          '<circle cx="' + p.cx + '" cy="' + p.cy + '" r="' + r + '" fill="' + p.color + '" stroke="#0c0a15" stroke-width="2"/>' +
+          '<circle cx="' + p.cx + '" cy="' + p.cy + '" r="' + (r + 3) + '" fill="none" stroke="' + p.color + '" stroke-opacity="0.35" stroke-width="1.5"/>' +
+          '</g>';
+      }).join('');
+
+      const dayLabels = points.map((p) => {
+        return '<text x="' + p.cx + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)" font-family="Inter">' + p.dayLabel + '</text>';
+      }).join('');
+
+      const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto; display:block;" class="mood-river-svg">' +
+        defs + gridLines +
+        '<path d="' + areaD + '" fill="url(#moodRiverArea)"/>' +
+        '<path d="' + pathD + '" fill="none" stroke="url(#moodRiverStroke)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        dots + dayLabels + '</svg>';
+
+      host.innerHTML = svg;
+
+      // Dominant-family summary (kept so the existing text slot still tells a story).
+      const families = points.map(p => p.family);
+      const familyCounts = families.reduce((acc, f) => { acc[f] = (acc[f] || 0) + 1; return acc; }, {});
+      let dominantFamily = "neutral", maxCount = 0;
+      Object.keys(familyCounts).forEach((f) => { if (familyCounts[f] > maxCount) { maxCount = familyCounts[f]; dominantFamily = f; } });
+      const summaryColor = getMoodColor(dominantFamily);
+      const pct = Math.round((maxCount / points.length) * 100);
       const domLabel = dominantFamily.charAt(0).toUpperCase() + dominantFamily.slice(1);
+      const seq = points.map(p => p.feeling).join(" -> ");
+      const avgEnergy = Math.round(points.reduce((s, p) => s + p.energy, 0) / points.length);
       summaryEl.innerHTML = "This week leaned <strong style=\"color:" + summaryColor + "\">" + domLabel + "</strong> " +
-        "(" + maxCount + " of " + count + " check-ins, " + pct + "%). " +
-        "Sequence: " + feelingsSequence.join(" -> ") + ".";
+        "(" + maxCount + " of " + points.length + " check-ins, " + pct + "%). " +
+        "Average energy " + avgEnergy + "/100. Sequence: " + seq + ".";
     }
 
     function goToStepKey(key) {
@@ -1586,14 +1576,71 @@
               </div>
             </div>
 
-            <!-- SECTION 4: MOOD PATTERN BUBBLE CANVAS & REFLECTION SPACE -->
-            <div class="dash-grid-2">
-              <!-- MOOD PATTERN BUBBLE CANVAS CARD -->
+            <!-- SECTION 4: MOOD PATTERN RIVER + BALANCE + REFLECTION SPACE -->
+            <div class="dash-grid-equal">
+              <!-- MOOD PATTERN RIVER CARD -->
               <div class="dash-card">
                 <div class="dash-card-title">Your Mood Pattern</div>
-                <div id="mood-bubble-canvas" class="mood-bubble-canvas" style="min-height:160px; margin-top:8px;"></div>
+                <div id="mood-bubble-canvas" class="mood-bubble-canvas" style="min-height:160px;"></div>
                 <p id="mood-summary-text" style="font-size:12px; color:var(--theme-text-muted); margin-top:8px;"></p>
               </div>
+
+              <!-- MOOD BALANCE CARD (a second sight: expansive vs contractive equilibrium) -->
+              ${(() => {
+                const real = getCheckins();
+                const usingSample = !real || real.length === 0;
+                const week = usingSample ? getLast7CheckinsOrPlaceholder() : real.slice(-7);
+                const expansiveFamilies = ['hopeful', 'energized'];
+                const contractiveFamilies = ['heavy', 'anxious'];
+                let expansive = 0, contractive = 0, neutral = 0;
+                week.forEach(c => {
+                  const f = getMoodFamily(c.feeling);
+                  if (expansiveFamilies.includes(f)) expansive++;
+                  else if (contractiveFamilies.includes(f)) contractive++;
+                  else neutral++;
+                });
+                const total = week.length || 1;
+                const exPct = Math.round((expansive / total) * 100);
+                const coPct = Math.round((contractive / total) * 100);
+                const nePct = Math.max(0, 100 - exPct - coPct);
+                const exColor = '#AEE6C5', coColor = '#E8A0A0', neColor = '#F5B35C';
+                // Best / hardest day by energy score.
+                let best = null, hardest = null;
+                week.forEach(c => {
+                  const e = MOOD_ENERGY[getMoodFamily(c.feeling)] != null ? MOOD_ENERGY[getMoodFamily(c.feeling)] : 50;
+                  if (!best || e > best.e) best = { e, feeling: c.feeling, date: c.date };
+                  if (!hardest || e < hardest.e) hardest = { e, feeling: c.feeling, date: c.date };
+                });
+                const fmtDay = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }) : '';
+                let read;
+                if (exPct >= 50) read = "Momentum is building - your week leaned into light and energy.";
+                else if (coPct >= 50) read = "A heavy week. That is information, not a verdict - rest counts as progress.";
+                else if (nePct >= 50) read = "An even, steady week. Balance is its own quiet kind of strength.";
+                else read = "A mixed week with no single tone in charge - worth noticing what shifted the dial.";
+
+                return `
+                <div class="dash-card">
+                  <div class="dash-card-title">Mood Balance</div>
+                  <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">
+                    How your week split between expansive (bright/energized), steady, and contractive (low/tense) states${usingSample ? ' - sample week until you log a check-in' : ''}.
+                  </p>
+                  <div class="mood-balance-bar" role="img" aria-label="Expansive ${exPct} percent, steady ${nePct} percent, contractive ${coPct} percent">
+                    <div class="mood-balance-seg" style="width:${exPct}%; background:${exColor}; box-shadow:0 0 10px ${exColor}66;"></div>
+                    <div class="mood-balance-seg" style="width:${nePct}%; background:${neColor};"></div>
+                    <div class="mood-balance-seg" style="width:${coPct}%; background:${coColor}; box-shadow:0 0 10px ${coColor}66;"></div>
+                  </div>
+                  <div class="mood-balance-legend">
+                    <span class="mood-balance-legend-item"><span class="mood-balance-legend-dot" style="background:${exColor}; color:${exColor};"></span>Expansive ${exPct}%</span>
+                    <span class="mood-balance-legend-item"><span class="mood-balance-legend-dot" style="background:${neColor}; color:${neColor};"></span>Steady ${nePct}%</span>
+                    <span class="mood-balance-legend-item"><span class="mood-balance-legend-dot" style="background:${coColor}; color:${coColor};"></span>Contractive ${coPct}%</span>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+                    ${best ? `<span class="mood-balance-chip" style="color:${exColor}; border-color:${exColor}55;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6z"/></svg>Brightest: ${fmtDay(best.date)} - ${best.feeling}</span>` : ''}
+                    ${hardest ? `<span class="mood-balance-chip" style="color:${coColor}; border-color:${coColor}55;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z"/><path d="M8 15s1.5-2 4-2 4 2 4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Hardest: ${fmtDay(hardest.date)} - ${hardest.feeling}</span>` : ''}
+                  </div>
+                  <p style="font-size:12px; color:var(--theme-text-muted); font-style:italic; margin:12px 0 0; line-height:1.5;">${read}</p>
+                </div>`;
+              })()}
 
               <!-- REFLECTION SPACE CARD -->
               <div class="dash-card">

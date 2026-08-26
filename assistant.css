@@ -461,111 +461,21 @@ select.input option {
 --------------------------------------------------- */
 
 .mood-bubble-canvas {
-  position: relative;
   width: 100%;
-  height: 180px;
   margin-top: 14px;
   margin-bottom: 10px;
   border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--theme-card-border);
-  overflow: hidden;
+  padding: 10px 6px 4px;
+  box-sizing: border-box;
 }
 
-.mood-bubble {
-  position: absolute;
-  border-radius: 999px;
-  opacity: 0;
-  animation: bubbleFade 0.8s ease forwards;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.mood-bubble:hover,
-.mood-bubble:focus {
-  transform: scale(1.12);
-  box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 14px var(--theme-accent-glow);
-  outline: none;
-  z-index: 5;
-}
-.mood-bubble-tip {
-  position: absolute;
-  bottom: 115%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(12, 9, 21, 0.95);
-  color: #ffffff;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s ease;
-  border: 1px solid var(--theme-card-border);
-}
-.mood-bubble:hover .mood-bubble-tip,
-.mood-bubble:focus .mood-bubble-tip {
-  opacity: 1;
-}
-.mood-bubble-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-.mood-pattern-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
-  z-index: 2;
-}
-.mood-pattern-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  color: var(--theme-text-muted);
-  background: rgba(12, 9, 21, 0.6);
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--theme-card-border);
-}
-.mood-pattern-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-@keyframes bubbleFade {
-  0% { opacity: 0; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-.week-summary-bubble {
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-  animation: summaryPulse 3s ease-in-out infinite;
-}
-
-@keyframes summaryPulse {
-  0% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.9; }
-}
+.mood-river-svg { overflow: visible; }
+.mood-river-pt { cursor: pointer; transition: transform 0.2s ease; transform-box: fill-box; transform-origin: center; }
+.mood-river-pt:hover circle:nth-child(1),
+.mood-river-pt:focus circle:nth-child(1) { filter: drop-shadow(0 0 6px currentColor); }
+.mood-river-pt:focus { outline: none; }
 
 #mood-summary-text {
   font-size: 13px;
@@ -573,6 +483,51 @@ select.input option {
   margin-top: 8px;
   line-height: 1.5;
   text-align: center;
+}
+
+/* Mood Balance equilibrium card */
+.mood-balance-bar {
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.mood-balance-seg { height: 100%; transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.mood-balance-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  justify-content: center;
+}
+.mood-balance-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--theme-text-muted);
+}
+.mood-balance-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+.mood-balance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ---------------------------------------------------
