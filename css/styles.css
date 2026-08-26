@@ -1084,6 +1084,7 @@ header .brand img.brand-logo:hover,
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   width: 380px;
+  max-width: calc(100vw - 32px);
   max-height: 75vh;
   padding: 24px;
   display: flex;

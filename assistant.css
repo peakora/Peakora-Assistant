@@ -20,6 +20,15 @@
   --theme-primary-grad: linear-gradient(135deg, #e07a5f 0%, #f4a261 50%, #a78bfa 100%);
   --theme-card-glow: rgba(224, 122, 95, 0.18);
   --theme-card-glow-hover: rgba(224, 122, 95, 0.38);
+
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --shadow-sm: 0 6px 24px -2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 20px 48px -6px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 16px 40px -4px rgba(224, 122, 95, 0.28), 0 0 28px -2px rgba(167, 139, 250, 0.2);
+  --shadow-card: 0 22px 50px -8px rgba(0, 0, 0, 0.8), 0 0 36px rgba(224, 122, 95, 0.35);
+  --shadow-frame: 0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 38px rgba(224, 122, 95, 0.3), 0 0 20px rgba(167, 139, 250, 0.2);
 }
 
 body {
@@ -44,7 +53,7 @@ body {
 /* MAIN ASSISTANT CARD CONTAINER */
 .assistant-card {
   background: var(--theme-card-bg);
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   max-width: 520px;
   width: 100%;
   padding: 28px 26px 24px;
@@ -200,7 +209,7 @@ body {
 .input {
   width: 100%;
   padding: 14px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
@@ -324,7 +333,7 @@ select.input option {
 .card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--theme-card-border);
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   padding: 22px;
   margin-bottom: 20px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -462,7 +471,7 @@ select.input option {
   height: 180px;
   margin-top: 14px;
   margin-bottom: 10px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--theme-card-border);
   overflow: hidden;
@@ -543,7 +552,7 @@ select.input option {
 .modal-card, .peakora-popup-card, .peakora-modal-standard {
   background: var(--theme-card-bg) !important;
   color: var(--theme-text-main) !important;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   max-width: 540px;
   width: 100%;
   max-height: 88vh;
@@ -624,7 +633,7 @@ select.input option {
   width: 100%;
   height: 60vh;
   border: 1px solid var(--theme-card-border);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   background: #0c0a15;
 }
 
@@ -778,7 +787,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(224, 122, 95, 0.22);
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
 }
 
 .dash-container {
@@ -848,7 +857,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: transparent;
   color: var(--theme-text-muted);
@@ -935,7 +944,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .dash-card {
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 30px var(--theme-card-glow);
   position: relative;
@@ -985,7 +994,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   transition: all 0.25s ease;
 }
 
@@ -1104,7 +1113,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   background: rgba(244, 162, 97, 0.15);
   border: 1.5px solid var(--theme-accent);
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   box-shadow: 0 0 20px rgba(244, 162, 97, 0.4);
   z-index: 5;
   transform: translateY(-8px);
@@ -1123,7 +1132,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   width: 220px;
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-accent);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 16px var(--theme-card-glow);
   z-index: 10;
@@ -1214,7 +1223,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .intention-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -1338,7 +1347,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .audio-wave-box {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 16px;
   margin-top: 20px;
 }
@@ -1367,7 +1376,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .solfeggio-item {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   padding: 10px 6px;
   text-align: center;
   cursor: pointer;
@@ -1486,7 +1495,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   gap: 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
   transition: all 0.25s ease;
 }
@@ -1500,7 +1509,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .ambient-thumb {
   width: 48px;
   height: 48px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -1664,7 +1673,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   }
   .assistant-card:not(.is-dashboard-mode) {
     padding: 22px 18px;
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
   }
 }
 
@@ -1677,7 +1686,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   padding: 12px 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   text-align: left;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -1753,7 +1762,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   text-align: left;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
