@@ -1973,7 +1973,8 @@ header .brand img.brand-logo:hover,
   position: relative;
 }
 
-.aff-teaser-illustration img {
+.aff-teaser-illustration img,
+.aff-dash-mock {
   width: 100%;
   height: auto;
   border-radius: var(--radius-lg);
@@ -1983,10 +1984,156 @@ header .brand img.brand-logo:hover,
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
 }
 
-.aff-teaser-illustration:hover img {
+.aff-teaser-illustration:hover img,
+.aff-teaser-illustration:hover .aff-dash-mock {
   transform: translateY(-6px) scale(1.015);
   box-shadow: var(--shadow-frame-hover);
   border-color: rgba(224, 122, 95, 0.5);
+}
+
+/* Affiliate dashboard mockup (mirrors the real partner portal aesthetic) */
+.aff-dash-mock {
+  background: linear-gradient(160deg, #151122 0%, #0c0a15 100%);
+  padding: 26px 24px 22px;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.aff-dash-mock::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224, 122, 95, 0.28) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.aff-dash-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.aff-dash-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a0aec0;
+}
+
+.aff-dash-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0c0a15;
+  background: linear-gradient(135deg, #e07a5f, #f4a261);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.aff-dash-balance {
+  margin-bottom: 22px;
+}
+
+.aff-dash-balance small {
+  display: block;
+  font-size: 12px;
+  color: #a0aec0;
+  margin-bottom: 4px;
+}
+
+.aff-dash-balance strong {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.aff-dash-balance span {
+  font-size: 12px;
+  color: #34d399;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.aff-dash-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 22px;
+}
+
+.aff-dash-link code {
+  font-family: 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+  color: #f4a261;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.aff-dash-link svg {
+  flex-shrink: 0;
+}
+
+.aff-dash-chart-label {
+  font-size: 11px;
+  color: #a0aec0;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.aff-dash-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 80px;
+  margin-bottom: 18px;
+}
+
+.aff-dash-bar {
+  flex: 1;
+  background: linear-gradient(180deg, #f4a261 0%, #e07a5f 100%);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.85;
+}
+
+.aff-dash-bar:last-child {
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(244, 162, 97, 0.5);
+}
+
+.aff-dash-foot {
+  display: flex;
+  gap: 18px;
+  font-size: 12px;
+  color: #a0aec0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.aff-dash-foot b {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .aff-dash-balance strong { font-size: 30px; }
+  .aff-dash-mock { padding: 22px 18px 18px; }
 }
 
 .aff-teaser-content {
