@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
-const CACHE_VERSION = "v4-affiliate-deploy";
+const CACHE_VERSION = "v5-hub-logo";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
@@ -15,7 +15,10 @@ const FILES_TO_CACHE = [
   "./manifest.json",
   "./offline.html",
   "./service-worker.js",
-  "./assets/peakora-logo.png"
+  "./assets/peakora-logo.png",
+  "./assets/hub-logo.png",
+  "./assets/hub-logo-192.png",
+  "./assets/hub-logo-512.png"
 ];
 
 self.addEventListener("install", event => {
@@ -58,8 +61,8 @@ self.addEventListener("push", event => {
   event.waitUntil(
     self.registration.showNotification(data.title || "Peakora", {
       body: data.body || "A gentle nudge from your quiet corner.",
-      icon: "./assets/peakora-logo.png",
-      badge: "./assets/peakora-logo.png",
+      icon: "./assets/hub-logo.png",
+      badge: "./assets/hub-logo-192.png",
       tag: "peakora-nudge",
       renotify: false
     })
