@@ -940,19 +940,19 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .dash-grid-2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 20px;
   width: 100%;
-  align-items: start;
+  align-items: stretch;
 }
 
 .dash-grid-equal {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 20px;
   width: 100%;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* GLASS CARD STYLING */
@@ -960,18 +960,19 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 30px var(--theme-card-glow);
   position: relative;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
   overflow-wrap: break-word;
+  display: flex;
+  flex-direction: column;
 }
 
 .dash-card:hover {
-  transform: translateY(-4px);
   border-color: var(--theme-card-border);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 40px var(--theme-card-glow-hover);
 }
@@ -990,6 +991,16 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   color: var(--theme-text-muted);
   margin: 0 0 16px 0;
 }
+
+.dash-card > p:first-of-type,
+.dash-card > p {
+  margin-top: 0;
+}
+
+/* Spacing utility used by stacked sections */
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-24 { margin-bottom: 24px; }
 
 /* MOOD CHECK-IN EMOJIS */
 .mood-grid {
@@ -1579,33 +1590,35 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     flex-direction: column;
     min-height: auto;
   }
-  /* Mobile sidebar: compact horizontal bar, sticky at top, horizontally scrollable.
-     Prevents the "huge ugly box" that overflowed into the header on zoom/mobile.
-     NOTE: the bar wraps to multiple rows on zoom instead of clipping, so every tab
-     stays visible (the old max-height:56px + overflow:hidden hid tabs on zoom). */
+  /* Mobile nav: a single compact, horizontally-scrollable bar fixed at top.
+     Wrapping was the cause of the "huge card" that pushed every other card
+     down - the bar now stays ONE row and scrolls sideways instead. */
   .dash-sidebar {
     width: 100%;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 10px 12px;
-    gap: 8px;
+    gap: 10px;
     position: sticky;
     top: 0;
     z-index: 50;
     background: rgba(12, 9, 21, 0.97);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .dash-sidebar::-webkit-scrollbar { display: none; }
   .dash-brand {
     margin-bottom: 0;
     flex-shrink: 0;
   }
   .dash-nav {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 4px;
     justify-content: flex-start;
     flex: 1 1 auto;
@@ -1619,9 +1632,6 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     padding: 8px 12px;
     font-size: 12px;
     gap: 4px;
-  }
-  .dash-nav-btn svg {
-    flex-shrink: 0;
   }
   .dash-grid-2, .dash-grid-equal {
     grid-template-columns: 1fr;
