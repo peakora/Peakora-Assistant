@@ -1001,14 +1001,14 @@
           <div class="step">
             <h2>Pick how deep you want to go</h2>
             <p class="soft-note">The core stuff — your full 7-day plan and daily toolkit — is free. Always.</p>
-            <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:14px; padding:16px;">
+            <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:var(--radius-md); padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
                 <span style="background:var(--theme-primary-grad); color:#fff; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
               </div>
               <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood check-in, breathing ring, micro-journal, analytics, offline mode & unlimited resets — the essentials, on us.</p>
             </div>
-            <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px;">
+            <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora+ Tier</h3>
                 <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$9.99/mo</span>
@@ -1367,7 +1367,7 @@
                 </div>
 
                 <!-- MOOD INSIGHT BOX (follows your last check-in) -->
-                <div style="margin-top:14px; background:rgba(255,255,255,0.03); border-left:3px solid ${currentInsight.color}; border-radius:10px; padding:12px 14px;">
+                <div style="margin-top:14px; background:rgba(255,255,255,0.03); border-left:3px solid ${currentInsight.color}; border-radius:var(--radius-sm); padding:12px 14px;">
                   <div style="font-size:13px; font-weight:700; color:${currentInsight.color}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">A note on your mood • ${currentInsight.title}</div>
                   <div style="font-size:12px; color:#ffffff; line-height:1.4;">${currentInsight.text}</div>
                 </div>
@@ -1380,7 +1380,7 @@
                   <span style="font-size:13px; font-weight:700; color:${currentInsight.color}; background:rgba(255,255,255,0.06); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
                 </div>
                 ${isAdaptiveWeekActive() ? `
-                <div style="margin-top:8px; font-size:13px; color:var(--theme-text-muted); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.35); border-radius:10px; padding:7px 12px; line-height:1.5;">
+                <div style="margin-top:8px; font-size:13px; color:var(--theme-text-muted); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.35); border-radius:var(--radius-sm); padding:7px 12px; line-height:1.5;">
                   <strong style="color:#34d399;">Adaptive Week:</strong> your plan quietly waited for you — nothing skipped, nothing to catch up on. Just today.
                 </div>` : ''}
 
@@ -1438,7 +1438,7 @@
                     <div class="plan-choice-quote">"${today.forgiveness}"</div>
                   </div>
                 </div>
-                ${currentFocus ? `<div style="background:rgba(255,255,255,0.04); border-left:3px solid var(--theme-accent); padding:8px 12px; border-radius:10px; font-size:13px; color:#ffffff;"><strong>Current Focus:</strong> ${currentFocus}</div>` : ''}
+                ${currentFocus ? `<div style="background:rgba(255,255,255,0.04); border-left:3px solid var(--theme-accent); padding:8px 12px; border-radius:var(--radius-sm); font-size:13px; color:#ffffff;"><strong>Current Focus:</strong> ${currentFocus}</div>` : ''}
               </div>
 
               <!-- RESET PROGRESS CARD -->
@@ -1623,7 +1623,7 @@
                   ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
                 </div>
                 ${!isPlus ? `
-                <div style="margin-bottom:12px; padding:10px 12px; border-radius:10px; background:rgba(244,162,97,0.08); border:1px dashed rgba(244,162,97,0.4); font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
+                <div style="margin-bottom:12px; padding:10px 12px; border-radius:var(--radius-sm); background:rgba(244,162,97,0.08); border:1px dashed rgba(244,162,97,0.4); font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
                   The soundscape studio is a <strong style="color:var(--theme-accent);">Peakora+</strong> treat — preview the library below, and unlock every sound when you're ready.
                   <a href="#" onclick="openPlanSelectionModal(); return false;" style="color:var(--theme-accent); font-weight:700; text-decoration:none;">Unlock with Plus</a>
                 </div>` : ''}
@@ -1647,9 +1647,9 @@
                 </div>
 
                 <!-- SOUNDSCAPE LIBRARY -->
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:12px;">
                   <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Soundscape Library</div>
-                  <div id="audio-playing-status" style="font-size:13px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:8px; border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
+                  <div id="audio-playing-status" style="font-size:13px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:var(--radius-sm); border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
                   <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;" onchange="switchSoundscapeTrack(this.value)">
                     ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
                   </select>
@@ -1781,26 +1781,26 @@
                   <p style="font-size:13px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' — showing a sample week until you log your first mood' : ''}:</p>
 
                   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; margin-bottom:10px;">
-                    <div style="background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:12px; padding:10px 8px; text-align:center;">
+                    <div style="background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:var(--theme-accent);">${avgEnergy}</div>
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600; margin-bottom:3px;">Avg energy</div>
                       ${!usingSample ? `<span style="font-size:9px; font-weight:800; color:${trendChip.color};">${trendChip.txt}</span>` : ''}
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:#ffffff;">${streak}</div>
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Day streak${streak > 1 ? ' — keep it alive' : ''}</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:#ffffff;">${total}</div>
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Check-ins</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
                       <div style="font-size:13px; font-weight:800; color:${domLabel[1]}; line-height:1.3; margin-top:6px;">${domLabel[0]}</div>
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600; margin-top:3px;">Leading tone</div>
                     </div>
                   </div>
 
-                  <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); margin-bottom:10px;">
+                  <div style="background:rgba(255,255,255,0.03); border-radius:var(--radius-md); padding:12px; border:1px solid rgba(255,255,255,0.08); margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                       <div style="font-size:13px; font-weight:700; color:#ffffff;">Your weekly emotional spectrum</div>
                       <div style="font-size:13px; color:var(--theme-text-muted); font-weight:600;">${total} check-in${total === 1 ? '' : 's'}</div>
@@ -1906,14 +1906,14 @@
 
           if (!isPlus) {
             html += `
-              <div style="background:rgba(244,162,97,0.06); border:1px dashed rgba(244,162,97,0.4); border-radius:12px; padding:16px; text-align:center;">
+              <div style="background:rgba(244,162,97,0.06); border:1px dashed rgba(244,162,97,0.4); border-radius:var(--radius-md); padding:16px; text-align:center;">
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 6px;">Plan history & archiving unlock with <strong style="color:var(--theme-accent);">Peakora+</strong>.</p>
                 <button class="btn primary" style="font-size:13px; padding:6px 16px;" onclick="openPlanSelectionModal()">Unlock saved weeks</button>
               </div>
             `;
           } else if (!pastPlans || pastPlans.length === 0) {
             html += `
-              <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
+              <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:var(--radius-md); padding:16px; text-align:center;">
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">Nothing saved yet — and that's fine.</p>
                 <p style="font-size:13px; color:var(--theme-text-muted); opacity:0.8; margin:0;">When a week ends, tap <strong>"Save This Week"</strong> and it will wait for you here.</p>
               </div>
@@ -1989,7 +1989,7 @@
                         ${p.points.map(pt => `<div style="display:flex; gap:8px; font-size:13px; color:var(--theme-text-main); line-height:1.5;"><span style="color:${p.badgeColor}; flex-shrink:0;">&#10003;</span><span>${pt}</span></div>`).join('')}
                       </div>
                       <div style="margin-top:auto;">
-                        <div style="background:var(--theme-primary-grad); color:#ffffff; text-align:center; font-size:13px; font-weight:800; padding:11px 14px; border-radius:12px; letter-spacing:0.02em;">${p.cta} &rarr;</div>
+                        <div style="background:var(--theme-primary-grad); color:#ffffff; text-align:center; font-size:13px; font-weight:800; padding:11px 14px; border-radius:var(--radius-md); letter-spacing:0.02em;">${p.cta} &rarr;</div>
                         <div style="margin-top:8px; font-size:13px; color:var(--theme-text-muted); text-align:center;">Opens on the partner site &mdash; Peakora earns a small commission at no cost to you.</div>
                       </div>
                     </div>
@@ -2058,7 +2058,7 @@
                 <div style="margin-top:auto;">
                   ${isPlus
                     ? `<button class="btn ghost" style="width:100%; font-size:12px; border:1px solid rgba(52,211,153,0.35); color:#34d399;" onclick="selectPlan(false)">Switch back to Free</button>`
-                    : `<div style="text-align:center; font-size:12px; font-weight:700; color:#34d399; padding:11px; border-radius:12px; background:rgba(52,211,153,0.1); border:1px dashed rgba(52,211,153,0.4);">This is your plan right now</div>`}
+                    : `<div style="text-align:center; font-size:12px; font-weight:700; color:#34d399; padding:11px; border-radius:var(--radius-md); background:rgba(52,211,153,0.1); border:1px dashed rgba(52,211,153,0.4);">This is your plan right now</div>`}
                 </div>
               </div>
 
@@ -2078,7 +2078,7 @@
                   <span class="sub-status-indicator" style="font-size:13px; font-weight:800; padding:4px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${isPlus ? 'background:rgba(244,162,97,0.2); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.45);' : 'background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);'}">
                     <span style="font-size:7px;">&#9679;</span> ${isPlus ? 'Active — thank you for being here' : 'Status: ' + peakoraSubStatus}
                   </span>
-                  ${isDevMode() ? `<button type="button" class="btn ghost" style="font-size:9px; padding:3px 7px; border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer; opacity:0.6;" onclick="toggleMockSubscriptionStatus()" title="Preview the other membership state">
+                  ${isDevMode() ? `<button type="button" class="btn ghost" style="font-size:9px; padding:3px 7px; border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius-sm); cursor:pointer; opacity:0.6;" onclick="toggleMockSubscriptionStatus()" title="Preview the other membership state">
                     Preview ${isPlus ? 'free' : 'plus'}
                   </button>` : ''}
                 </div>
@@ -2223,7 +2223,7 @@
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Reminder Time</div>
                       <div style="font-size:13px; color:var(--theme-text-muted);">When the daily prompt should arrive</div>
                     </div>
-                    <select class="input" style="width:auto; font-size:13px; padding:5px 9px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;" onchange="changeNotifTime(this.value)" ${notifDaily ? '' : 'disabled'}>
+                    <select class="input" style="width:auto; font-size:13px; padding:5px 9px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm);" onchange="changeNotifTime(this.value)" ${notifDaily ? '' : 'disabled'}>
                       ${['07:00 AM','08:00 AM','09:00 AM','12:00 PM','08:00 PM'].map(t => `<option value="${t}" ${notifTime === t ? 'selected' : ''} style="background:#151122; color:#fff;">${t}</option>`).join('')}
                     </select>
                   </div>
@@ -2250,13 +2250,13 @@
                   Everything Peakora remembers lives only in this browser. Take it with you, reshape it, or wipe it clean — your call, always.
                 </p>
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                  <button class="btn secondary" style="text-align:left; justify-content:flex-start; font-size:12px; padding:10px 14px; border-radius:10px;" onclick="exportMyData()">
+                  <button class="btn secondary" style="text-align:left; justify-content:flex-start; font-size:12px; padding:10px 14px; border-radius:var(--radius-sm);" onclick="exportMyData()">
                     <strong>Download My Data</strong>&nbsp;— every check-in, plan, and preference as JSON
                   </button>
-                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:10px; color:#ffffff;" onclick="restartOnboarding()">
+                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:var(--radius-sm); color:#ffffff;" onclick="restartOnboarding()">
                     <strong>Restart Onboarding</strong>&nbsp;— reshape your 7-day plan (membership & moods stay)
                   </button>
-                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(251,113,133,0.25); padding:10px 14px; border-radius:10px; color:#fb7185;" onclick="clearAllDataAndReset()">
+                  <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(251,113,133,0.25); padding:10px 14px; border-radius:var(--radius-sm); color:#fb7185;" onclick="clearAllDataAndReset()">
                     <strong>Erase Everything</strong>&nbsp;— full reset, nothing kept on this device
                   </button>
                 </div>
@@ -2270,8 +2270,8 @@
               <p style="font-size:12px; color:var(--theme-text-muted); margin:0 auto 16px; max-width:480px; line-height:1.6; text-align:center;">
                 A sentence is plenty. What helped, what annoyed you, what's missing — it goes straight to the small team building this, and we actually read every one.
               </p>
-              <div style="max-width:560px; margin:0 auto; background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:16px; padding:14px;">
-                <textarea id="peakora-feedback-input" rows="3" class="input" style="width:100%; font-size:13px; line-height:1.6; resize:vertical; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 14px;" placeholder="The thing I wish Peakora did is..."></textarea>
+              <div style="max-width:560px; margin:0 auto; background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:var(--radius-md); padding:14px;">
+                <textarea id="peakora-feedback-input" rows="3" class="input" style="width:100%; font-size:13px; line-height:1.6; resize:vertical; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-md); padding:12px 14px;" placeholder="The thing I wish Peakora did is..."></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; flex-wrap:wrap;">
                   <span style="font-size:13px; color:var(--theme-text-muted);">Anonymous unless you're signed in — never shared, never sold.</span>
                   <button class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow);" onclick="sendFeedback()">Send it over</button>
@@ -2540,7 +2540,7 @@
       let html = "";
       list.forEach((item, idx) => {
         html += `
-          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; position:relative; transition:all 0.2s ease;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:12px 14px; position:relative; transition:all 0.2s ease;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <span style="font-size:13px; font-weight:700; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">${item.date}</span>
               <button style="background:rgba(255,255,255,0.06); border:none; color:var(--theme-text-muted); border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; justify-content:center;" onclick="deleteReflection(${idx})" aria-label="Delete entry" title="Delete Quote">✕</button>
@@ -2622,11 +2622,11 @@
             <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 18px;">
               ${plan === 'yearly' ? 'Annual plan — $95.88/yr (save 20%)' : 'Monthly plan — $9.99/mo'}
             </p>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:12px; padding:14px; margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:var(--radius-md); padding:14px; margin-bottom:16px;">
               <label style="display:block; font-size:13px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
-              <input type="email" id="dodo-email" value="${userEmail}" style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:13px; background:rgba(0,0,0,0.25); color:#ffffff;" placeholder="your.email@example.com">
+              <input type="email" id="dodo-email" value="${userEmail}" style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); font-size:13px; background:rgba(0,0,0,0.25); color:#ffffff;" placeholder="your.email@example.com">
             </div>
-            <button type="button" id="dodo-continue-btn" class="btn primary" style="width:100%; padding:13px; font-size:14px; font-weight:800; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;" onclick="startDodoCheckout('${plan}', '${price}')">
+            <button type="button" id="dodo-continue-btn" class="btn primary" style="width:100%; padding:13px; font-size:14px; font-weight:800; background:var(--theme-primary-grad); color:#fff; border-radius:var(--radius-sm); cursor:pointer;" onclick="startDodoCheckout('${plan}', '${price}')">
               Continue to Secure Checkout
             </button>
             <div style="margin-top:14px; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
@@ -2995,7 +2995,7 @@
       if (!toastEl) {
         toastEl = document.createElement("div");
         toastEl.id = "peakora-toast-elem";
-        toastEl.style.cssText = "position:fixed; bottom:24px; right:24px; z-index:10000; background:rgba(21,17,34,0.92); border:1px solid var(--theme-accent, #f4a261); color:#ffffff; padding:10px 18px; border-radius:12px; font-size:12px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,0.5); backdrop-filter:blur(10px); transition:all 0.3s ease; opacity:0; transform:translateY(10px); pointer-events:none;";
+        toastEl.style.cssText = "position:fixed; bottom:24px; right:24px; z-index:10000; background:rgba(21,17,34,0.92); border:1px solid var(--theme-accent, #f4a261); color:#ffffff; padding:10px 18px; border-radius:var(--radius-md); font-size:12px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,0.5); backdrop-filter:blur(10px); transition:all 0.3s ease; opacity:0; transform:translateY(10px); pointer-events:none;";
         document.body.appendChild(toastEl);
       }
       toastEl.textContent = msg;
@@ -3131,7 +3131,7 @@
 
       (p.days || []).forEach((d, i) => {
         html += `
-          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-sm); padding:12px;">
             <div style="font-weight:700; font-size:13px; color:var(--theme-accent, #f4a261); margin-bottom:2px;">${d.title || 'Day ' + (i+1)}: ${d.focus || ''}</div>
             <div style="font-size:12px; color:#ffffff; margin-bottom:4px;"><strong>Action:</strong> ${d.action || ''}</div>
             <div style="font-size:13px; color:var(--theme-text-muted); margin-bottom:4px;"><strong>Reflection:</strong> ${d.reflection || ''}</div>
@@ -3942,7 +3942,7 @@
       if (!toast) {
         toast = document.createElement('div');
         toast.id = 'peakora-toast';
-        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(21,17,34,0.95);color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;border:1px solid var(--theme-accent);box-shadow:0 8px 30px rgba(0,0,0,0.5), 0 0 16px var(--theme-accent-glow, rgba(244,162,97,0.3));transition:opacity 0.3s ease, transform 0.3s ease;max-width:88vw;text-align:center;';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(21,17,34,0.95);color:#fff;padding:12px 18px;border-radius:var(--radius-md);font-size:13px;font-weight:600;z-index:99999;border:1px solid var(--theme-accent);box-shadow:0 8px 30px rgba(0,0,0,0.5), 0 0 16px var(--theme-accent-glow, rgba(244,162,97,0.3));transition:opacity 0.3s ease, transform 0.3s ease;max-width:88vw;text-align:center;';
         document.body.appendChild(toast);
       }
       toast.textContent = message;
@@ -4292,7 +4292,7 @@
       <!-- Plan comparison cards -->
       <div style="display:flex; flex-direction:column; gap:14px;">
         <!-- Free Plan Card -->
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:16px;">
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-md); padding:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <h3 style="margin:0; font-size:16px; color:#ffffff;">Peakora Core (Free)</h3>
             <span style="font-size:12px; font-weight:700; color:var(--theme-text-muted);">$0 / Forever</span>
@@ -4313,7 +4313,7 @@
         </div>
 
         <!-- Peakora+ Membership Card with Pricing -->
-        <div style="background:rgba(244,162,97,0.06); border:1.5px solid var(--theme-accent, #f4a261); border-radius:14px; padding:16px; position:relative;">
+        <div style="background:rgba(244,162,97,0.06); border:1.5px solid var(--theme-accent, #f4a261); border-radius:var(--radius-md); padding:16px; position:relative;">
           <span style="position:absolute; top:-10px; right:16px; background:var(--theme-primary-grad); color:#fff; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px;">RECOMMENDED</span>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <h3 style="margin:0; font-size:16px; color:#ffffff;">Peakora+ Membership</h3>
@@ -4372,7 +4372,7 @@
 
       <div style="display:flex; flex-direction:column; gap:12px; font-size:12px; color:var(--theme-text-muted);">
         <!-- iOS Setup -->
-        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.08);">
           <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">iPhone & iPad (Safari)</strong>
           <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
             1. Open Peakora in <strong>Safari</strong><br>
@@ -4382,7 +4382,7 @@
         </div>
 
         <!-- Android Setup -->
-        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.08);">
           <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">Android Phones & Tablets (Chrome)</strong>
           <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
             1. Open Peakora in <strong>Chrome</strong><br>
@@ -4392,7 +4392,7 @@
         </div>
 
         <!-- Desktop Setup -->
-        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+        <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.08);">
           <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">Desktop (Mac, Windows, Chromebook)</strong>
           <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
             1. Open in <strong>Chrome, Edge, or Safari</strong><br>
