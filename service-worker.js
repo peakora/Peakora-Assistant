@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
-const CACHE_VERSION = "v6-hub-logo";
+const CACHE_VERSION = "v7-favicon";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
@@ -15,6 +15,7 @@ const FILES_TO_CACHE = [
   "./manifest.json",
   "./offline.html",
   "./service-worker.js",
+  "./favicon.ico",
   "./assets/peakora-logo.png",
   "./assets/hub-logo.png?v=2",
   "./assets/hub-logo-192.png?v=2",
