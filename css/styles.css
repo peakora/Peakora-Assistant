@@ -1384,6 +1384,7 @@ header .brand img.brand-logo:hover,
 /* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
   .real-life-layout,
+  .aff-teaser-layout,
   .showcase-grid {
     grid-template-columns: 1fr;
     text-align: center;
@@ -1957,68 +1958,84 @@ header .brand img.brand-logo:hover,
   position: relative;
 }
 
-.aff-teaser-card {
-  background: linear-gradient(135deg, #181329 0%, #251c3d 100%);
-  border-radius: 28px;
-  padding: 48px 36px;
-  max-width: 680px;
-  margin: 0 auto;
-  border: 1px solid rgba(224, 122, 95, 0.25);
-  box-shadow: 0 20px 56px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(224, 122, 95, 0.15);
+.aff-teaser-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 52px;
+  align-items: center;
+}
+
+.aff-teaser-illustration {
   position: relative;
-  overflow: hidden;
+}
+
+.aff-teaser-illustration img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 38px rgba(224, 122, 95, 0.3), 0 0 20px rgba(167, 139, 250, 0.2);
+  border: 1px solid rgba(224, 122, 95, 0.35);
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+
+.aff-teaser-illustration:hover img {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 28px 64px -8px rgba(0, 0, 0, 0.9), 0 0 55px rgba(224, 122, 95, 0.45), 0 0 28px rgba(167, 139, 250, 0.3);
+  border-color: rgba(224, 122, 95, 0.5);
+}
+
+.aff-teaser-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.aff-teaser-point {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.aff-teaser-point:hover {
+  transform: translateY(-4px);
+  border-color: rgba(224, 122, 95, 0.35);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), 0 0 24px rgba(224, 122, 95, 0.2);
+}
+
+.aff-teaser-point h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
   text-align: center;
 }
 
-.aff-teaser-badge {
-  display: inline-block;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--accent-amber);
-  background: rgba(244, 162, 97, 0.1);
-  border: 1px solid rgba(244, 162, 97, 0.25);
-  padding: 6px 16px;
-  border-radius: 999px;
-  margin-bottom: 18px;
-}
-
-.aff-teaser-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 34px;
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0 0 14px;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-}
-
-.aff-teaser-sub {
-  font-size: 16px;
-  color: var(--text-light);
-  line-height: 1.65;
-  margin: 0 0 30px;
-  max-width: 520px;
-  margin-left: auto;
-  margin-right: auto;
+.aff-teaser-point p {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  text-align: center;
 }
 
 .aff-teaser-btn {
   padding: 16px 38px;
   font-size: 16px;
+  margin-top: 6px;
 }
 
 @media (max-width: 600px) {
-  .aff-teaser-title {
-    font-size: 26px;
-  }
-  .aff-teaser-sub {
-    font-size: 14px;
-  }
-  .aff-teaser-card {
-    padding: 36px 22px;
+  .aff-teaser-btn {
+    padding: 14px 28px;
+    font-size: 15px;
   }
 }
 
