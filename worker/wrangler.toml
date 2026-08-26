@@ -29,3 +29,11 @@ DODO_ENVIRONMENT = "live_mode"
 APP_PUBLIC_URL = "https://peakora-assistant.pages.dev"
 APP_PUBLIC_URL_API = "https://peakora-api.peakora.workers.dev"
 GOOGLE_CLIENT_ID = "136973395826-ef90gdu365rdhssnv0g07g7medm65dki.apps.googleusercontent.com"
+
+# Secrets (set via: npx wrangler secret put NAME)
+# VAPID_PUBLIC_KEY  — Web Push public key (also safe to expose; returned by /push-key)
+# VAPID_PRIVATE_KEY — Web Push private key (hex), used to sign VAPID JWTs
+
+# Daily gentle nudge to all subscribed devices.
+[triggers]
+crons = ["0 9 * * *"]

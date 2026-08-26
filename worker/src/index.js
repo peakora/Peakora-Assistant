@@ -1,4 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
+import { sendWebPush } from './webpush.js';
 /**
  * Peakora shared API backend — Cloudflare Worker.
  *
@@ -12,6 +13,7 @@
  *   GET  /stats                    — admin dashboard stats (admin token)
  *   POST /push-subscribe           — web push subscription
  *   POST /push-unsubscribe         — remove web push subscription
+ *   GET  /push-key                 — VAPID public key (for the browser subscribe() call)
  *   POST /push-broadcast           — admin push broadcast (admin token)
  *
  * Affiliate program (see affiliate.js):
@@ -348,6 +350,67 @@ async function handlePushUnsubscribe(request, env) {
   return json({ success: true });
 }
 
+async function handlePushKey(_request, env) {
+  if (!env.VAPID_PUBLIC_KEY) return json({ success: false, error: 'VAPID not configured' }, 500);
+  return json({ success: true, key: env.VAPID_PUBLIC_KEY });
+}
+
+const DAILY_NUDGES = [
+  { title: 'Peakora', body: 'A small step today keeps momentum real. Open your plan when you are ready.' },
+  { title: 'Peakora', body: 'One quiet check-in can shift the day. Your plan is here when you are.' },
+  { title: 'Peakora', body: 'No streaks to break. Just a gentle next step waiting for you.' },
+  { title: 'Peakora', body: 'Your 7-day plan is pacing itself around you. Drop in anytime.' },
+  { title: 'Peakora', body: 'Progress is quiet. Take a breath, then take one step.' }
+];
+
+async function handlePushBroadcast(request, env) {
+  const body = await readJson(request);
+  const title = (body && body.title) || 'Peakora';
+  const message = (body && body.body) || 'A gentle nudge from your quiet corner.';
+  const rows = await env.DB.prepare('SELECT endpoint, keys FROM push_subscriptions').all();
+  const subs = (rows.results || []).map(r => ({
+    endpoint: r.endpoint,
+    keys: typeof r.keys === 'string' ? JSON.parse(r.keys) : (r.keys || {})
+  })).filter(s => s.keys && s.keys.p256dh && s.keys.auth);
+
+  let delivered = 0, failed = 0;
+  const payload = JSON.stringify({ title, body: message });
+  for (const sub of subs) {
+    try {
+      const r = await sendWebPush(sub, payload, env);
+      if (r.ok) delivered++; else failed++;
+      // 404/410 = subscription gone/expired -> clean it up.
+      if (r.status === 404 || r.status === 410) {
+        await env.DB.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').bind(sub.endpoint).run();
+      }
+    } catch (e) { failed++; }
+  }
+  return json({ success: true, delivered, failed, total: subs.length });
+}
+
+// Daily gentle nudge to all subscribed devices (called by the Cron Trigger).
+async function sendDailyNudge(env) {
+  const rows = await env.DB.prepare('SELECT endpoint, keys FROM push_subscriptions').all();
+  const subs = (rows.results || []).map(r => ({
+    endpoint: r.endpoint,
+    keys: typeof r.keys === 'string' ? JSON.parse(r.keys) : (r.keys || {})
+  })).filter(s => s.keys && s.keys.p256dh && s.keys.auth);
+
+  const nudge = DAILY_NUDGES[new Date().getUTCDay() % DAILY_NUDGES.length];
+  const payload = JSON.stringify(nudge);
+  let delivered = 0;
+  for (const sub of subs) {
+    try {
+      const r = await sendWebPush(sub, payload, env);
+      if (r.ok) delivered++;
+      if (r.status === 404 || r.status === 410) {
+        await env.DB.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').bind(sub.endpoint).run();
+      }
+    } catch (e) {}
+  }
+  return { delivered, total: subs.length };
+}
+
 // ── Router ─────────────────────────────────────────────────────────────────
 
 export default {
@@ -381,6 +444,11 @@ export default {
         response = await handlePushSubscribe(request, env);
       } else if (path === '/push-unsubscribe' && method === 'POST') {
         response = await handlePushUnsubscribe(request, env);
+      } else if (path === '/push-key' && method === 'GET') {
+        response = await handlePushKey(request, env);
+      } else if (path === '/push-broadcast' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handlePushBroadcast(request, env);
 
       /* ── Affiliate program: public + partner routes ── */
       } else if (path === '/affiliate/click' && method === 'GET') {
@@ -445,5 +513,10 @@ export default {
     }
 
     return cors(response, request);
+  },
+
+  // Cron Trigger: one gentle daily nudge to all subscribed devices.
+  async scheduled(_event, env, _ctx) {
+    await sendDailyNudge(env);
   }
 };
