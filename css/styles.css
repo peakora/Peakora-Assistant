@@ -305,7 +305,7 @@ header .brand img.brand-logo:hover,
 
 .hero-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 52px;
+  font-size: 44px;
   font-weight: 800;
   line-height: 1.15;
   color: #ffffff;
@@ -436,7 +436,7 @@ header .brand img.brand-logo:hover,
 
 .section-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 38px;
+  font-size: 32px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.04em;
@@ -806,7 +806,7 @@ header .brand img.brand-logo:hover,
 
 .peakora-crown-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 38px;
+  font-size: 32px;
   font-weight: 800;
   margin-bottom: 16px;
   letter-spacing: -0.6px;
@@ -880,7 +880,7 @@ header .brand img.brand-logo:hover,
 }
 
 .story-quote-mark {
-  font-size: 42px;
+  font-size: 34px;
   line-height: 1;
   color: var(--primary);
   opacity: 0.5;
@@ -1444,11 +1444,11 @@ header .brand img.brand-logo:hover,
   }
 
   .hero-title {
-    font-size: 38px;
+    font-size: 32px;
   }
 
   .section-title {
-    font-size: 30px;
+    font-size: 26px;
   }
 
   .what-grid,
@@ -2101,7 +2101,7 @@ header .brand img.brand-logo:hover,
 .pricing-price {
   display: block;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 46px;
+  font-size: 40px;
   font-weight: 800;
   color: #fff;
   line-height: 1;
@@ -2197,14 +2197,14 @@ header .brand img.brand-logo:hover,
 
 /* Standalone pricing page hero (uses the same cards as the old section) */
 .pricing-hero {
-  padding: 96px 0 80px;
+  padding: 72px 0 64px;
   background: radial-gradient(circle at 50% 0%, rgba(224, 122, 95, 0.08), transparent 55%);
   min-height: 60vh;
 }
 @media (max-width: 640px) {
   .pricing-section { padding: 56px 0 48px; }
-  .pricing-hero { padding: 64px 0 48px; }
-  .pricing-price { font-size: 38px; }
+  .pricing-hero { padding: 56px 0 48px; }
+  .pricing-price { font-size: 34px; }
   .pricing-card { padding: 28px 22px; }
 }
 

@@ -1004,7 +1004,7 @@
             <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:14px; padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
-                <span style="background:var(--theme-primary-grad); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
+                <span style="background:var(--theme-primary-grad); color:#fff; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
               </div>
               <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood check-in, breathing ring, micro-journal, analytics, offline mode & unlimited resets — the essentials, on us.</p>
             </div>
@@ -1184,7 +1184,7 @@
             '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
           ];
           const icon = dayIcons[idx % dayIcons.length];
-          const stepsList = (day.steps || []).map(s => `<div style="font-size:11px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('');
+          const stepsList = (day.steps || []).map(s => `<div style="font-size:13px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('');
           html += `
             <div class="plan-choice-btn ${isToday ? 'is-today' : ''}">
               <div class="plan-choice-icon">${icon}</div>
@@ -1197,7 +1197,7 @@
                 <div class="plan-choice-action"><strong>Focus:</strong> ${day.focus}</div>
                 <div class="plan-choice-action"><strong>How:</strong> ${day.action}</div>
                 ${stepsList ? `<div style="margin-top:4px;">${stepsList}</div>` : ''}
-                <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${day.reflection || ''}</div>
+                <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:13px;"><strong>Reflection:</strong> ${day.reflection || ''}</div>
                 <div class="plan-choice-quote">"${day.forgiveness}"</div>
               </div>
             </div>
@@ -1368,7 +1368,7 @@
 
                 <!-- MOOD INSIGHT BOX (follows your last check-in) -->
                 <div style="margin-top:14px; background:rgba(255,255,255,0.03); border-left:3px solid ${currentInsight.color}; border-radius:10px; padding:12px 14px;">
-                  <div style="font-size:11px; font-weight:700; color:${currentInsight.color}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">A note on your mood • ${currentInsight.title}</div>
+                  <div style="font-size:13px; font-weight:700; color:${currentInsight.color}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">A note on your mood • ${currentInsight.title}</div>
                   <div style="font-size:12px; color:#ffffff; line-height:1.4;">${currentInsight.text}</div>
                 </div>
               </div>
@@ -1377,10 +1377,10 @@
               <div class="dash-card" style="min-height:${190 + (todayIndex * 8)}px; border-color:${currentInsight.color}44;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                   <div class="dash-card-title">7-Day Reset Plan Timeline</div>
-                  <span style="font-size:11px; font-weight:700; color:${currentInsight.color}; background:rgba(255,255,255,0.06); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
+                  <span style="font-size:13px; font-weight:700; color:${currentInsight.color}; background:rgba(255,255,255,0.06); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
                 </div>
                 ${isAdaptiveWeekActive() ? `
-                <div style="margin-top:8px; font-size:11px; color:var(--theme-text-muted); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.35); border-radius:10px; padding:7px 12px; line-height:1.5;">
+                <div style="margin-top:8px; font-size:13px; color:var(--theme-text-muted); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.35); border-radius:10px; padding:7px 12px; line-height:1.5;">
                   <strong style="color:#34d399;">Adaptive Week:</strong> your plan quietly waited for you — nothing skipped, nothing to catch up on. Just today.
                 </div>` : ''}
 
@@ -1418,7 +1418,7 @@
               <div class="dash-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                   <div class="dash-card-title">Today’s Focus</div>
-                  <span style="font-size:11px; font-weight:700; background:rgba(244,162,97,0.15); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.3); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
+                  <span style="font-size:13px; font-weight:700; background:rgba(244,162,97,0.15); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.3); padding:3px 10px; border-radius:999px;">Day ${todayIndex + 1} Active</span>
                 </div>
                 
                 <div class="plan-choice-btn is-today" style="cursor:default; margin-bottom:10px;">
@@ -1433,19 +1433,19 @@
                     </div>
                     ${today.why ? `<div class="plan-choice-action" style="font-style:italic; color:var(--theme-text-muted);">${today.why}</div>` : ''}
                     <div class="plan-choice-action"><strong>How:</strong> ${today.action}</div>
-                    ${(today.steps || []).map(s => `<div style="font-size:11px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
-                    <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${today.reflection}</div>
+                    ${(today.steps || []).map(s => `<div style="font-size:13px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
+                    <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:13px;"><strong>Reflection:</strong> ${today.reflection}</div>
                     <div class="plan-choice-quote">"${today.forgiveness}"</div>
                   </div>
                 </div>
-                ${currentFocus ? `<div style="background:rgba(255,255,255,0.04); border-left:3px solid var(--theme-accent); padding:8px 12px; border-radius:10px; font-size:11px; color:#ffffff;"><strong>Current Focus:</strong> ${currentFocus}</div>` : ''}
+                ${currentFocus ? `<div style="background:rgba(255,255,255,0.04); border-left:3px solid var(--theme-accent); padding:8px 12px; border-radius:10px; font-size:13px; color:#ffffff;"><strong>Current Focus:</strong> ${currentFocus}</div>` : ''}
               </div>
 
               <!-- RESET PROGRESS CARD -->
               <div class="dash-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div class="dash-card-title">7-Day Reset Progress</div>
-                  <span style="font-size:11px; font-weight:700; color:#a78bfa; background:rgba(167,139,250,0.15); padding:3px 10px; border-radius:999px;">${todayIndex + 1}/7 Days — ${Math.round(((todayIndex + 1)/7)*100)}% complete</span>
+                  <span style="font-size:13px; font-weight:700; color:#a78bfa; background:rgba(167,139,250,0.15); padding:3px 10px; border-radius:999px;">${todayIndex + 1}/7 Days — ${Math.round(((todayIndex + 1)/7)*100)}% complete</span>
                 </div>
                 
                 <div class="progress-bar-container">
@@ -1478,7 +1478,7 @@
               <div class="dash-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                   <div class="dash-card-title">Gentle Toolkit</div>
-                  <span style="font-size:10px; font-weight:700; background:rgba(255,255,255,0.06); color:var(--theme-accent); padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.1);">5 Active Tools</span>
+                  <span style="font-size:13px; font-weight:700; background:rgba(255,255,255,0.06); color:var(--theme-accent); padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.1);">5 Active Tools</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:10px;">
                   <!-- Choice 1 -->
@@ -1553,7 +1553,7 @@
               <div class="dash-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <div class="dash-card-title">Reflection Space</div>
-                  <button class="btn secondary" style="font-size:11px; padding:4px 12px; border-radius:999px; border-color:var(--theme-accent); color:var(--theme-accent);" onclick="openReflectionsModal()">
+                  <button class="btn secondary" style="font-size:13px; padding:4px 12px; border-radius:999px; border-color:var(--theme-accent); color:var(--theme-accent);" onclick="openReflectionsModal()">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px; vertical-align:middle;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     Saved Quotes (<span id="reflections-count-badge">0</span>)
                   </button>
@@ -1561,8 +1561,8 @@
                 <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:8px;">A thought, a small win, or just a moment — drop it here:</p>
                 <textarea id="story-input" class="input" style="min-height:60px; font-size:12px;" placeholder="What felt good (or honestly, what didn't) today?"></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                  <span style="font-size:10px; color:var(--theme-text-muted);">Kept private — only on this device</span>
-                  <button class="btn primary" style="font-size:11px; padding:6px 14px;" onclick="handleShareStory()">Keep this thought</button>
+                  <span style="font-size:13px; color:var(--theme-text-muted);">Kept private — only on this device</span>
+                  <button class="btn primary" style="font-size:13px; padding:6px 14px;" onclick="handleShareStory()">Keep this thought</button>
                 </div>
               </div>
             </div>
@@ -1606,12 +1606,12 @@
                 <div class="breathing-center-info">
                   <div class="breathing-action-label" id="dash-breath-state">READY</div>
                   <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
-                  <div style="font-size:11px; color:#ffffff; font-weight:700; margin-top:4px;" id="dash-breath-total">0:00 / 2:00</div>
+                  <div style="font-size:13px; color:#ffffff; font-weight:700; margin-top:4px;" id="dash-breath-total">0:00 / 2:00</div>
                 </div>
               </div>
               <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
-                <button class="btn ghost" style="font-size:11px; padding:6px 14px;" onclick="resetDashBreathing()">Reset session</button>
-                <span style="font-size:10px; color:var(--theme-text-muted);">Works fully on the free plan — no sound needed, just follow the ring.</span>
+                <button class="btn ghost" style="font-size:13px; padding:6px 14px;" onclick="resetDashBreathing()">Reset session</button>
+                <span style="font-size:13px; color:var(--theme-text-muted);">Works fully on the free plan — no sound needed, just follow the ring.</span>
               </div>
             </div>
 
@@ -1623,7 +1623,7 @@
                   ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
                 </div>
                 ${!isPlus ? `
-                <div style="margin-bottom:12px; padding:10px 12px; border-radius:10px; background:rgba(244,162,97,0.08); border:1px dashed rgba(244,162,97,0.4); font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+                <div style="margin-bottom:12px; padding:10px 12px; border-radius:10px; background:rgba(244,162,97,0.08); border:1px dashed rgba(244,162,97,0.4); font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
                   The soundscape studio is a <strong style="color:var(--theme-accent);">Peakora+</strong> treat — preview the library below, and unlock every sound when you're ready.
                   <a href="#" onclick="openPlanSelectionModal(); return false;" style="color:var(--theme-accent); font-weight:700; text-decoration:none;">Unlock with Plus</a>
                 </div>` : ''}
@@ -1635,7 +1635,7 @@
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                     <div>
                       <div style="font-size:13px; font-weight:700; color:#ffffff;" id="wave-track-name">Nothing playing yet</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted);" id="wave-track-time">Pick a sound below and press play</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);" id="wave-track-time">Pick a sound below and press play</div>
                     </div>
                     <div style="display:flex; gap:6px; align-items:center;">
                       <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(-1)" title="Previous sound">&#9198;</button>
@@ -1649,11 +1649,11 @@
                 <!-- SOUNDSCAPE LIBRARY -->
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px;">
                   <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Soundscape Library</div>
-                  <div id="audio-playing-status" style="font-size:11px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:8px; border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
+                  <div id="audio-playing-status" style="font-size:13px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:8px; border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
                   <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;" onchange="switchSoundscapeTrack(this.value)">
                     ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
                   </select>
-                  <p style="font-size:10px; color:var(--theme-text-muted); margin:8px 0 0;">Choosing a track starts it right away — the transport buttons above handle the rest.</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin:8px 0 0;">Choosing a track starts it right away — the transport buttons above handle the rest.</p>
                 </div>
               </div>
 
@@ -1665,7 +1665,7 @@
                     AMBIENT SOUNDSCAPES
                     ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
                   </div>
-                  <p style="font-size:11px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a card to start or stop that layer, then blend volumes to taste.</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a card to start or stop that layer, then blend volumes to taste.</p>
                   <div class="ambient-list">
                     ${[
                       { key: 'rainforest', label: 'RAINFOREST', img: 'src/assets/images/soundscape_rainforest_1785859412795.jpg', desc: 'Warm rain on leaves' },
@@ -1686,7 +1686,7 @@
                         ${thumb}
                         <div class="ambient-info">
                           <div class="ambient-title">${a.label} <span style="font-size:9px; font-weight:600; color:${isOn ? '#34d399' : 'var(--theme-text-muted)'}; margin-left:4px;">${isOn ? '● PLAYING' : '○ TAP TO PLAY'}</span></div>
-                          <div style="font-size:10px; color:var(--theme-text-muted);">${a.desc}</div>
+                          <div style="font-size:13px; color:var(--theme-text-muted);">${a.desc}</div>
                         </div>
                       </div>
                       <div class="ambient-slider-wrap">
@@ -1778,7 +1778,7 @@
                   return `
                 <div class="dash-card">
                   <div class="dash-card-title">Deep Mood & Energy Analytics</div>
-                  <p style="font-size:11px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' — showing a sample week until you log your first mood' : ''}:</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' — showing a sample week until you log your first mood' : ''}:</p>
 
                   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; margin-bottom:10px;">
                     <div style="background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:12px; padding:10px 8px; text-align:center;">
@@ -1795,15 +1795,15 @@
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Check-ins</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px 8px; text-align:center;">
-                      <div style="font-size:11px; font-weight:800; color:${domLabel[1]}; line-height:1.3; margin-top:6px;">${domLabel[0]}</div>
+                      <div style="font-size:13px; font-weight:800; color:${domLabel[1]}; line-height:1.3; margin-top:6px;">${domLabel[0]}</div>
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600; margin-top:3px;">Leading tone</div>
                     </div>
                   </div>
 
                   <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.08); margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                      <div style="font-size:11px; font-weight:700; color:#ffffff;">Your weekly emotional spectrum</div>
-                      <div style="font-size:10px; color:var(--theme-text-muted); font-weight:600;">${total} check-in${total === 1 ? '' : 's'}</div>
+                      <div style="font-size:13px; font-weight:700; color:#ffffff;">Your weekly emotional spectrum</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted); font-weight:600;">${total} check-in${total === 1 ? '' : 's'}</div>
                     </div>
                     <svg viewBox="0 0 300 78" style="width:100%; height:68px;">
                       ${bars.map(b => {
@@ -1820,17 +1820,17 @@
                   <div style="display:flex; flex-direction:column; gap:6px;">
                     ${distRows.map(r => `
                     <div>
-                      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; color:#ffffff;">
+                      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:2px; color:#ffffff;">
                         <span>${r.label}</span>
                         <strong style="color:${r.color};">${r.pct}%</strong>
                       </div>
                       <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
                         <div class="analytics-bar" style="width:${r.pct}%; height:100%; background:${r.color}; border-radius:999px; box-shadow:0 0 8px ${r.color}66;"></div>
                       </div>
-                    </div>`).join('') || '<div style="font-size:11px; color:var(--theme-text-muted);">No distribution yet — log a mood on the Home tab to wake this up.</div>'}
+                    </div>`).join('') || '<div style="font-size:13px; color:var(--theme-text-muted);">No distribution yet — log a mood on the Home tab to wake this up.</div>'}
                   </div>
 
-                  <p style="font-size:10px; color:var(--theme-text-muted); font-style:italic; margin:8px 0 0;">${insightByFamily[dominant]}${breathNote}</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); font-style:italic; margin:8px 0 0;">${insightByFamily[dominant]}${breathNote}</p>
                 </div>`;
                 })()}
               </div>
@@ -1876,8 +1876,8 @@
                         </div>
                         <div class="plan-choice-action"><strong>Focus:</strong> ${p.focus || ''}</div>
                         <div class="plan-choice-action"><strong>How:</strong> ${p.action}</div>
-                        ${(p.steps || []).map(s => `<div style="font-size:11px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
-                        <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:11px;"><strong>Reflection:</strong> ${p.reflection || ''}</div>
+                        ${(p.steps || []).map(s => `<div style="font-size:13px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
+                        <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:13px;"><strong>Reflection:</strong> ${p.reflection || ''}</div>
                         <div class="plan-choice-quote">"${p.forgiveness}"</div>
                       </div>
                     </div>
@@ -1888,7 +1888,7 @@
                 <button class="btn secondary" style="width:100%; font-weight:700; font-size:13px; margin-top:6px; padding:14px; border:1.5px dashed var(--theme-accent); color:var(--theme-accent); background:rgba(244,162,97,0.06);" onclick="startNewPlan()">
                   + Start a New Plan
                 </button>
-                <p style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin:2px 0 0;">Finished this week, or life changed? Begin a fresh onboarding and we'll shape a new 7 days around where you are now. Your current plan is saved to history first, so nothing is lost.</p>
+                <p style="font-size:13px; color:var(--theme-text-muted); text-align:center; margin:2px 0 0;">Finished this week, or life changed? Begin a fresh onboarding and we'll shape a new 7 days around where you are now. Your current plan is saved to history first, so nothing is lost.</p>
               </div>
             </div>
 
@@ -1899,7 +1899,7 @@
                   Your Saved Weeks
                   ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
                 </div>
-                <button class="btn secondary" style="font-size:11px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save This Week</button>
+                <button class="btn secondary" style="font-size:13px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save This Week</button>
               </div>
               <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">${isPlus ? "Weeks you've saved live here — revisit one any time:" : "With Peakora+ you can save finished weeks and bring them back whenever life calls for them."}</p>
           `;
@@ -1908,14 +1908,14 @@
             html += `
               <div style="background:rgba(244,162,97,0.06); border:1px dashed rgba(244,162,97,0.4); border-radius:12px; padding:16px; text-align:center;">
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 6px;">Plan history & archiving unlock with <strong style="color:var(--theme-accent);">Peakora+</strong>.</p>
-                <button class="btn primary" style="font-size:11px; padding:6px 16px;" onclick="openPlanSelectionModal()">Unlock saved weeks</button>
+                <button class="btn primary" style="font-size:13px; padding:6px 16px;" onclick="openPlanSelectionModal()">Unlock saved weeks</button>
               </div>
             `;
           } else if (!pastPlans || pastPlans.length === 0) {
             html += `
               <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">Nothing saved yet — and that's fine.</p>
-                <p style="font-size:11px; color:var(--theme-text-muted); opacity:0.8; margin:0;">When a week ends, tap <strong>"Save This Week"</strong> and it will wait for you here.</p>
+                <p style="font-size:13px; color:var(--theme-text-muted); opacity:0.8; margin:0;">When a week ends, tap <strong>"Save This Week"</strong> and it will wait for you here.</p>
               </div>
             `;
           } else {
@@ -1979,25 +1979,25 @@
                   <div class="dash-card" style="height:100%; margin:0; overflow:hidden; padding:0; display:flex; flex-direction:column; transition:transform .25s ease, box-shadow .25s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 18px 44px rgba(0,0,0,0.55), 0 0 28px var(--theme-card-glow-hover)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
                     <div style="position:relative;">
                       <img src="${p.img}" alt="${p.title}" style="width:100%; height:150px; object-fit:cover; display:block;">
-                      <span style="position:absolute; top:10px; left:10px; background:rgba(8,6,14,0.78); backdrop-filter:blur(6px); color:${p.badgeColor}; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid ${p.badgeColor}55;">${p.badge}</span>
+                      <span style="position:absolute; top:10px; left:10px; background:rgba(8,6,14,0.78); backdrop-filter:blur(6px); color:${p.badgeColor}; font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid ${p.badgeColor}55;">${p.badge}</span>
                     </div>
                     <div style="padding:18px 18px 20px; display:flex; flex-direction:column; flex:1;">
                       <h3 style="margin:0 0 2px; font-size:16px; font-weight:800; color:var(--theme-heading, #ffffff); line-height:1.3;">${p.title}</h3>
-                      <div style="font-size:11px; font-weight:600; color:${p.badgeColor}; margin-bottom:10px; line-height:1.4;">${p.tagline}</div>
+                      <div style="font-size:13px; font-weight:600; color:${p.badgeColor}; margin-bottom:10px; line-height:1.4;">${p.tagline}</div>
                       <p style="margin:0 0 12px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">${p.desc}</p>
                       <div style="margin-bottom:16px; display:flex; flex-direction:column; gap:6px;">
-                        ${p.points.map(pt => `<div style="display:flex; gap:8px; font-size:11px; color:var(--theme-text-main); line-height:1.5;"><span style="color:${p.badgeColor}; flex-shrink:0;">&#10003;</span><span>${pt}</span></div>`).join('')}
+                        ${p.points.map(pt => `<div style="display:flex; gap:8px; font-size:13px; color:var(--theme-text-main); line-height:1.5;"><span style="color:${p.badgeColor}; flex-shrink:0;">&#10003;</span><span>${pt}</span></div>`).join('')}
                       </div>
                       <div style="margin-top:auto;">
                         <div style="background:var(--theme-primary-grad); color:#ffffff; text-align:center; font-size:13px; font-weight:800; padding:11px 14px; border-radius:12px; letter-spacing:0.02em;">${p.cta} &rarr;</div>
-                        <div style="margin-top:8px; font-size:10px; color:var(--theme-text-muted); text-align:center;">Opens on the partner site &mdash; Peakora earns a small commission at no cost to you.</div>
+                        <div style="margin-top:8px; font-size:13px; color:var(--theme-text-muted); text-align:center;">Opens on the partner site &mdash; Peakora earns a small commission at no cost to you.</div>
                       </div>
                     </div>
                   </div>
                 </a>
               `).join('')}
             </div>
-            <p style="margin-top:16px; font-size:11px; color:var(--theme-text-muted); text-align:center;">We only share tools we would hand to a friend. If one is not for you, no harm &mdash; your plan here stays free and whole.</p>
+            <p style="margin-top:16px; font-size:13px; color:var(--theme-text-muted); text-align:center;">We only share tools we would hand to a friend. If one is not for you, no harm &mdash; your plan here stays free and whole.</p>
           `;
         }
 
@@ -2023,7 +2023,7 @@
           ];
           const li = (f, color) => `
             <div style="display:flex; gap:10px; align-items:flex-start;">
-              <span style="flex-shrink:0; width:20px; height:20px; border-radius:50%; background:${color}22; border:1px solid ${color}55; color:${color}; font-size:11px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; margin-top:1px;">&#10003;</span>
+              <span style="flex-shrink:0; width:20px; height:20px; border-radius:50%; background:${color}22; border:1px solid ${color}55; color:${color}; font-size:13px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; margin-top:1px;">&#10003;</span>
               <div style="font-size:12px; color:var(--theme-text-main); line-height:1.5;"><strong>${f[0]}</strong> <span style="color:var(--theme-text-muted);">— ${f[1]}</span></div>
             </div>`;
 
@@ -2040,10 +2040,10 @@
                 <div style="position:absolute; top:-70px; right:-70px; width:190px; height:190px; border-radius:50%; background:radial-gradient(circle, rgba(52,211,153,0.22), transparent 70%); pointer-events:none;"></div>
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; flex-wrap:wrap; gap:8px;">
                   <div>
-                    <div style="font-size:10px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#34d399; margin-bottom:4px;">Peakora Core</div>
+                    <div style="font-size:13px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#34d399; margin-bottom:4px;">Peakora Core</div>
                     <h2 style="margin:0; font-size:20px; font-weight:800; color:var(--theme-heading, #ffffff);">The Free Plan</h2>
                   </div>
-                  ${!isPlus ? `<span style="font-size:10px; font-weight:800; padding:5px 12px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.4); letter-spacing:0.06em;">YOUR PLAN</span>` : ''}
+                  ${!isPlus ? `<span style="font-size:13px; font-weight:800; padding:5px 12px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.4); letter-spacing:0.06em;">YOUR PLAN</span>` : ''}
                 </div>
                 <div style="display:flex; align-items:baseline; gap:6px; margin:8px 0 12px;">
                   <span style="font-size:30px; font-weight:800; color:var(--theme-heading, #ffffff);">$0</span>
@@ -2067,15 +2067,15 @@
                 <div style="position:absolute; top:-60px; left:-60px; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow-hover), transparent 70%); pointer-events:none;"></div>
                 <div style="position:absolute; top:14px; right:14px; font-size:9px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; padding:5px 11px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff; box-shadow:0 4px 14px var(--theme-accent-glow);">Most Loved</div>
                 <div style="margin-bottom:4px;">
-                  <div style="font-size:10px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent; display:inline-block; margin-bottom:4px;">Peakora+ Membership</div>
+                  <div style="font-size:13px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent; display:inline-block; margin-bottom:4px;">Peakora+ Membership</div>
                   <h2 style="margin:0; font-size:20px; font-weight:800; color:var(--theme-heading, #ffffff);">The Deep Reset</h2>
                 </div>
                 <div style="display:flex; align-items:baseline; gap:6px; margin:8px 0 4px;">
                   <span style="font-size:30px; font-weight:800; background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent;">$9.99</span>
                   <span style="font-size:12px; color:var(--theme-text-muted);">/mo &nbsp;or&nbsp; <strong style="color:var(--theme-text-main);">$95.88/yr</strong> (save 20%)</span>
                 </div>
-                <div style="font-size:11px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                  <span class="sub-status-indicator" style="font-size:10px; font-weight:800; padding:4px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${isPlus ? 'background:rgba(244,162,97,0.2); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.45);' : 'background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);'}">
+                <div style="font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <span class="sub-status-indicator" style="font-size:13px; font-weight:800; padding:4px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${isPlus ? 'background:rgba(244,162,97,0.2); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.45);' : 'background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);'}">
                     <span style="font-size:7px;">&#9679;</span> ${isPlus ? 'Active — thank you for being here' : 'Status: ' + peakoraSubStatus}
                   </span>
                   ${isDevMode() ? `<button type="button" class="btn ghost" style="font-size:9px; padding:3px 7px; border:1px solid rgba(255,255,255,0.12); border-radius:6px; cursor:pointer; opacity:0.6;" onclick="toggleMockSubscriptionStatus()" title="Preview the other membership state">
@@ -2092,7 +2092,7 @@
                   <button class="btn primary" style="width:100%; font-size:13px; font-weight:800; padding:13px; box-shadow:0 8px 22px var(--theme-accent-glow);" onclick="openPlanSelectionModal()">
                     ${isPlus ? 'Manage Membership & Billing' : 'Go Peakora+ — $9.99/mo'}
                   </button>
-                  <div style="margin-top:10px; display:flex; justify-content:center; gap:14px; font-size:10px; color:var(--theme-text-muted); flex-wrap:wrap;">
+                  <div style="margin-top:10px; display:flex; justify-content:center; gap:14px; font-size:13px; color:var(--theme-text-muted); flex-wrap:wrap;">
                     <span>7-day money-back guarantee</span>
                     <span>&bull;</span>
                     <span>Cancel anytime</span>
@@ -2120,9 +2120,9 @@
                 Love Peakora? Share it and earn 30% recurring commission on every subscriber you bring — for as long as they stay. No audience minimum, 90-day cookie window, real-time tracking.
               </p>
               <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">30% recurring</span>
-                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">90-day cookie</span>
-                <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Bank transfer payouts</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">30% recurring</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">90-day cookie</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Bank transfer payouts</span>
               </div>
               <a href="affiliate.html" class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow); text-decoration:none; display:inline-block;">
                 Explore the Affiliate Program
@@ -2179,7 +2179,7 @@
                 <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                   <div style="flex:1; min-width:200px;">
                     <div style="font-size:12px; font-weight:700; color:#ffffff;">Mood-Reactive Auto-Theme ${!isPlus ? '<span style="font-size:9px; font-weight:800; color:var(--theme-accent); letter-spacing:0.06em;">PLUS</span>' : ''}</div>
-                    <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">The room quietly shifts color to match the mood you log each morning.</div>
+                    <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">The room quietly shifts color to match the mood you log each morning.</div>
                   </div>
                   ${switchBtn(isPlus && isAutoTheme, 'toggleAutoTheme()')}
                 </div>
@@ -2193,37 +2193,37 @@
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Daily Check-in Reminder</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">A gentle prompt at your chosen time to log today's mood</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);">A gentle prompt at your chosen time to log today's mood</div>
                     </div>
                     ${switchBtn(notifDaily, "toggleNotifSetting('peakora_notif_daily')")}
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Breathing Chimes</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">A soft tone at each phase change during the Inhale ring</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);">A soft tone at each phase change during the Inhale ring</div>
                     </div>
                     ${switchBtn(notifSound, "toggleNotifSetting('peakora_notif_sound')")}
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Weekly Progress Digest</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">A one-line summary of your week when fresh data is waiting</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);">A one-line summary of your week when fresh data is waiting</div>
                     </div>
                     ${switchBtn(notifWeekly, "toggleNotifSetting('peakora_notif_weekly')")}
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Push Nudges on This Device</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">Real notifications even when the app is closed — works best once installed</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);">Real notifications even when the app is closed — works best once installed</div>
                     </div>
                     ${switchBtn(localStorage.getItem("peakora_push_enabled") === "true", "togglePushNotifications()")}
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; opacity:${notifDaily ? '1' : '0.45'};">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Reminder Time</div>
-                      <div style="font-size:11px; color:var(--theme-text-muted);">When the daily prompt should arrive</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);">When the daily prompt should arrive</div>
                     </div>
-                    <select class="input" style="width:auto; font-size:11px; padding:5px 9px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;" onchange="changeNotifTime(this.value)" ${notifDaily ? '' : 'disabled'}>
+                    <select class="input" style="width:auto; font-size:13px; padding:5px 9px; font-weight:700; background:rgba(255,255,255,0.05); color:#ffffff; border:1px solid rgba(255,255,255,0.15); border-radius:8px;" onchange="changeNotifTime(this.value)" ${notifDaily ? '' : 'disabled'}>
                       ${['07:00 AM','08:00 AM','09:00 AM','12:00 PM','08:00 PM'].map(t => `<option value="${t}" ${notifTime === t ? 'selected' : ''} style="background:#151122; color:#fff;">${t}</option>`).join('')}
                     </select>
                   </div>
@@ -2273,7 +2273,7 @@
               <div style="max-width:560px; margin:0 auto; background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:16px; padding:14px;">
                 <textarea id="peakora-feedback-input" rows="3" class="input" style="width:100%; font-size:13px; line-height:1.6; resize:vertical; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 14px;" placeholder="The thing I wish Peakora did is..."></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; flex-wrap:wrap;">
-                  <span style="font-size:10px; color:var(--theme-text-muted);">Anonymous unless you're signed in — never shared, never sold.</span>
+                  <span style="font-size:13px; color:var(--theme-text-muted);">Anonymous unless you're signed in — never shared, never sold.</span>
                   <button class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow);" onclick="sendFeedback()">Send it over</button>
                 </div>
               </div>
@@ -2287,7 +2287,7 @@
           </div> <!-- /assistant-card -->
 
           <!-- Dodo Merchant Compliance Footer Links -->
-          <div style="text-align:center; padding:16px 0 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted);">
+          <div style="text-align:center; padding:16px 0 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:13px; color:var(--theme-text-muted);">
             <div>© 2026 Peakora™ — For a Better You.</div>
             <div style="margin-top:6px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
               <a href="#" style="color:var(--accent-violet, #a78bfa); text-decoration:none;" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
@@ -2300,7 +2300,7 @@
               <span>•</span>
               <a href="affiliate.html" style="color:#7c3aed; text-decoration:none;">Affiliate Program</a>
             </div>
-            <div style="margin-top:6px; font-size:10px; color:#999;">© 2026 Peakora. Billed securely. Support: peakora.network@gmail.com</div>
+            <div style="margin-top:6px; font-size:13px; color:#999;">© 2026 Peakora. Billed securely. Support: peakora.network@gmail.com</div>
           </div>
         </div>
       `;
@@ -2542,8 +2542,8 @@
         html += `
           <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; position:relative; transition:all 0.2s ease;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span style="font-size:11px; font-weight:700; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">${item.date}</span>
-              <button style="background:rgba(255,255,255,0.06); border:none; color:var(--theme-text-muted); border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:11px; display:inline-flex; align-items:center; justify-content:center;" onclick="deleteReflection(${idx})" aria-label="Delete entry" title="Delete Quote">✕</button>
+              <span style="font-size:13px; font-weight:700; color:var(--theme-accent); text-transform:uppercase; letter-spacing:0.04em;">${item.date}</span>
+              <button style="background:rgba(255,255,255,0.06); border:none; color:var(--theme-text-muted); border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; justify-content:center;" onclick="deleteReflection(${idx})" aria-label="Delete entry" title="Delete Quote">✕</button>
             </div>
             <div style="font-size:13px; color:#ffffff; line-height:1.5; font-style:italic;">“${item.text}”</div>
           </div>
@@ -2623,13 +2623,13 @@
               ${plan === 'yearly' ? 'Annual plan — $95.88/yr (save 20%)' : 'Monthly plan — $9.99/mo'}
             </p>
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:12px; padding:14px; margin-bottom:16px;">
-              <label style="display:block; font-size:11px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
+              <label style="display:block; font-size:13px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
               <input type="email" id="dodo-email" value="${userEmail}" style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:13px; background:rgba(0,0,0,0.25); color:#ffffff;" placeholder="your.email@example.com">
             </div>
             <button type="button" id="dodo-continue-btn" class="btn primary" style="width:100%; padding:13px; font-size:14px; font-weight:800; background:var(--theme-primary-grad); color:#fff; border-radius:10px; cursor:pointer;" onclick="startDodoCheckout('${plan}', '${price}')">
               Continue to Secure Checkout
             </button>
-            <div style="margin-top:14px; font-size:10px; color:var(--theme-text-muted); line-height:1.5;">
+            <div style="margin-top:14px; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
               Billed securely by Dodo Payments (Merchant of Record).<br>
               7-day money-back guarantee. Cancel anytime.
             </div>
@@ -3134,8 +3134,8 @@
           <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
             <div style="font-weight:700; font-size:13px; color:var(--theme-accent, #f4a261); margin-bottom:2px;">${d.title || 'Day ' + (i+1)}: ${d.focus || ''}</div>
             <div style="font-size:12px; color:#ffffff; margin-bottom:4px;"><strong>Action:</strong> ${d.action || ''}</div>
-            <div style="font-size:11px; color:var(--theme-text-muted); margin-bottom:4px;"><strong>Reflection:</strong> ${d.reflection || ''}</div>
-            <div style="font-size:11px; color:var(--theme-text-muted); opacity:0.8; font-style:italic;">"${d.forgiveness || ''}"</div>
+            <div style="font-size:13px; color:var(--theme-text-muted); margin-bottom:4px;"><strong>Reflection:</strong> ${d.reflection || ''}</div>
+            <div style="font-size:13px; color:var(--theme-text-muted); opacity:0.8; font-style:italic;">"${d.forgiveness || ''}"</div>
           </div>
         `;
       });
@@ -4314,12 +4314,12 @@
 
         <!-- Peakora+ Membership Card with Pricing -->
         <div style="background:rgba(244,162,97,0.06); border:1.5px solid var(--theme-accent, #f4a261); border-radius:14px; padding:16px; position:relative;">
-          <span style="position:absolute; top:-10px; right:16px; background:var(--theme-primary-grad); color:#fff; font-size:10px; font-weight:700; padding:3px 10px; border-radius:999px;">RECOMMENDED</span>
+          <span style="position:absolute; top:-10px; right:16px; background:var(--theme-primary-grad); color:#fff; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px;">RECOMMENDED</span>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <h3 style="margin:0; font-size:16px; color:#ffffff;">Peakora+ Membership</h3>
             <div style="text-align:right;">
               <span style="font-size:14px; font-weight:700; color:var(--theme-accent, #f4a261);">$9.99 / month</span>
-              <div style="font-size:10px; color:var(--theme-text-muted);">or $95.88 / year (Save 20%)</div>
+              <div style="font-size:13px; color:var(--theme-text-muted);">or $95.88 / year (Save 20%)</div>
             </div>
           </div>
           <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Complete visual customizability, 7-day plan history archive, synthesized soundscapes, & adaptive planning.</p>
@@ -4341,14 +4341,14 @@
             </button>
           </div>
           
-          <div style="font-size:10px; color:var(--theme-text-muted); text-align:center; margin-top:8px;">
+          <div style="font-size:13px; color:var(--theme-text-muted); text-align:center; margin-top:8px;">
             7-day money-back guarantee • Cancel anytime • Billed securely via Dodo Payments
           </div>
         </div>
       </div>
 
       <!-- Merchant compliance footer notes inside modal -->
-      <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:var(--theme-text-muted); text-align:center;">
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); font-size:13px; color:var(--theme-text-muted); text-align:center;">
         <div style="display:flex; justify-content:center; gap:10px;">
           <a href="#" style="color:var(--accent-violet, #a78bfa);" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
           <span>•</span>
@@ -4356,7 +4356,7 @@
           <span>•</span>
           <a href="#" style="color:var(--accent-violet, #a78bfa);" onclick="openLegalModal('refund'); return false;">Refund Policy</a>
         </div>
-        <div style="margin-top:4px; font-size:10px; color:var(--theme-text-muted);">Merchant Support: peakora.network@gmail.com</div>
+        <div style="margin-top:4px; font-size:13px; color:var(--theme-text-muted);">Merchant Support: peakora.network@gmail.com</div>
       </div>
     </div>
   </div>
@@ -4374,7 +4374,7 @@
         <!-- iOS Setup -->
         <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
           <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">iPhone & iPad (Safari)</strong>
-          <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+          <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
             1. Open Peakora in <strong>Safari</strong><br>
             2. Tap the <strong>Share</strong> button at the bottom of the screen<br>
             3. Scroll down and select <strong>"Add to Home Screen"</strong>
@@ -4384,7 +4384,7 @@
         <!-- Android Setup -->
         <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
           <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">Android Phones & Tablets (Chrome)</strong>
-          <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+          <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
             1. Open Peakora in <strong>Chrome</strong><br>
             2. Tap the <strong>Menu</strong> (three vertical dots) in top right<br>
             3. Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>
@@ -4394,7 +4394,7 @@
         <!-- Desktop Setup -->
         <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
           <strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:4px;">Desktop (Mac, Windows, Chromebook)</strong>
-          <div style="font-size:11px; color:var(--theme-text-muted); line-height:1.5;">
+          <div style="font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
             1. Open in <strong>Chrome, Edge, or Safari</strong><br>
             2. Click the <strong>Install Icon</strong> in the browser address bar<br>
             3. Or click <strong>"Install App Now"</strong> below
@@ -4450,7 +4450,7 @@
       </div>
       
       <div style="display:flex; justify-content:space-between; align-items:center; pt-10; border-top:1px solid rgba(255,255,255,0.08);">
-        <button class="btn ghost" style="font-size:11px; color:#ef4444;" onclick="clearAllReflections()">Clear All Quotes</button>
+        <button class="btn ghost" style="font-size:13px; color:#ef4444;" onclick="clearAllReflections()">Clear All Quotes</button>
         <button class="btn secondary" style="font-size:12px; padding:6px 16px;" onclick="closeReflectionsModal()">Close</button>
       </div>
     </div>
