@@ -773,11 +773,27 @@ export async function handleAdminDeleteAffiliate(request, env) {
 }
 
 /** Admin panel sign-in check: confirms a partner portal token belongs to the
- *  admin account, so the panel can unlock via Google/email sign-in. */
+ *  admin account, so the panel can unlock via Google/email sign-in. Also
+ *  accepts the raw ADMIN_TOKEN so the panel behaves consistently whether Ala
+ *  unlocks with the token or a signed-in admin partner. */
+function adminTokenMatches(request, env) {
+  if (!env.ADMIN_TOKEN) return false;
+  const url = new URL(request.url);
+  const tok = url.searchParams.get('token') || request.headers.get('x-admin-token') || '';
+  if (!tok || tok.length !== env.ADMIN_TOKEN.length) return false;
+  let diff = 0;
+  for (let i = 0; i < tok.length; i++) diff |= tok.charCodeAt(i) ^ env.ADMIN_TOKEN.charCodeAt(i);
+  return diff === 0;
+}
+
 export async function handleAdminVerifyPartner(request, env) {
+  if (adminTokenMatches(request, env)) {
+    const aff = await getAffiliateByEmail(env.DB, MASTER_EMAIL);
+    return json({ success: true, email: MASTER_EMAIL, referral_code: aff ? aff.referral_code : null, via: 'token' });
+  }
   const aff = await verifyAdminPartner(request, env);
   if (!aff) return json({ success: false, error: 'Not an admin account.' }, 403);
-  return json({ success: true, email: aff.user_email, referral_code: aff.referral_code });
+  return json({ success: true, email: aff.user_email, referral_code: aff.referral_code, via: 'partner' });
 }
 
 export async function handleAdminAdjustCommission(request, env) {
