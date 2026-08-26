@@ -324,7 +324,7 @@
       canvas.innerHTML = "";
 
       if (!data.length) {
-        summaryEl.textContent = "You haven’t checked in yet this week.";
+        summaryEl.textContent = "You haven't checked in yet this week.";
         return;
       }
 
@@ -332,11 +332,13 @@
       const height = canvas.clientHeight || 200;
       const count = data.length;
 
-      const xStep = count > 1 ? (width - 40) / (count - 1) : 0;
+      const padX = 28;
+      const xStep = count > 1 ? (width - padX * 2) / (count - 1) : 0;
       const yBase = height / 2;
 
       const families = [];
       const feelingsSequence = [];
+      const points = [];
 
       data.forEach((item, index) => {
         const feeling = item.feeling || item.mood || "";
@@ -345,11 +347,12 @@
         const size = getMoodSize(feeling) * 1.3;
 
         families.push(family);
-        feelingsSequence.push((feeling || "").toLowerCase() || "…");
+        feelingsSequence.push((feeling || "").toLowerCase() || "...");
 
-        const x = 20 + xStep * index;
+        const x = padX + xStep * index;
         const drift = (index % 2 === 0 ? -1 : 1) * (6 + (index % 3));
         const y = yBase + drift;
+        points.push({ x, y, size, color, family, feeling, date: item.date });
 
         const bubble = document.createElement("div");
         bubble.className = "mood-bubble";
@@ -359,11 +362,39 @@
         bubble.style.top = y - size / 2 + "px";
         bubble.style.background =
           "radial-gradient(circle at 30% 30%, " + color + ", #f58b5c)";
-        bubble.style.animationDelay = index * 0.15 + "s";
-        bubble.title = feeling || "No label";
+        bubble.style.animationDelay = index * 0.12 + "s";
+        bubble.setAttribute("role", "img");
+        const dayLabel = item.date
+          ? new Date(item.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" })
+          : "Day " + (index + 1);
+        bubble.setAttribute("aria-label", dayLabel + ": " + (feeling || "no label"));
+        bubble.tabIndex = 0;
+
+        const tooltip = document.createElement("span");
+        tooltip.className = "mood-bubble-tip";
+        tooltip.textContent = dayLabel + " - " + (feeling || "no label");
+        bubble.appendChild(tooltip);
 
         canvas.appendChild(bubble);
       });
+
+      // Connecting timeline line so the week reads as a sequence, not random dots.
+      if (points.length > 1) {
+        const svgNs = "http://www.w3.org/2000/svg";
+        const line = document.createElementNS(svgNs, "svg");
+        line.setAttribute("class", "mood-bubble-line");
+        line.setAttribute("viewBox", "0 0 " + width + " " + height);
+        line.setAttribute("preserveAspectRatio", "none");
+        const path = document.createElementNS(svgNs, "path");
+        const d = points.map((p, i) => (i === 0 ? "M" : "L") + p.x + " " + p.y).join(" ");
+        path.setAttribute("d", d);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "rgba(244,162,97,0.4)");
+        path.setAttribute("stroke-width", "2");
+        path.setAttribute("stroke-dasharray", "4,4");
+        line.appendChild(path);
+        canvas.insertBefore(line, canvas.firstChild);
+      }
 
       const familyCounts = families.reduce((acc, f) => {
         acc[f] = (acc[f] || 0) + 1;
@@ -383,10 +414,25 @@
       summaryBubble.className = "week-summary-bubble";
       summaryBubble.style.background =
         "radial-gradient(circle at 30% 30%, " + summaryColor + ", #f58b5c)";
+      summaryBubble.title = "Dominant pattern: " + dominantFamily;
       canvas.appendChild(summaryBubble);
 
-      const sequenceText = feelingsSequence.join(" → ");
-      summaryEl.textContent = "This week leaned toward: " + sequenceText + ".";
+      // Legend so colors mean something, not just look pretty.
+      const usedFamilies = Object.keys(familyCounts);
+      const legend = document.createElement("div");
+      legend.className = "mood-pattern-legend";
+      legend.innerHTML = usedFamilies.map((f) => {
+        const c = getMoodColor(f);
+        return '<span class="mood-pattern-legend-item"><span class="mood-pattern-legend-dot" style="background:' + c + ';"></span>' +
+          f.charAt(0).toUpperCase() + f.slice(1) + ' (' + familyCounts[f] + ')</span>';
+      }).join("");
+      canvas.appendChild(legend);
+
+      const pct = Math.round((maxCount / count) * 100);
+      const domLabel = dominantFamily.charAt(0).toUpperCase() + dominantFamily.slice(1);
+      summaryEl.innerHTML = "This week leaned <strong style=\"color:" + summaryColor + "\">" + domLabel + "</strong> " +
+        "(" + maxCount + " of " + count + " check-ins, " + pct + "%). " +
+        "Sequence: " + feelingsSequence.join(" -> ") + ".";
     }
 
     function goToStepKey(key) {
@@ -2114,15 +2160,15 @@
               <div style="position:absolute; top:-60px; right:-60px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow), transparent 70%); pointer-events:none;"></div>
               <div class="dash-card-title" style="display:flex; align-items:center; gap:8px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--theme-accent);"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                Affiliate Program — Earn While You Share
+                Affiliate Program - Earn While You Share
               </div>
               <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.6;">
-                Love Peakora? Share it and earn 30% recurring commission on every subscriber you bring — for as long as they stay. No audience minimum, 90-day cookie window, real-time tracking.
+                Love Peakora? Share it and earn 50% recurring commission on every subscriber you bring - for as long as they stay. No audience minimum, 90-day cookie window, real-time tracking.
               </p>
               <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">30% recurring</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">50% recurring</span>
                 <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">90-day cookie</span>
-                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Bank transfer payouts</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">PayPal, Wise, bank, or USDC</span>
               </div>
               <a href="affiliate.html" class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow); text-decoration:none; display:inline-block;">
                 Explore the Affiliate Program
@@ -4241,6 +4287,15 @@
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      // When a new SW takes control (skipWaiting -> controllerchange), reload once
+      // so an already-open installed PWA picks up the fresh version instead of
+      // running stale HTML/CSS until the next manual reload.
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloading) return;
+        reloading = true;
+        try { window.location.reload(); } catch (e) {}
+      });
     }
   </script>
   <!-- Theme Palette Selection Pop-Up Modal (Peakora+) -->

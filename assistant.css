@@ -478,6 +478,71 @@ select.input option {
   opacity: 0;
   animation: bubbleFade 0.8s ease forwards;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.mood-bubble:hover,
+.mood-bubble:focus {
+  transform: scale(1.12);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 14px var(--theme-accent-glow);
+  outline: none;
+  z-index: 5;
+}
+.mood-bubble-tip {
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(12, 9, 21, 0.95);
+  color: #ffffff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  border: 1px solid var(--theme-card-border);
+}
+.mood-bubble:hover .mood-bubble-tip,
+.mood-bubble:focus .mood-bubble-tip {
+  opacity: 1;
+}
+.mood-bubble-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.mood-pattern-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 2;
+}
+.mood-pattern-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--theme-text-muted);
+  background: rgba(12, 9, 21, 0.6);
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--theme-card-border);
+}
+.mood-pattern-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 @keyframes bubbleFade {
@@ -1560,23 +1625,24 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     min-height: auto;
   }
   /* Mobile sidebar: compact horizontal bar, sticky at top, horizontally scrollable.
-     Prevents the "huge ugly box" that overflowed into the header on zoom/mobile. */
+     Prevents the "huge ugly box" that overflowed into the header on zoom/mobile.
+     NOTE: the bar wraps to multiple rows on zoom instead of clipping, so every tab
+     stays visible (the old max-height:56px + overflow:hidden hid tabs on zoom). */
   .dash-sidebar {
     width: 100%;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 10px 12px;
-    gap: 10px;
+    gap: 8px;
     position: sticky;
     top: 0;
     z-index: 50;
     background: rgba(12, 9, 21, 0.97);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    max-height: 56px;
-    overflow: hidden;
   }
   .dash-brand {
     margin-bottom: 0;
@@ -1584,18 +1650,11 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   }
   .dash-nav {
     flex-direction: row;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 4px;
     justify-content: flex-start;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    flex: 1 1 0;
+    flex: 1 1 auto;
     min-width: 0;
-  }
-  .dash-nav::-webkit-scrollbar {
-    display: none;
   }
   .dash-nav-btn {
     flex: 0 0 auto;
@@ -1628,15 +1687,16 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .dash-welcome-h1 {
     font-size: 20px;
   }
-  /* On very small screens: hide nav button text, show icons only */
+  /* On very small screens: compact the nav, keep labels readable.
+     Old rule set font-size:0 which left only icons - ambiguous on zoom. */
   .dash-nav-btn {
     padding: 8px 10px;
-    font-size: 0;
-    gap: 0;
+    font-size: 11px;
+    gap: 4px;
   }
   .dash-nav-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
   .timeline-arc-wrap {
     height: auto;

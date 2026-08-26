@@ -245,6 +245,12 @@
   <script>
     if("serviceWorker" in navigator){
       navigator.serviceWorker.register("./service-worker.js");
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloading) return;
+        reloading = true;
+        try { window.location.reload(); } catch (e) {}
+      });
     }
   </script>
 </body>
