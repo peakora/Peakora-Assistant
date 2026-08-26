@@ -467,7 +467,7 @@
 .aff-feature-icon {
   width: 56px;
   height: 56px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: rgba(52, 211, 153, 0.1);
   border: 1px solid rgba(52, 211, 153, 0.2);
   display: flex;
@@ -565,7 +565,7 @@
 .aff-calc-field select {
   width: 100%;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
@@ -758,7 +758,7 @@
 .aff-apply-form textarea {
   width: 100%;
   padding: 14px 18px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
@@ -799,7 +799,7 @@
   display: flex;
   gap: 8px;
   padding: 6px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 22px;
@@ -807,7 +807,7 @@
 .aff-auth-tab {
   flex: 1;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -832,7 +832,7 @@
   gap: 12px;
   width: 100%;
   padding: 14px 18px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #1f2937;
