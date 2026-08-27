@@ -540,7 +540,11 @@
     function isPeakoraPlusActive() {
       // Master account always has full Plus access
       if (isMasterAccount()) return true;
-      return localStorage.getItem("peakora_plus_member") === "true";
+      // Server-verified state is authoritative. The localStorage flag is only an
+      // optimistic cache so the UI does not flicker before the server reconciles;
+      // it is NEVER trusted alone to unlock premium (that was the paywall bypass:
+      // anyone could set the flag by hand). Server confirmation is required.
+      return localStorage.getItem("peakora_plus_verified") === "true";
     }
 
     // Dev/test affordances (plan preview toggle) only appear with ?dev=1 or
@@ -2897,6 +2901,10 @@
       const next = current === "Active" ? "Trial" : "Active";
       localStorage.setItem("peakora_subscription_status", next);
       localStorage.setItem("peakora_plus_member", next === "Active" ? "true" : "false");
+      // Dev-only preview also flips the server-verified flag so the UI reflects
+      // the other tier. This is gated behind isDevMode() and never reachable in
+      // production; the real source of truth remains checkServerSubscription().
+      localStorage.setItem("peakora_plus_verified", next === "Active" ? "true" : "false");
       renderStep();
     }
 
@@ -4405,26 +4413,42 @@
     };
 
     // Sync subscription state from the Cloudflare Worker D1 database.
-    // If the master account email is set, force Plus access regardless of DB.
+    // This is the AUTHORITATIVE check: it sets the server-verified flag when the
+    // server says active, and CLEARS it (and the optimistic cache) when it does
+    // not. That closes the client-trusted paywall bypass: a manually-set
+    // localStorage flag is reconciled away on the next server check.
     async function checkServerSubscription() {
       try {
         const email = localStorage.getItem("peakora_user_email") || "";
-        if (!email) return;
+        if (!email) {
+          localStorage.removeItem("peakora_plus_verified");
+          return;
+        }
         const resp = await fetch(
           "https://peakora-api.peakora.workers.dev/subscription-status?email=" +
           encodeURIComponent(email)
         );
         const data = await resp.json();
         if (data && data.isMaster) {
+          localStorage.setItem("peakora_plus_verified", "true");
           localStorage.setItem("peakora_plus_member", "true");
           localStorage.setItem("peakora_subscription_status", "Active");
           localStorage.setItem("peakora_master_account", "true");
         } else if (data && data.isPlus) {
+          localStorage.setItem("peakora_plus_verified", "true");
           localStorage.setItem("peakora_plus_member", "true");
           localStorage.setItem("peakora_subscription_status", "Active");
+        } else {
+          // Server says NOT active: revoke premium. Clear the verified flag so
+          // isPeakoraPlusActive() returns false regardless of any stale cache.
+          localStorage.removeItem("peakora_plus_verified");
+          localStorage.setItem("peakora_plus_member", "false");
+          localStorage.setItem("peakora_subscription_status", data && data.status ? data.status : "free");
         }
       } catch (e) {
-        // Network/API failure should never block the app
+        // Network/API failure: keep the last known verified state (do not lock
+        // out a paying member on a transient network blip). The verified flag
+        // can only have been set by a prior successful server confirmation.
       }
     }
   </script>

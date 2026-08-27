@@ -372,11 +372,25 @@ export async function handleAffiliateApply(request, env) {
 /**
  * Lightweight partner auth: the affiliate's email + a short-lived signed token
  * issued at apply-approval / portal-login. Token = HMAC(email|expiry, ADMIN_TOKEN).
+ *
+ * SECURITY: the HMAC key is ADMIN_TOKEN only. There is NO 'fallback' secret:
+ * if ADMIN_TOKEN is not set, token sign/verify both refuse, so portal tokens
+ * cannot be forged with a known constant when the secret is unset.
  */
+function portalSecret(env) {
+  const k = env.ADMIN_TOKEN;
+  if (!k || typeof k !== 'string' || k.length < 16) {
+    const err = new Error('ADMIN_TOKEN not configured (must be >= 16 chars)');
+    err.code = 'NO_ADMIN_TOKEN';
+    throw err;
+  }
+  return k;
+}
+
 async function portalToken(email, env) {
   const expiry = Math.floor(Date.now() / 1000) + 86400 * 7; // 7 days
   const msg = `${email}|${expiry}`;
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.ADMIN_TOKEN || 'fallback'),
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(portalSecret(env)),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(msg));
   const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
@@ -391,8 +405,11 @@ async function verifyPortalAuth(request, env) {
   const expiry = Number(expStr);
   if (!Number.isFinite(expiry) || expiry < Math.floor(Date.now() / 1000)) return null;
   const msg = `${email}|${expiry}`;
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.ADMIN_TOKEN || 'fallback'),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+  // No fallback secret: if ADMIN_TOKEN is unset, no token can verify.
+  let key;
+  try { key = await crypto.subtle.importKey('raw', new TextEncoder().encode(portalSecret(env)),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']); }
+  catch (e) { return null; }
   const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
   const ok = await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(msg));
   return ok ? email : null;
@@ -517,9 +534,41 @@ export function buildGoogleConsentUrl(env, state) {
 
 export async function handleAffiliateGoogleStart(request, env) {
   if (!env.GOOGLE_CLIENT_ID) return json({ success: false, error: 'Google sign-in is not configured.' }, 503);
-  const state = genId('gsta').slice(4); // opaque nonce
+  if (!env.ADMIN_TOKEN || env.ADMIN_TOKEN.length < 16) {
+    return json({ success: false, error: 'Server not configured for OAuth (ADMIN_TOKEN missing).' }, 503);
+  }
+  // Self-verifying state: state = "<random>.<hmac(random|expiry)>". The callback
+  // re-validates the HMAC + expiry without needing server-side session storage,
+  // so the OAuth state parameter actually prevents CSRF (it was generated but
+  // never checked before, so the callback accepted any state).
+  const nonceBytes = new Uint8Array(16);
+  crypto.getRandomValues(nonceBytes);
+  const nonce = Array.from(nonceBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  const expiry = Math.floor(Date.now() / 1000) + 600; // 10 min
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.ADMIN_TOKEN),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${nonce}|${expiry}`));
+  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, '');
+  const state = `${expiry}.${nonce}.${sigB64}`;
   const url = buildGoogleConsentUrl(env, state);
   return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': 'no-store' } });
+}
+
+/** Verify the self-signed OAuth state returned by Google. Returns true only if
+ *  the HMAC matches and the state has not expired. */
+async function verifyGoogleState(env, state) {
+  if (!env.ADMIN_TOKEN || !state) return false;
+  const parts = String(state).split('.');
+  if (parts.length !== 3) return false;
+  const expiry = Number(parts[0]);
+  const nonce = parts[1];
+  const sigB64 = parts[2];
+  if (!Number.isFinite(expiry) || expiry < Math.floor(Date.now() / 1000)) return false;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.ADMIN_TOKEN),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+  const sigBytes = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
+  const ok = await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(`${nonce}|${expiry}`));
+  return ok;
 }
 
 /** Exchange an authorization code for Google tokens, then fetch verified
@@ -597,10 +646,17 @@ export async function findOrCreateGoogleAffiliate(env, profile) {
 export async function handleAffiliateGoogleCallback(request, env) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code') || '';
+  const state = url.searchParams.get('state') || '';
   const error = url.searchParams.get('error') || '';
   const portalUrl = env.APP_PUBLIC_URL || 'https://peakora-assistant.pages.dev';
   const failRedirect = `${portalUrl}/affiliate-portal.html?google_error=1`;
   if (error) return new Response(null, { status: 302, headers: { Location: failRedirect, 'Cache-Control': 'no-store' } });
+  // Verify the OAuth state (CSRF protection). A missing or invalid state must
+  // never proceed to code exchange.
+  const stateOk = await verifyGoogleState(env, state);
+  if (!stateOk) {
+    return new Response(null, { status: 302, headers: { Location: `${failRedirect}&reason=state`, 'Cache-Control': 'no-store' } });
+  }
   if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
     return new Response(null, { status: 302, headers: { Location: `${failRedirect}&reason=not_configured`, 'Cache-Control': 'no-store' } });
   }
@@ -860,11 +916,16 @@ export async function handleAdminAdjustCommission(request, env) {
   const body = await readJson(request);
   const id = String(body.id || '');
   const type = String(body.commission_type || 'percentage').toLowerCase() === 'flat' ? 'flat' : 'percentage';
-  const rate = Math.max(0, Math.min(1, Number(body.commission_rate) || 0));
+  const rawRate = Number(body.commission_rate);
+  // Clamp sensibly per type: percentage to [0,1], flat dollar amount to [0,1000].
+  // A negative rate must never be storable (would pay out negative commission).
+  const rate = type === 'flat'
+    ? Math.max(0, Math.min(1000, Number.isFinite(rawRate) ? rawRate : 0))
+    : Math.max(0, Math.min(1, Number.isFinite(rawRate) ? rawRate : 0));
   if (!id) return json({ success: false, error: 'Affiliate id required.' }, 400);
   await env.DB.prepare(
     'UPDATE affiliates SET commission_type = ?, commission_rate = ? WHERE id = ?'
-  ).bind(type, type === 'flat' ? rate : rate, id).run();
+  ).bind(type, rate, id).run();
   return json({ success: true });
 }
 

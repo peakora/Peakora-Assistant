@@ -320,13 +320,17 @@
         .then(function (d) {
           if (d && d.status === 'active') {
             try {
+              localStorage.setItem('peakora_plus_verified', 'true');
               localStorage.setItem('peakora_plus_member', 'true');
               localStorage.setItem('peakora_subscription_plan', plan);
               localStorage.setItem('peakora_subscription_status', 'Active');
             } catch (e) {}
             setStatus('active', 'Subscription confirmed. All Peakora+ features are unlocked.');
           } else {
-            try { localStorage.setItem('peakora_subscription_status', 'Pending confirmation'); } catch (e) {}
+            try {
+              localStorage.removeItem('peakora_plus_verified');
+              localStorage.setItem('peakora_subscription_status', 'Pending confirmation');
+            } catch (e) {}
             setStatus('pending', 'We are still confirming your payment. If Peakora+ does not unlock within a few minutes, your webhook may still be processing. Contact us if it persists.');
           }
         })

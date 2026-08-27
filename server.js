@@ -51,7 +51,17 @@ const persist = {
 
 function requireAdmin(req, res) {
   const token = req.query.token || req.get('x-admin-token') || '';
-  if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) {
+  // Fail closed when no ADMIN_TOKEN is configured: admin routes are 403, never
+  // open. Use a timing-safe comparison so the token cannot leak via timing.
+  if (!ADMIN_TOKEN || !token) {
+    res.status(403).json({ success: false, error: 'Admin token required (set ADMIN_TOKEN env var).' });
+    return false;
+  }
+  const a = Buffer.from(String(token));
+  const b = Buffer.from(String(ADMIN_TOKEN));
+  let ok = a.length === b.length;
+  if (ok) ok = crypto.timingSafeEqual(a, b);
+  if (!ok) {
     res.status(403).json({ success: false, error: 'Admin token required (set ADMIN_TOKEN env var).' });
     return false;
   }
