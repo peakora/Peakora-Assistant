@@ -511,3 +511,40 @@ describe('payout validation', () => {
     assert.equal('extra' in r.details, true); // pass-through, not stripped
   });
 });
+
+// ── Dodo webhook event mapping (refund revocation) ──────────────────────────
+// Regression: mapDodoEvent must map refund/chargeback/dispute events to
+// status 'refunded' so a refunded customer loses Plus access (isPlus is
+// derived from status === 'active'). Previously refunds left status 'active'.
+import { mapDodoEvent } from '../dodo-billing.js';
+
+describe('mapDodoEvent refund revocation', () => {
+  const mk = (type) => mapDodoEvent({
+    type,
+    data: { subscription: { id: 'sub_123', product_id: 'pdt_x' }, customer: { email: 'cust@test.com' } }
+  });
+
+  test('refund event maps to status refunded (not active)', () => {
+    assert.equal(mk('payment.refunded').status, 'refunded');
+    assert.equal(mk('chargeback.created').status, 'refunded');
+    assert.equal(mk('payment.dispute_opened').status, 'refunded');
+  });
+
+  test('cancel/past_due still map correctly (regression)', () => {
+    assert.equal(mk('subscription.canceled').status, 'canceled');
+    assert.equal(mk('subscription.paused').status, 'canceled');
+    assert.equal(mk('invoice.payment_failed').status, 'past_due');
+  });
+
+  test('subscription_created stays active', () => {
+    assert.equal(mk('subscription.created').status, 'active');
+    assert.equal(mk('invoice.paid').status, 'active');
+  });
+
+  test('transactionId is deterministic (no Date.now fallback)', () => {
+    const rec = mk('payment.refunded');
+    assert.equal(rec.transactionId, 'sub_123');
+    // A second mapping of the same event yields the SAME id (idempotency).
+    assert.equal(mk('payment.refunded').transactionId, rec.transactionId);
+  });
+});

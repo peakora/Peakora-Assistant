@@ -190,14 +190,21 @@ export function mapDodoEvent(payload) {
 
   let status = 'active';
   const t = type.toLowerCase();
-  if (t.includes('cancel') || t.includes('paused') || t.includes('expired')) status = 'canceled';
+  // Refund / chargeback revokes access (must come before cancel/past_due so a
+  // refund event is not misread as a mere cancellation).
+  if (t.includes('refund') || t.includes('chargeback') || t.includes('dispute')) status = 'refunded';
+  else if (t.includes('cancel') || t.includes('paused') || t.includes('expired')) status = 'canceled';
   else if (t.includes('failed') || t.includes('past_due')) status = 'past_due';
 
+  // Deterministic transaction id: prefer stable Dodo ids, then the webhook
+  // event id (also stable). Never Date.now() - that let replayed webhooks
+  // generate a fresh id each time and bypass dedup.
+  const webhookId = payload.id || payload.webhook_id || '';
   return {
     email,
     status,
     plan,
-    transactionId: sub.id || data.subscription_id || data.payment_id || data.id || ('DODO-' + Date.now().toString().slice(-6)),
+    transactionId: sub.id || data.subscription_id || data.payment_id || data.id || webhookId || ('DODO-' + type),
     eventType: type,
     method: data.payment_method || sub.payment_method || 'Dodo Payments',
     updatedAt: new Date().toISOString()

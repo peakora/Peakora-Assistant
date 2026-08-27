@@ -163,32 +163,64 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-/* ------------------------------- DODO PAYMENTS ----------------------------- */
+/* ------------------------------- DODO PAYMENTS -----------------------------
+ * Consolidation (#7): the Worker + D1 is the single source of truth for
+ * billing and subscription state (it receives the Dodo webhook, runs
+ * attribution, and holds the authoritative subscriptions table). server.js
+ * proxies checkout + subscription-status to the Worker so the Node/Docker
+ * deploy path can never diverge from the Worker's logic, and so it holds no
+ * parallel subscription store of its own (#6: no second, un-isolated copy of
+ * subscriber state on this half).
+ */
+const WORKER_ORIGIN = process.env.WORKER_ORIGIN || 'https://peakora-api.peakora.workers.dev';
+
 /* Public-safe config for the frontend (no secrets leak here). */
 app.get('/api/dodo-config', (_req, res) => {
-  res.json({ success: true, ...dodoPublicConfig() });
+  res.json({ success: true, ...dodoPublicConfig(), workerOrigin: WORKER_ORIGIN });
 });
 
-/* Create a hosted checkout session and return the redirect URL. */
+/* Create a hosted checkout session by proxying to the Worker's
+ * attribution-aware /dodo/create-checkout (carries the affiliate `via` code
+ * into the Dodo metadata). Falls back to the local createCheckoutSession only
+ * if the Worker is unreachable, so local dev without the Worker still works. */
 app.post('/api/dodo/checkout', async (req, res) => {
-  try {
-    const body = req.body || {};
-    const plan = String(body.plan || 'monthly').toLowerCase() === 'yearly' ? 'yearly' : 'monthly';
-    const email = String(body.email || '').trim().toLowerCase() || null;
-    const metadata = (typeof body.metadata === 'object' && body.metadata) ? body.metadata : {};
+  const body = req.body || {};
+  const plan = String(body.plan || 'monthly').toLowerCase() === 'yearly' ? 'yearly' : 'monthly';
+  const email = String(body.email || '').trim().toLowerCase() || null;
+  const metadata = (typeof body.metadata === 'object' && body.metadata) ? body.metadata : {};
+  const via = String(body.via || (metadata.via) || '').trim().toUpperCase() || undefined;
 
-    const session = await createCheckoutSession({ plan, email, metadata });
-    console.log(`[Dodo Checkout] session created for ${email || '(guest)'} plan=${plan}`);
-    res.json({ success: true, checkout_url: session.checkout_url, session_id: session.session_id });
-  } catch (error) {
-    console.error('[Dodo Checkout Error]', error.message);
-    const status = error.code === 'NOT_CONFIGURED' || error.code === 'NO_PRODUCT' || error.code === 'DODO_UNREACHABLE' ? 503
-      : (error.status || 500);
-    res.status(status).json({ success: false, error: error.message, code: error.code || null });
+  try {
+    const resp = await fetch(`${WORKER_ORIGIN}/dodo/create-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, email, via })
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (resp.ok && data.success && data.checkout_url) {
+      return res.json({ success: true, checkout_url: data.checkout_url, session_id: data.session_id || null });
+    }
+    // Worker refused (misconfigured product / Dodo down) - surface its error.
+    return res.status(resp.status === 200 ? 502 : resp.status)
+      .json({ success: false, error: data.error || `Worker checkout failed (${resp.status})` });
+  } catch (proxyErr) {
+    // Fallback: create the session locally (dev without the Worker running).
+    try {
+      const meta = { ...metadata };
+      if (via) meta.via = via;
+      const session = await createCheckoutSession({ plan, email, metadata: meta });
+      return res.json({ success: true, checkout_url: session.checkout_url, session_id: session.session_id });
+    } catch (err) {
+      const status = err.code === 'NOT_CONFIGURED' || err.code === 'NO_PRODUCT' || err.code === 'DODO_UNREACHABLE' ? 503 : (err.status || 500);
+      return res.status(status).json({ success: false, error: err.message, code: err.code || null });
+    }
   }
 });
 
-/* Receive Dodo webhook events (Standard Webhooks spec). */
+/* Webhook: production webhooks go to the WORKER, not here. This route is kept
+ * only for the local-dev case where the tunnel points at server.js; it records
+ * the event locally but does NOT run attribution (the Worker does that). If
+ * you need attribution in a Node-only deploy, point Dodo at the Worker. */
 app.post('/api/dodo/webhook', (req, res) => {
   try {
     const headers = {
@@ -200,8 +232,7 @@ app.post('/api/dodo/webhook', (req, res) => {
       console.warn('[Dodo Webhook] Signature verification failed');
       return res.status(401).json({ success: false, error: 'Invalid signature' });
     }
-    const payload = req.body || {};
-    const rec = mapDodoEvent(payload);
+    const rec = mapDodoEvent(req.body || {});
     if (rec.email) {
       store.subscriptions[rec.email] = rec;
       persist.subscriptions();
@@ -214,14 +245,21 @@ app.post('/api/dodo/webhook', (req, res) => {
   }
 });
 
-app.get('/api/subscription-status', (req, res) => {
+/* Subscription status: proxy to the Worker (D1 is authoritative). Falls back
+ * to the local JSON store only if the Worker is unreachable. */
+app.get('/api/subscription-status', async (req, res) => {
   const email = String(req.query.email || '').trim().toLowerCase();
-  const sub = email ? store.subscriptions[email] : null;
-  if (sub) {
-    res.json({ success: true, ...sub });
-  } else {
-    res.json({ success: true, email, status: 'free', isPlus: false });
-  }
+  if (!email) return res.json({ success: true, status: 'free', isPlus: false });
+  try {
+    const resp = await fetch(`${WORKER_ORIGIN}/subscription-status?email=${encodeURIComponent(email)}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      return res.json(data);
+    }
+  } catch { /* fall through to local store */ }
+  const sub = store.subscriptions[email];
+  if (sub) return res.json({ success: true, ...sub, isPlus: sub.status === 'active' });
+  return res.json({ success: true, email, status: 'free', isPlus: false });
 });
 
 /* ------------------------------ WEB PUSH ----------------------------------- */

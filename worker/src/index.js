@@ -147,7 +147,10 @@ function mapDodoEvent(payload, env) {
 
   let status = 'active';
   const t = type.toLowerCase();
-  if (t.includes('cancel') || t.includes('paused') || t.includes('expired')) status = 'canceled';
+  // Refund / chargeback revokes access (must come before cancel/past_due so a
+  // refund event is not misread as a mere cancellation).
+  if (t.includes('refund') || t.includes('chargeback') || t.includes('dispute')) status = 'refunded';
+  else if (t.includes('cancel') || t.includes('paused') || t.includes('expired')) status = 'canceled';
   else if (t.includes('failed') || t.includes('past_due')) status = 'past_due';
 
   // Deterministic transaction id: prefer the stable Dodo ids; only fall back to
