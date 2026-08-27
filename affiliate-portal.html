@@ -774,7 +774,7 @@
 
     var earnDots = earnPts.map(function (p) { return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="#f4a261" />'; }).join('');
 
-    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto;">' +
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto;" id="trend-svg">' +
       '<defs><linearGradient id="portalEarnGrad" x1="0" y1="0" x2="0" y2="1">' +
       '<stop offset="0%" stop-color="#f4a261" stop-opacity="0.4"/><stop offset="100%" stop-color="#f4a261" stop-opacity="0.02"/>' +
       '</linearGradient></defs>' +
@@ -784,9 +784,77 @@
       earnDots +
       '<path d="' + clickLine + '" fill="none" stroke="#818cf8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="0" />' +
       clickPts.map(function (p) { return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="#818cf8" />'; }).join('') +
+      // Hover guide + highlight dot (hidden until interaction).
+      '<line id="trend-guide" x1="0" y1="' + padT + '" x2="0" y2="' + (padT + chartH) + '" stroke="rgba(255,255,255,0.25)" stroke-width="1" stroke-dasharray="3 3" style="opacity:0;"/>' +
+      '<circle id="trend-hl" cx="0" cy="0" r="5" fill="#fff" stroke="#0c0a15" stroke-width="2" style="opacity:0;"/>' +
       xLabels +
       '</svg>';
     wrap.innerHTML = svg;
+    wrap.style.position = 'relative';
+
+    // Interactive hover tooltip: follow the nearest day, show date + clicks + earnings.
+    var tip = document.createElement('div');
+    tip.className = 'portal-trend-tip';
+    tip.style.display = 'none';
+    wrap.appendChild(tip);
+
+    var svgEl = document.getElementById('trend-svg');
+    var guide = document.getElementById('trend-guide');
+    var hl = document.getElementById('trend-hl');
+
+    function nearestIdx(vbX) {
+      var best = 0, bestDist = Infinity;
+      for (var i = 0; i < n; i++) {
+        var d = Math.abs(xAt(i) - vbX);
+        if (d < bestDist) { bestDist = d; best = i; }
+      }
+      return best;
+    }
+
+    function showTip(clientX) {
+      var rect = svgEl.getBoundingClientRect();
+      var vbX = ((clientX - rect.left) / rect.width) * W;
+      if (vbX < padL || vbX > W - padR) { hideTip(); return; }
+      var i = nearestIdx(vbX);
+      var pt = series[i];
+      var px = xAt(i);
+      // Position tooltip in CSS pixels relative to wrap.
+      var cssX = (px / W) * rect.width;
+      var earnY = yEarn(pt.earnings || 0);
+      var cssY = (earnY / H) * rect.height;
+      guide.setAttribute('x1', px);
+      guide.setAttribute('x2', px);
+      guide.style.opacity = '1';
+      hl.setAttribute('cx', px);
+      hl.setAttribute('cy', earnY);
+      hl.style.opacity = '1';
+      var dateStr = String(pt.date || '');
+      var prettyDate = dateStr.length >= 10 ? new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : dateStr;
+      tip.innerHTML =
+        '<div class="portal-trend-tip-date">' + prettyDate + '</div>' +
+        '<div class="portal-trend-tip-row"><span class="portal-trend-tip-dot" style="background:#818cf8;"></span>Clicks <em>' + (pt.clicks || 0) + '</em></div>' +
+        '<div class="portal-trend-tip-row"><span class="portal-trend-tip-dot" style="background:#f4a261;"></span>Earnings <em>$' + Number(pt.earnings || 0).toFixed(2) + '</em></div>';
+      tip.style.display = 'block';
+      // Keep tooltip inside the chart horizontally.
+      var tipW = tip.offsetWidth || 120;
+      var left = cssX - tipW / 2;
+      if (left < 4) left = 4;
+      if (left + tipW > rect.width - 4) left = rect.width - tipW - 4;
+      tip.style.left = left + 'px';
+      tip.style.top = Math.max(4, cssY - 64) + 'px';
+    }
+
+    function hideTip() {
+      tip.style.display = 'none';
+      guide.style.opacity = '0';
+      hl.style.opacity = '0';
+    }
+
+    svgEl.addEventListener('mousemove', function (e) { showTip(e.clientX); });
+    svgEl.addEventListener('mouseleave', hideTip);
+    svgEl.addEventListener('touchstart', function (e) { if (e.touches[0]) showTip(e.touches[0].clientX); }, { passive: true });
+    svgEl.addEventListener('touchmove', function (e) { if (e.touches[0]) showTip(e.touches[0].clientX); }, { passive: true });
+    svgEl.addEventListener('touchend', hideTip);
   }
 
   function niceCeil(v) {

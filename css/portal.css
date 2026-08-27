@@ -9,6 +9,45 @@
   --portal-gap: 24px;
 }
 
+/* ── BASE DASHBOARD CARD + GRID (Dark Luxury Wellness) ─────────────────────
+   Shared with the assistant dashboard. Every portal card uses .dash-card so
+   it inherits the glass card surface, ambient glow, and responsive grid. */
+.dash-card {
+  background: var(--theme-card-bg, #151122);
+  border: 1px solid var(--theme-card-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--portal-radius);
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+.dash-card:hover {
+  border-color: rgba(244, 162, 97, 0.28);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 28px var(--theme-card-glow, rgba(224, 122, 95, 0.18));
+}
+.dash-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: var(--portal-gap);
+  margin-bottom: var(--portal-gap);
+  width: 100%;
+}
+.dash-grid-equal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--portal-gap);
+  margin-bottom: var(--portal-gap);
+  width: 100%;
+}
+.dash-card h1, .dash-card h2, .dash-card h3, .dash-card h4 {
+  color: #ffffff;
+}
+.dash-card p { color: var(--theme-text-muted, #a0aec0); }
+
 /* LOGIN */
 .portal-login-section {
   padding: 90px 0 60px;
@@ -524,6 +563,48 @@
 /* ── 30-DAY TREND CHART ──────────────────────────────────────────────────── */
 .portal-trend-card { margin-bottom: var(--portal-gap); }
 .portal-trend-wrap { width: 100%; }
+.portal-trend-tip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  min-width: 130px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(12, 9, 21, 0.96);
+  border: 1px solid rgba(244, 162, 97, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 18px var(--theme-card-glow, rgba(224, 122, 95, 0.18));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: 'Inter', sans-serif;
+}
+.portal-trend-tip-date {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.portal-trend-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--theme-text-muted, #a0aec0);
+  line-height: 1.6;
+}
+.portal-trend-tip-row em {
+  font-style: normal;
+  font-weight: 800;
+  color: #fff;
+  margin-left: auto;
+}
+.portal-trend-tip-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 .portal-trend-card .portal-chart-head {
   flex-wrap: wrap; gap: 8px;
 }
