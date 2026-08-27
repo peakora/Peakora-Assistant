@@ -29,7 +29,16 @@
 
 ## Deploy gotcha
 - GitHub Actions Worker deploy sometimes fails in ~4s with `steps:[]` / `runner_id:0` (infra allocation, not code). Fallback: `cd worker && CLOUDFLARE_API_TOKEN=$TOKEN npx wrangler deploy && npx wrangler d1 execute peakora-db --remote --file=schema.sql`. Pages deploys independently from git.
+- Local npm: root `package.json` lists `wrangler ^4.125.0` as devDep. Run `npm install` at repo root first (creates local `node_modules/.bin/wrangler`), then `cd worker && CLOUDFLARE_API_TOKEN=$TOKEN npx wrangler deploy`. Global `npm i -g wrangler` fails on permissions in this env.
+- Cloudflare Pages auto-deploys from git on push to main. The worker does NOT auto-deploy from Pages; it deploys via GitHub Actions (`.github/workflows/deploy-worker.yml`) on push to `worker/**`, or manually via wrangler. So: frontend changes need a git push to go live; worker changes need a git push (CI) or manual `wrangler deploy`.
+- **Push to deploy**: local commits do NOT appear on the live site until pushed to `origin/main`. Verified 2026-08-26: live Pages had SW `v11-mobile-drawer` + old affiliate copy while local was at `v13` + new copy, because 6 local commits were unpushed.
 - The `affiliates.password_hash` column is new. CREATE TABLE IF NOT EXISTS will not add it to the existing table, so run a one-time `ALTER TABLE affiliates ADD COLUMN password_hash TEXT;` if the column is missing (D1 ignores the error if it already exists). Both existing real affiliates (peakora.network@gmail.com = BGJQFP, ibieruti@gmail.com = 3NZ2R8) have NULL password_hash and must set one via the portal set-password flow or admin set-password before they can log in.
+
+## Web push (notifications)
+- `push_subscriptions` table: `endpoint` (PRIMARY KEY, the per-device FCM/Mozilla push URL), `keys` (JSON with p256dh + auth), `created_at`. No user identity linked - subscriptions are anonymous per-browser.
+- Endpoints: `/push-subscribe` (store), `/push-unsubscribe` (remove), `/push-key` (VAPID public key), `/push-broadcast` (admin: send to ALL devices), `/push-subscriptions` (admin: list devices), `/push-send` (admin: send to ONE endpoint = targeted per-machine).
+- Targeted per-user push is NOT possible without a login/account system on the PWA, because subscriptions aren't linked to identity. The push `endpoint` URL is the only per-machine identifier. To target Ala specifically, use `/push-subscriptions` to find the device endpoint, then `/push-send`.
+- VAPID keys are Cloudflare secrets (VAPID_PUBLIC_KEY returned by /push-key, VAPID_PRIVATE_KEY used to sign JWTs). Daily nudge cron: `0 9 * * *` UTC.
 
 ## Style rules (mandatory)
 - NO labels/eyebrows/badges (no hero-eyebrow, aff-hero-badge, diff-eyebrow).
