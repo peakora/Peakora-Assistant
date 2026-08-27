@@ -645,13 +645,16 @@
           }).then(function (r) { return r.json(); }).then(function (d) {
             if (d.success) {
               rememberPartner(d.token, d.email, d.referral_code, d.is_admin);
-              setTimeout(function () { window.location.href = 'affiliate-portal.html'; }, 900);
+              // Show the thank-you page, then the partner lands in the portal from there.
+              setTimeout(function () { window.location.href = 'thankyou.html?mode=affiliate&email=' + encodeURIComponent(email); }, 900);
             } else {
-              status.innerHTML += ' <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Go to your portal</a>.';
+              setTimeout(function () { window.location.href = 'thankyou.html?mode=affiliate&email=' + encodeURIComponent(email); }, 900);
             }
           }).catch(function () {
-            status.innerHTML += ' <a href="affiliate-portal.html?email=' + encodeURIComponent(email) + '">Go to your portal</a>.';
+            setTimeout(function () { window.location.href = 'thankyou.html?mode=affiliate&email=' + encodeURIComponent(email); }, 900);
           });
+        } else {
+          setTimeout(function () { window.location.href = 'thankyou.html?mode=affiliate&email=' + encodeURIComponent(email); }, 900);
         }
       } else {
         status.textContent = (res.data && res.data.error) || 'Something went wrong. Please try again.';

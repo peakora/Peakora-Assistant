@@ -2841,6 +2841,11 @@
         if (!link) throw new Error('Payment link not configured');
         if (email) link += (link.indexOf('?') === -1 ? '?' : '&') + 'email=' + encodeURIComponent(email);
 
+        // Send the buyer back to our thank-you page after payment. Dodo appends
+        // its own confirmation params (status, tx, etc.) to the redirect_url.
+        const thanksUrl = window.location.origin + '/thankyou.html?status=success&plan=' + encodeURIComponent(plan) + (email ? '&email=' + encodeURIComponent(email) : '');
+        link += (link.indexOf('?') === -1 ? '?' : '&') + 'redirect_url=' + encodeURIComponent(thanksUrl);
+
         // Attach affiliate referral token so attribution survives the redirect.
         if (window.PeakoraAffiliate) {
           link = window.PeakoraAffiliate.attachToUrl(link);
