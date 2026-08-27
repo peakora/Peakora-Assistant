@@ -34,9 +34,8 @@ jobs:
         run: |
           node --check worker/src/index.js && node --check worker/src/affiliate.js && test -f worker/wrangler.toml && echo "worker OK"
 
-      - name: Run affiliate engine tests
-        run: |
-          node --test tests/affiliate.test.js
+      - name: Run tests
+        run: npm test
 
       - name: Ensure no real secrets committed
         run: |
