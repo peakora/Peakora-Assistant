@@ -2359,3 +2359,53 @@ header .brand img.brand-logo:hover,
   .pricing-card { padding: 28px 22px; }
 }
 
+/* ===== MOBILE CARD TIGHTENING =====
+   Landing cards keep desktop padding on phones by default, which makes them
+   look oversized and pushes content too far apart. This block reduces card
+   padding, gaps, and font sizes on small screens, and forces word-break so
+   long strings never overflow card edges. */
+@media (max-width: 600px) {
+  .what-card { padding: 22px 16px; }
+  .showcase-feature-card { padding: 20px 16px; }
+  .story-card { padding: 22px 16px; }
+  .aff-teaser-point { padding: 18px 16px; }
+  .more-features-panel { padding: 22px 16px; }
+  .why-card { padding: 22px 16px; }
+
+  /* Prevent text from clipping card edges. */
+  .what-card p,
+  .showcase-feature-card p,
+  .story-card p,
+  .aff-teaser-point p,
+  .why-card p {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  /* Slightly smaller card headings on phones. */
+  .what-card h3,
+  .showcase-feature-card h3,
+  .story-card h3 { font-size: 1.1rem; }
+
+  /* Grid items must not exceed their track width (prevents overflow). */
+  .what-grid,
+  .showcase-grid,
+  .stories-grid,
+  .more-features-grid,
+  .aff-teaser-content {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .what-card,
+  .showcase-feature-card,
+  .story-card,
+  .aff-teaser-point,
+  .why-card { padding: 18px 14px; }
+  .what-card h3,
+  .showcase-feature-card h3,
+  .story-card h3 { font-size: 1rem; }
+}
+

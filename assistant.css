@@ -1745,6 +1745,30 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   }
 }
 
+/* ===== MOBILE CARD TIGHTENING (dashboard) ===== */
+@media (max-width: 600px) {
+  .dash-card { padding: 16px 14px; }
+  .dash-grid-2, .dash-grid-equal { gap: 14px; }
+  /* Ensure all card text wraps inside the card and never overflows edges. */
+  .dash-card,
+  .dash-card * {
+    max-width: 100%;
+  }
+  .dash-card h1,
+  .dash-card h2,
+  .dash-card h3,
+  .dash-card p,
+  .dash-card span,
+  .dash-card li {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 400px) {
+  .dash-card { padding: 14px 12px; }
+}
+
 /* GENTLE TOOLKIT 2-LINE CHOICE TILES */
 .toolkit-choice-btn {
   display: flex;

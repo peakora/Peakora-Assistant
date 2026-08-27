@@ -591,4 +591,35 @@
 @media (max-width: 600px) {
   .portal-kpi-strip { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .portal-kpi-value { font-size: 22px; }
+  .portal-kpi { padding: 14px 12px; }
+}
+
+/* ===== MOBILE CARD TIGHTENING (portal) ===== */
+@media (max-width: 600px) {
+  .portal-balance-card { padding: 18px 16px; }
+  .portal-chart-card { padding: 18px 14px; }
+  .portal-section { padding: 18px 14px; }
+  .portal-balance-value { font-size: 30px; }
+  .portal-balance-meta { gap: 10px; }
+  /* Ensure portal text never overflows card edges. */
+  .dash-card,
+  .dash-card *,
+  .portal-section-title,
+  .portal-section-sub,
+  .portal-table td,
+  .portal-table th {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+  }
+  .portal-table { font-size: 12px; }
+  .portal-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 400px) {
+  .portal-balance-card,
+  .portal-chart-card,
+  .portal-section { padding: 14px 12px; }
+  .portal-balance-value { font-size: 26px; }
+  .portal-kpi-value { font-size: 19px; }
 }
