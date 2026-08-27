@@ -476,6 +476,74 @@ select.input option {
 .mood-river-pt:hover circle:nth-child(1),
 .mood-river-pt:focus circle:nth-child(1) { filter: drop-shadow(0 0 6px currentColor); }
 .mood-river-pt:focus { outline: none; }
+.mood-river-pt:hover { transform: scale(1.25); }
+
+.mood-empty {
+  padding: 18px 14px;
+  text-align: center;
+}
+.mood-sample-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--theme-accent, #f4a261);
+  background: rgba(244, 162, 97, 0.12);
+  border: 1px solid rgba(244, 162, 97, 0.25);
+  margin-bottom: 10px;
+}
+.mood-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mood-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-text-muted, #a0aec0);
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.mood-stat-chip em {
+  font-style: normal;
+  font-weight: 800;
+  color: var(--theme-text-main, #f8fafc);
+}
+.mood-stat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mood-family-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.mood-family-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--theme-text-muted, #a0aec0);
+}
+.mood-family-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 #mood-summary-text {
   font-size: 13px;
@@ -1666,7 +1734,66 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     flex-direction: column;
     min-height: auto;
   }
-  /* Mobile top bar: hamburger + brand title + logo. Hidden on desktop. */
+  /* Narrow viewport (desktop zoom or small tablet): sidebar stays visible as a
+     horizontal scrollable tab bar on top, so every tab remains reachable.
+     The hamburger drawer is reserved for real phones (<=520px) below. */
+  .dash-mobile-bar {
+    display: none;
+  }
+  .dash-drawer-overlay {
+    display: none;
+  }
+  .dash-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(12, 9, 21, 0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+  }
+  .dash-brand {
+    margin-bottom: 0;
+    flex-shrink: 0;
+    padding-right: 10px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .dash-nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: auto;
+    flex: 1;
+  }
+  .dash-nav-btn {
+    width: auto;
+    flex-shrink: 0;
+    justify-content: center;
+    padding: 9px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .dash-grid-2, .dash-grid-equal {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .solfeggio-toggle-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Real phones: horizontal bar is too cramped, so switch to the off-canvas
+   hamburger drawer. Tabs live behind the hamburger and open on tap. */
+@media (max-width: 520px) {
   .dash-mobile-bar {
     display: flex;
     align-items: center;
@@ -1708,7 +1835,6 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     object-fit: cover;
     flex-shrink: 0;
   }
-  /* Drawer overlay: invisible by default, fades in when open. */
   .dash-drawer-overlay {
     display: none;
     position: fixed;
@@ -1724,7 +1850,6 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     display: block;
     opacity: 1;
   }
-  /* Sidebar becomes an off-canvas drawer on mobile. Slides in from the left. */
   .dash-sidebar {
     position: fixed;
     top: 0;
@@ -1733,7 +1858,9 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     width: 260px;
     max-width: 82vw;
     flex-direction: column;
+    align-items: stretch;
     border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
     padding: 22px 16px;
     background: rgba(12, 9, 21, 0.98);
     backdrop-filter: blur(16px);
@@ -1742,30 +1869,29 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     transform: translateX(-100%);
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto;
+    overflow-x: hidden;
   }
   .dash-sidebar.dash-drawer-open {
     transform: translateX(0);
   }
   .dash-brand {
     margin-bottom: 24px;
+    padding-right: 0;
+    border-right: none;
   }
   .dash-nav {
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 4px;
+    width: 100%;
+    flex: none;
   }
   .dash-nav-btn {
     width: 100%;
     justify-content: flex-start;
     padding: 12px 14px;
     font-size: 14px;
-  }
-  .dash-grid-2, .dash-grid-equal {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-  .solfeggio-toggle-grid {
-    grid-template-columns: repeat(2, 1fr);
+    white-space: normal;
   }
 }
 

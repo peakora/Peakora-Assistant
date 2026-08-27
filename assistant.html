@@ -363,19 +363,26 @@
       const summaryEl = document.getElementById("mood-summary-text");
       if (!host || !summaryEl) return;
 
+      const real = getCheckins();
+      const usingSample = !real || real.length === 0;
       const data = getLast7CheckinsOrPlaceholder();
       host.innerHTML = "";
 
       if (!data.length) {
-        summaryEl.textContent = "You haven't checked in yet this week.";
+        host.innerHTML = '<div class="mood-empty">' +
+          '<p style="margin:0 0 10px; font-size:13px; color:var(--theme-text-main);">No check-ins yet this week.</p>' +
+          '<p style="margin:0; font-size:12px; color:var(--theme-text-muted); line-height:1.5;">Pick a mood above and your pattern starts to take shape - gently, one day at a time.</p>' +
+          '</div>';
+        summaryEl.textContent = "";
         return;
       }
 
-      const W = 320, H = 150;
-      const padL = 14, padR = 14, padT = 16, padB = 26;
+      const W = 340, H = 168;
+      const padL = 30, padR = 16, padT = 18, padB = 28;
       const innerW = W - padL - padR;
       const innerH = H - padT - padB;
       const n = data.length;
+      const baseY = padT + innerH;
 
       const points = data.map((item, i) => {
         const feeling = (item.feeling || item.mood || "").toLowerCase() || "steady";
@@ -386,10 +393,10 @@
         const dayLabel = item.date
           ? new Date(item.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" })
           : "Day " + (i + 1);
-        return { cx, cy, energy, family, color: getMoodColor(family), feeling, dayLabel, date: item.date, i };
+        return { cx, cy, energy, family, color: getMoodColor(family), feeling, dayLabel, date: item.date, i, isLatest: i === n - 1 };
       });
 
-      // Smooth trend path (Catmull-Rom-ish via quadratic midpoints).
+      // Smooth trend path (quadratic midpoints).
       let pathD = "";
       if (points.length === 1) {
         pathD = "M " + points[0].cx + " " + points[0].cy;
@@ -403,61 +410,98 @@
         const last = points[points.length - 1];
         pathD += " Q " + last.cx + " " + last.cy + " " + last.cx + " " + last.cy;
       }
-      // Filled area under the trend line.
-      const baseY = padT + innerH;
       const areaD = pathD + " L " + points[points.length - 1].cx + " " + baseY +
         " L " + points[0].cx + " " + baseY + " Z";
 
       const defs = '<defs>' +
         '<linearGradient id="moodRiverArea" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0%" stop-color="#f4a261" stop-opacity="0.42"/>' +
-        '<stop offset="100%" stop-color="#a78bfa" stop-opacity="0.06"/>' +
+        '<stop offset="0%" stop-color="#f4a261" stop-opacity="0.40"/>' +
+        '<stop offset="100%" stop-color="#a78bfa" stop-opacity="0.05"/>' +
         '</linearGradient>' +
         '<linearGradient id="moodRiverStroke" x1="0" y1="0" x2="1" y2="0">' +
         '<stop offset="0%" stop-color="#e07a5f"/>' +
         '<stop offset="50%" stop-color="#f4a261"/>' +
         '<stop offset="100%" stop-color="#a78bfa"/>' +
-        '</linearGradient></defs>';
+        '</linearGradient>' +
+        '<radialGradient id="moodTodayGlow">' +
+        '<stop offset="0%" stop-color="#f4a261" stop-opacity="0.55"/>' +
+        '<stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>' +
+        '</radialGradient></defs>';
 
-      const gridLines = [0.25, 0.5, 0.75].map(f => {
+      // Horizontal energy guide lines + Low/High labels.
+      const guide = [0.5].map(f => {
         const y = padT + innerH * (1 - f);
-        return '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>';
+        return '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="3 4"/>';
       }).join("");
+      const axisLabels =
+        '<text x="' + (padL - 8) + '" y="' + (padT + 8) + '" text-anchor="end" font-size="8.5" fill="rgba(255,255,255,0.4)" font-family="Inter">High</text>' +
+        '<text x="' + (padL - 8) + '" y="' + (baseY + 2) + '" text-anchor="end" font-size="8.5" fill="rgba(255,255,255,0.4)" font-family="Inter">Low</text>';
 
       const dots = points.map((p) => {
-        const r = 5;
-        return '<g class="mood-river-pt" tabindex="0" role="img">' +
+        const r = p.isLatest ? 6 : 4.5;
+        let s = '';
+        if (p.isLatest) {
+          s += '<circle cx="' + p.cx + '" cy="' + p.cy + '" r="14" fill="url(#moodTodayGlow)"><animate attributeName="r" values="11;15;11" dur="2.6s" repeatCount="indefinite"/></circle>';
+        }
+        s += '<g class="mood-river-pt" tabindex="0" role="img">' +
           '<title>' + p.dayLabel + ' - ' + p.feeling + ' (' + p.energy + '/100)</title>' +
           '<circle cx="' + p.cx + '" cy="' + p.cy + '" r="' + r + '" fill="' + p.color + '" stroke="#0c0a15" stroke-width="2"/>' +
-          '<circle cx="' + p.cx + '" cy="' + p.cy + '" r="' + (r + 3) + '" fill="none" stroke="' + p.color + '" stroke-opacity="0.35" stroke-width="1.5"/>' +
+          '<circle cx="' + p.cx + '" cy="' + p.cy + '" r="' + (r + 3) + '" fill="none" stroke="' + p.color + '" stroke-opacity="0.32" stroke-width="1.5"/>' +
           '</g>';
+        return s;
       }).join('');
 
       const dayLabels = points.map((p) => {
-        return '<text x="' + p.cx + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.5)" font-family="Inter">' + p.dayLabel + '</text>';
+        const fill = p.isLatest ? 'rgba(244,162,97,0.95)' : 'rgba(255,255,255,0.5)';
+        const weight = p.isLatest ? '600' : '400';
+        return '<text x="' + p.cx + '" y="' + (H - 8) + '" text-anchor="middle" font-size="9" fill="' + fill + '" font-family="Inter" font-weight="' + weight + '">' + p.dayLabel + '</text>';
       }).join('');
 
       const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto; display:block;" class="mood-river-svg">' +
-        defs + gridLines +
+        defs + guide + axisLabels +
         '<path d="' + areaD + '" fill="url(#moodRiverArea)"/>' +
         '<path d="' + pathD + '" fill="none" stroke="url(#moodRiverStroke)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
         dots + dayLabels + '</svg>';
 
-      host.innerHTML = svg;
-
-      // Dominant-family summary (kept so the existing text slot still tells a story).
+      // Stat chips: dominant mood, average energy, week trend.
       const families = points.map(p => p.family);
       const familyCounts = families.reduce((acc, f) => { acc[f] = (acc[f] || 0) + 1; return acc; }, {});
       let dominantFamily = "neutral", maxCount = 0;
       Object.keys(familyCounts).forEach((f) => { if (familyCounts[f] > maxCount) { maxCount = familyCounts[f]; dominantFamily = f; } });
-      const summaryColor = getMoodColor(dominantFamily);
-      const pct = Math.round((maxCount / points.length) * 100);
+      const domColor = getMoodColor(dominantFamily);
       const domLabel = dominantFamily.charAt(0).toUpperCase() + dominantFamily.slice(1);
-      const seq = points.map(p => p.feeling).join(" -> ");
+      const domPct = Math.round((maxCount / points.length) * 100);
       const avgEnergy = Math.round(points.reduce((s, p) => s + p.energy, 0) / points.length);
-      summaryEl.innerHTML = "This week leaned <strong style=\"color:" + summaryColor + "\">" + domLabel + "</strong> " +
-        "(" + maxCount + " of " + points.length + " check-ins, " + pct + "%). " +
-        "Average energy " + avgEnergy + "/100. Sequence: " + seq + ".";
+      const firstHalfAvg = points.slice(0, Math.max(1, Math.floor(points.length / 2))).reduce((s, p) => s + p.energy, 0) / Math.max(1, Math.floor(points.length / 2));
+      const secondHalfAvg = points.slice(Math.floor(points.length / 2)).reduce((s, p) => s + p.energy, 0) / points.slice(Math.floor(points.length / 2)).length;
+      const trendDelta = Math.round(secondHalfAvg - firstHalfAvg);
+      const trendIcon = trendDelta >= 8 ? '<path d="M5 12l5-5 5 5"/>' : trendDelta <= -8 ? '<path d="M5 12l5 5 5-5"/>' : '<path d="M5 12h10"/>';
+      const trendLabel = trendDelta >= 8 ? "Rising" : trendDelta <= -8 ? "Easing" : "Steady";
+      const trendColor = trendDelta >= 8 ? "#AEE6C5" : trendDelta <= -8 ? "#E8A0A0" : "#F5B35C";
+
+      const chips =
+        '<div class="mood-stat-row">' +
+          '<span class="mood-stat-chip"><span class="mood-stat-dot" style="background:' + domColor + '; box-shadow:0 0 8px ' + domColor + '99;"></span>' + domLabel + ' <em>' + domPct + '%</em></span>' +
+          '<span class="mood-stat-chip">Avg energy <em>' + avgEnergy + '/100</em></span>' +
+          '<span class="mood-stat-chip" style="color:' + trendColor + ';"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + trendIcon + '</svg>' + trendLabel + '</span>' +
+        '</div>';
+
+      // Mood-family legend (only families present this week).
+      const presentFamilies = Object.keys(familyCounts);
+      const legend = '<div class="mood-family-legend">' +
+        presentFamilies.map(f => {
+          const c = getMoodColor(f);
+          const lbl = f.charAt(0).toUpperCase() + f.slice(1);
+          return '<span class="mood-family-legend-item"><span class="mood-family-legend-dot" style="background:' + c + ';"></span>' + lbl + '</span>';
+        }).join('') + '</div>';
+
+      const sampleTag = usingSample ? '<span class="mood-sample-tag">Preview</span>' : '';
+      host.innerHTML = sampleTag + chips + svg + legend;
+
+      // One-line read under the chart.
+      const seq = points.map(p => p.feeling).join(" -> ");
+      const read = "This week leaned " + domLabel.toLowerCase() + ". Energy moved " + trendLabel.toLowerCase() + " - " + seq + ".";
+      summaryEl.innerHTML = '<span style="color:' + domColor + ';">' + domLabel + '</span> week - ' + read;
     }
 
     function goToStepKey(key) {
@@ -2255,12 +2299,13 @@
                 Affiliate Program - Earn While You Share
               </div>
               <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.6;">
-                Love Peakora? Share it and earn 50% recurring commission on every subscriber you bring - for as long as they stay. No audience minimum, 90-day cookie window, real-time tracking.
+                Love Peakora? Share it and earn a flat 50% recurring commission on every subscriber you bring - for as long as they stay. No tiered ladders to climb, no small print. You are approved instantly, so you can grab your link the same minute.
               </p>
               <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
                 <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.2); color:var(--theme-accent);">50% recurring</span>
                 <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">90-day cookie</span>
-                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">PayPal, Wise, bank, or USDC</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Approved instantly</span>
+                <span style="font-size:13px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--theme-text-muted);">Payouts from $25</span>
               </div>
               <a href="affiliate.html" class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow); text-decoration:none; display:inline-block;">
                 Explore the Affiliate Program
