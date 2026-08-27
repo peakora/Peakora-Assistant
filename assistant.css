@@ -840,6 +840,10 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   box-shadow: 0 0 14px var(--theme-accent-glow);
 }
 
+/* Mobile top bar + drawer overlay: hidden on desktop, shown <=900px. */
+.dash-mobile-bar { display: none; }
+.dash-drawer-overlay { display: none; }
+
 .dash-brand-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 15px;
@@ -1585,48 +1589,99 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     flex-direction: column;
     min-height: auto;
   }
-  /* Mobile nav: a single compact, horizontally-scrollable bar fixed at top.
-     Wrapping was the cause of the "huge card" that pushed every other card
-     down - the bar now stays ONE row and scrolls sideways instead. */
-  .dash-sidebar {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: nowrap;
+  /* Mobile top bar: hamburger + brand title + logo. Hidden on desktop. */
+  .dash-mobile-bar {
+    display: flex;
     align-items: center;
-    border-right: none;
+    gap: 12px;
+    padding: 10px 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 10px 12px;
-    gap: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
     background: rgba(12, 9, 21, 0.97);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    overflow-x: auto;
-    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
-  .dash-sidebar::-webkit-scrollbar { display: none; }
-  .dash-brand {
-    margin-bottom: 0;
+  .dash-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+    cursor: pointer;
     flex-shrink: 0;
   }
+  .dash-mobile-title {
+    flex: 1;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+  }
+  .dash-mobile-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  /* Drawer overlay: invisible by default, fades in when open. */
+  .dash-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 6, 14, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 90;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .dash-drawer-overlay.dash-drawer-overlay-show {
+    display: block;
+    opacity: 1;
+  }
+  /* Sidebar becomes an off-canvas drawer on mobile. Slides in from the left. */
+  .dash-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    max-width: 82vw;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 22px 16px;
+    background: rgba(12, 9, 21, 0.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+  }
+  .dash-sidebar.dash-drawer-open {
+    transform: translateX(0);
+  }
+  .dash-brand {
+    margin-bottom: 24px;
+  }
   .dash-nav {
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: nowrap;
     gap: 4px;
-    justify-content: flex-start;
-    flex: 1 1 auto;
-    min-width: 0;
   }
   .dash-nav-btn {
-    flex: 0 0 auto;
-    min-width: auto;
-    justify-content: center;
-    white-space: nowrap;
-    padding: 8px 12px;
-    font-size: 12px;
-    gap: 4px;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    font-size: 14px;
   }
   .dash-grid-2, .dash-grid-equal {
     grid-template-columns: 1fr;
@@ -1647,12 +1702,10 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .dash-welcome-h1 {
     font-size: 20px;
   }
-  /* On very small screens: compact the nav, keep labels readable.
-     Old rule set font-size:0 which left only icons - ambiguous on zoom. */
+  /* Drawer buttons stay full-width and readable on small screens. */
   .dash-nav-btn {
-    padding: 8px 10px;
-    font-size: 11px;
-    gap: 4px;
+    padding: 12px 14px;
+    font-size: 14px;
   }
   .dash-nav-btn svg {
     width: 18px;

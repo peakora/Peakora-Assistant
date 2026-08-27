@@ -1273,6 +1273,16 @@
           <div class="assistant-card dashboard-wide animate-fade-in">
             <div class="dash-container">
               
+              <!-- MOBILE TOP BAR (hamburger to open drawer) -->
+              <div class="dash-mobile-bar">
+                <button class="dash-hamburger" onclick="toggleDashDrawer(true)" aria-label="Open menu">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <span class="dash-mobile-title">${isPeakoraPlusActive() ? 'PEAKORA +' : 'PEAKORA'}</span>
+                <img src="assets/hub-logo.png" alt="Peakora" class="dash-mobile-logo" />
+              </div>
+              <div class="dash-drawer-overlay" onclick="toggleDashDrawer(false)"></div>
+
               <!-- LEFT SIDEBAR -->
               <div class="dash-sidebar">
                 <div class="dash-brand">
@@ -4206,8 +4216,23 @@
 
     window.switchDashTab = function(tabName) {
       window.currentDashTab = tabName;
+      toggleDashDrawer(false);
       if (typeof renderStep === "function") {
         renderStep();
+      }
+    };
+
+    // Mobile drawer: slide the sidebar in/out with an overlay backdrop.
+    window.toggleDashDrawer = function(open) {
+      var sidebar = document.querySelector('.dash-sidebar');
+      var overlay = document.querySelector('.dash-drawer-overlay');
+      if (!sidebar || !overlay) return;
+      if (open) {
+        sidebar.classList.add('dash-drawer-open');
+        overlay.classList.add('dash-drawer-overlay-show');
+      } else {
+        sidebar.classList.remove('dash-drawer-open');
+        overlay.classList.remove('dash-drawer-overlay-show');
       }
     };
 
