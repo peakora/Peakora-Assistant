@@ -22,6 +22,17 @@
 
 <div id="top"></div>
 
+<!-- PWA install banner: shows when beforeinstallprompt fires (not yet installed) -->
+<div id="pwa-install-banner" class="pwa-install-banner" style="display:none;">
+  <img src="assets/hub-logo.png" alt="Peakora" class="pwa-install-logo" />
+  <div class="pwa-install-text">
+    <strong>Install Peakora Portal</strong>
+    <span>Add to your home screen for quick access.</span>
+  </div>
+  <button class="pwa-install-btn" onclick="triggerInstall()">Install</button>
+  <button class="pwa-install-close" onclick="dismissInstallBanner()" aria-label="Dismiss">&times;</button>
+</div>
+
 <!-- HEADER -->
 <header class="header">
   <div class="container header-inner">
@@ -390,6 +401,41 @@
 <script src="affiliate.js"></script>
 <script src="script.js"></script>
 <script>
+  /* ===== PWA INSTALL PROMPT (affiliate portal) ===== */
+  var _deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    _deferredPrompt = e;
+    showInstallBanner();
+  });
+  window.addEventListener('appinstalled', function () {
+    _deferredPrompt = null;
+    hideInstallBanner();
+  });
+  function showInstallBanner() {
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return;
+    if (localStorage.getItem('peakora_install_dismissed') === '1') return;
+    var b = document.getElementById('pwa-install-banner');
+    if (b) b.style.display = 'flex';
+  }
+  function hideInstallBanner() {
+    var b = document.getElementById('pwa-install-banner');
+    if (b) b.style.display = 'none';
+  }
+  function dismissInstallBanner() {
+    localStorage.setItem('peakora_install_dismissed', '1');
+    hideInstallBanner();
+  }
+  function triggerInstall() {
+    if (_deferredPrompt) {
+      _deferredPrompt.prompt();
+      _deferredPrompt.userChoice.finally(function () { _deferredPrompt = null; });
+      hideInstallBanner();
+    } else {
+      alert("To install Peakora, tap your browser menu and choose 'Add to Home Screen'.");
+    }
+  }
+
   var AFFILIATE_API = (function () {
     var host = window.location.hostname || '';
     if (host.indexOf('localhost') !== -1 || host.indexOf('127.0.0.1') !== -1) return 'http://localhost:3000';
