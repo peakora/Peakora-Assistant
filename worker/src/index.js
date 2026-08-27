@@ -15,6 +15,8 @@ import { sendWebPush } from './webpush.js';
  *   POST /push-unsubscribe         — remove web push subscription
  *   GET  /push-key                 — VAPID public key (for the browser subscribe() call)
  *   POST /push-broadcast           — admin push broadcast (admin token)
+ *   GET  /push-subscriptions       — list subscribed devices (admin token)
+ *   POST /push-send                — send push to one device endpoint (admin token)
  *
  * Affiliate program (see affiliate.js):
  *   GET  /affiliate/click          — record a referral click (returns 1x1 GIF)
@@ -388,6 +390,47 @@ async function handlePushBroadcast(request, env) {
   return json({ success: true, delivered, failed, total: subs.length });
 }
 
+// Admin: list subscribed devices (endpoint is the per-machine push URL).
+async function handlePushListSubscriptions(_request, env) {
+  const rows = await env.DB.prepare(
+    'SELECT endpoint, created_at FROM push_subscriptions ORDER BY created_at DESC'
+  ).all();
+  const subs = (rows.results || []).map(r => {
+    let provider = 'unknown';
+    try { const h = new URL(r.endpoint).host; provider = h; } catch (e) {}
+    return {
+      endpoint: r.endpoint,
+      provider,
+      created_at: r.created_at
+    };
+  });
+  return json({ success: true, total: subs.length, subscriptions: subs });
+}
+
+// Admin: send a push to a single device endpoint (targeted per-machine).
+async function handlePushSend(request, env) {
+  const body = await readJson(request);
+  const endpoint = body && body.endpoint;
+  const title = (body && body.title) || 'Peakora';
+  const message = (body && body.body) || 'A gentle nudge from your quiet corner.';
+  if (!endpoint) return json({ success: false, error: 'endpoint required' }, 400);
+  const row = await env.DB.prepare('SELECT endpoint, keys FROM push_subscriptions WHERE endpoint = ?').bind(endpoint).first();
+  if (!row) return json({ success: false, error: 'subscription not found' }, 404);
+  const sub = { endpoint: row.endpoint, keys: typeof row.keys === 'string' ? JSON.parse(row.keys) : (row.keys || {}) };
+  if (!sub.keys || !sub.keys.p256dh || !sub.keys.auth) return json({ success: false, error: 'subscription missing keys' }, 400);
+  const payload = JSON.stringify({ title, body: message });
+  try {
+    const r = await sendWebPush(sub, payload, env);
+    if (r.status === 404 || r.status === 410) {
+      await env.DB.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').bind(sub.endpoint).run();
+      return json({ success: false, error: 'subscription expired and was removed', status: r.status }, 410);
+    }
+    return json({ success: r.ok, status: r.status, delivered: r.ok ? 1 : 0 });
+  } catch (e) {
+    return json({ success: false, error: String(e && e.message || e) }, 500);
+  }
+}
+
 // Daily gentle nudge to all subscribed devices (called by the Cron Trigger).
 async function sendDailyNudge(env) {
   const rows = await env.DB.prepare('SELECT endpoint, keys FROM push_subscriptions').all();
@@ -449,6 +492,12 @@ export default {
       } else if (path === '/push-broadcast' && method === 'POST') {
         if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handlePushBroadcast(request, env);
+      } else if (path === '/push-subscriptions' && method === 'GET') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handlePushListSubscriptions(request, env);
+      } else if (path === '/push-send' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handlePushSend(request, env);
 
       /* ── Affiliate program: public + partner routes ── */
       } else if (path === '/affiliate/click' && method === 'GET') {
