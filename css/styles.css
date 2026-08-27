@@ -2299,8 +2299,14 @@ header .brand img.brand-logo:hover,
 }
 .pricing-btn {
   display: block;
+  width: 100%;
   text-align: center;
   padding: 14px 22px;
+  /* Reset UA button chrome so a <button> renders like the old <a> did */
+  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
   border-radius: var(--radius-md);
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 14px;

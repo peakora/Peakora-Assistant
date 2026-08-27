@@ -2774,25 +2774,11 @@
       renderStep();
     }
 
-    /* DODO PAYMENTS — STATIC PAYMENT LINK REDIRECT */
-    // No server-side checkout session needed. Dodo payment links are static
-    // URLs that redirect to Dodo's hosted checkout. The Worker receives the
-    // webhook after payment and stores the subscription in D1.
+    /* DODO PAYMENTS — SERVER-SIDE CHECKOUT (attribution-safe) */
+    // Checkout goes through the Worker's /dodo/create-checkout so the affiliate
+    // referral code is carried into the Dodo checkout metadata and echoed back
+    // in the webhook for correct commission attribution.
     const PEAKORA_API = 'https://peakora-api.peakora.workers.dev';
-    let dodoConfigCache = null;
-
-    async function loadDodoConfig() {
-      if (dodoConfigCache) return dodoConfigCache;
-      try {
-        const resp = await fetch(PEAKORA_API + '/dodo/config');
-        const data = await resp.json();
-        dodoConfigCache = data;
-        return data;
-      } catch (err) {
-        console.warn('[Dodo] config fetch failed:', err);
-        return { configured: false, merchantOfRecord: 'Dodo Payments' };
-      }
-    }
 
     function openDodoCheckout(planType) {
       const plan = planType === 'yearly' ? 'yearly' : 'monthly';

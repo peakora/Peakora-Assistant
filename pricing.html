@@ -118,7 +118,7 @@
           <li>All mood themes &amp; soundscapes</li>
           <li>Cancel anytime</li>
         </ul>
-        <button type="button" class="pricing-btn pricing-btn-primary" onclick="peakoraStartCheckout('monthly')">Subscribe Monthly</button>
+        <button type="button" class="pricing-btn pricing-btn-primary" onclick="peakoraStartCheckout('monthly', event)">Subscribe Monthly</button>
       </div>
 
       <!-- YEARLY -->
@@ -134,7 +134,7 @@
           <li>Priority new-feature access</li>
           <li>Cancel anytime</li>
         </ul>
-        <button type="button" class="pricing-btn pricing-btn-primary" onclick="peakoraStartCheckout('yearly')">Subscribe Yearly</button>
+        <button type="button" class="pricing-btn pricing-btn-primary" onclick="peakoraStartCheckout('yearly', event)">Subscribe Yearly</button>
       </div>
     </div>
 
@@ -246,10 +246,11 @@
       } catch (e) {}
       return '';
     }
-    window.peakoraStartCheckout = function (plan) {
+    window.peakoraStartCheckout = function (plan, ev) {
       var via = getVia();
-      var btn = event && event.target;
-      if (btn) { btn.disabled = true; var orig = btn.textContent; btn.textContent = 'Redirecting...'; }
+      var btn = ev && ev.currentTarget;
+      var orig = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Redirecting...'; }
       fetch(PEAKORA_API + '/dodo/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -258,11 +259,11 @@
         if (d.success && d.checkout_url) {
           window.location.href = d.checkout_url;
         } else {
-          if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
+          if (btn) { btn.disabled = false; btn.textContent = orig; }
           alert(d.error || 'Checkout is unavailable right now. Please try again.');
         }
       }).catch(function () {
-        if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
+        if (btn) { btn.disabled = false; btn.textContent = orig; }
         alert('Network error. Please try again.');
       });
     };
