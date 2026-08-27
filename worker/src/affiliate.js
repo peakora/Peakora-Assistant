@@ -226,39 +226,47 @@ export function calculateCommission(affiliate, grossAmount) {
 }
 
 /**
- * Resolve attribution for a new payment: find the most recent click within the
- * affiliate's cookie window matching the customer email OR ip_hash. Last-click
- * wins. Returns the affiliate row (decorated) to pay, or null.
+ * Resolve attribution for a new payment using the referral code the customer
+ * carried into checkout (metadata.via, echoed back by Dodo in the webhook).
  *
- * Self-referral blocking: if the paying customer's email equals the
- * affiliate's own login email, attribution is rejected.
+ * This is the professional, reliable pattern: the affiliate code is set at the
+ * converting customer's checkout and comes back in the webhook, so commission
+ * is paid to the affiliate who ACTUALLY referred THAT customer — not the most
+ * recent click across all affiliates globally (the old, broken behavior).
+ *
+ * We still validate against a stored referral_click for that code within the
+ * affiliate's cookie window: proof the customer genuinely clicked the link
+ * before buying (last-click-wins within that affiliate's window). If no click
+ * is recorded, no commission is paid (better to pay no one than the wrong one).
+ *
+ * Self-referral blocking is enforced at accrual time (processAffiliateAttribution).
+ *
+ * @param {D1Database} db
+ * @param {string|null} referralCode  the metadata.via code from the webhook
+ * @param {string|null} customerEmail  the paying customer's email (self-ref check)
+ * @returns {Promise<{affiliate, clickId, clickedAt}|null>}
  */
-export async function resolveAttribution(db, customerEmail, ipHash) {
-  const holdMs = 120 * 24 * 3600 * 1000; // 120-day max window for attribution lookup
-  const since = new Date(Date.now() - holdMs).toISOString();
-  // Join clicks -> affiliates, ordered most-recent first, active affiliates only.
-  const rows = await db.prepare(
-    `SELECT c.id AS click_id, c.clicked_at, a.id AS affiliate_id, a.user_email
-     FROM referral_clicks c
-     JOIN affiliates a ON a.id = c.affiliate_id
-     WHERE a.status = 'active' AND c.clicked_at > ?
-     ORDER BY c.clicked_at DESC
-     LIMIT 200`
-  ).bind(since).all();
+export async function resolveAttribution(db, referralCode, customerEmail) {
+  if (!referralCode) return null;
+  const code = String(referralCode).trim().toUpperCase();
 
-  for (const c of rows.results || []) {
-    // Last-click-wins: the most recent in-window click attributes, regardless
-    // of whether it is a self-referral. The self-referral business rule is
-    // enforced at accrual time (processAffiliateAttribution) so the lookup
-    // stays a pure "who would be credited" resolver.
-    const aff = await getAffiliateById(db, c.affiliate_id);
-    if (!aff) continue;
-    const cookieMs = (aff.cookie_days || 90) * 24 * 3600 * 1000;
-    const clickedAt = new Date(c.clicked_at).getTime();
-    if (Date.now() - clickedAt > cookieMs) continue; // expired for this affiliate
-    return { affiliate: aff, clickId: c.click_id, clickedAt: c.clicked_at };
-  }
-  return null;
+  // The affiliate whose link/code was used at checkout.
+  const affiliate = await getAffiliateByCode(db, code);
+  if (!affiliate || affiliate.status !== 'active') return null;
+
+  // Validate a real click exists for this code within the cookie window
+  // (last-click-wins). This proves the conversion followed a genuine referral.
+  const cookieMs = (affiliate.cookie_days || 90) * 24 * 3600 * 1000;
+  const since = new Date(Date.now() - cookieMs).toISOString();
+  const click = await db.prepare(
+    `SELECT id, clicked_at FROM referral_clicks
+     WHERE referral_code = ? AND clicked_at > ?
+     ORDER BY clicked_at DESC LIMIT 1`
+  ).bind(code, since).first();
+  // No recorded click in window -> cannot confirm the referral; pay no one.
+  if (!click) return null;
+
+  return { affiliate, clickId: click.id, clickedAt: click.clicked_at };
 }
 
 // ── Public route: record a referral click ───────────────────────────────────
@@ -457,9 +465,17 @@ export async function handleAffiliateSetPassword(request, env) {
       const ok = await verifyPassword(currentPassword, aff.password_hash);
       if (!ok) return json({ success: false, error: 'Current password is incorrect.' }, 401);
     }
+  } else if (aff.google_sub) {
+    // Google-only accounts have no password and must NOT get one via this
+    // unauthenticated path — that would let anyone who knows the email take
+    // over the account. Direct them to Google sign-in.
+    return json({ success: false, use_google: true, error: 'This account uses Google sign-in. Please continue with Google to access your portal.' }, 403);
+  } else if (!await verifyPortalAuth(request, env)) {
+    // Legacy passwordless account: require a valid portal token to set the
+    // first password. This window only exists until a password is stored;
+    // afterwards the authenticated-change path above requires the current password.
+    return json({ success: false, error: 'Authentication required to set a password. Sign in via Google or use the portal link emailed to you.' }, 401);
   }
-  // else: legacy account with no password -> allow the one-time set. This window
-  // only exists until a password is stored; afterwards it requires auth above.
   const hash = await hashPassword(newPassword);
   await env.DB.prepare('UPDATE affiliates SET password_hash = ? WHERE id = ?').bind(hash, aff.id).run();
   const token = await portalToken(email, env);
@@ -934,14 +950,17 @@ export async function processAffiliateAttribution(env, rec) {
 
   if (!isAccrual) return null;
 
-  // Idempotency: don't double-accrue the same transaction.
+  // Idempotency: dedup on the transaction id AND the webhook event id (if present)
+  // so a replayed webhook never double-accrues commission. The transaction id is
+  // now deterministic (stable Dodo ids, never Date.now()).
   const dup = await env.DB.prepare(
     `SELECT 1 FROM commissions WHERE transaction_id = ? AND status != 'refunded'`
   ).bind(rec.transactionId).first();
   if (dup) return { action: 'duplicate', transactionId: rec.transactionId };
 
-  // Resolve attribution by email. (IP-based path handled inside resolveAttribution.)
-  const attr = await resolveAttribution(env.DB, rec.email, null);
+  // Resolve attribution by the referral code carried in the checkout metadata.
+  // No code -> no commission (pay no one rather than the wrong person).
+  const attr = await resolveAttribution(env.DB, rec.referralCode, rec.email);
   if (!attr) return { action: 'no_attribution', transactionId: rec.transactionId };
 
   const { affiliate } = attr;

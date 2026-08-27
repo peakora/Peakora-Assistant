@@ -2836,20 +2836,34 @@
       if (btn) { btn.disabled = true; btn.innerText = 'Redirecting to checkout...'; }
 
       try {
-        const config = await loadDodoConfig();
-        let link = plan === 'yearly' ? config.yearlyLink : config.monthlyLink;
-        if (!link) throw new Error('Payment link not configured');
-        if (email) link += (link.indexOf('?') === -1 ? '?' : '&') + 'email=' + encodeURIComponent(email);
-
-        // Send the buyer back to our thank-you page after payment. Dodo appends
-        // its own confirmation params (status, tx, etc.) to the redirect_url.
-        const thanksUrl = window.location.origin + '/thankyou.html?status=success&plan=' + encodeURIComponent(plan) + (email ? '&email=' + encodeURIComponent(email) : '');
-        link += (link.indexOf('?') === -1 ? '?' : '&') + 'redirect_url=' + encodeURIComponent(thanksUrl);
-
-        // Attach affiliate referral token so attribution survives the redirect.
-        if (window.PeakoraAffiliate) {
-          link = window.PeakoraAffiliate.attachToUrl(link);
+        // Resolve the affiliate referral code (if any) so it rides along into
+        // the Dodo checkout as metadata. The webhook reads metadata.via to
+        // attribute commission to the affiliate who actually referred this buyer.
+        var via = '';
+        try { via = (window.PeakoraAffiliate && window.PeakoraAffiliate.getReferralCode && window.PeakoraAffiliate.getReferralCode()) || ''; } catch (e) {}
+        if (!via) {
+          try {
+            var raw = localStorage.getItem('peakora_referral_attribution');
+            if (raw) { var atr = JSON.parse(raw); if (atr && atr.code) via = atr.code; }
+          } catch (e) {}
         }
+        if (!via) {
+          try {
+            var p = new URLSearchParams(window.location.search);
+            via = p.get('via') || p.get('ref') || '';
+          } catch (e) {}
+        }
+
+        const resp = await fetch(PEAKORA_API + '/dodo/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: plan, email: email || undefined, via: via || undefined })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.success || !data.checkout_url) {
+          throw new Error(data.error || 'Checkout session could not be created');
+        }
+        let link = data.checkout_url;
 
         if (window.PeakoraTracker) {
           window.PeakoraTracker.track('dodo_checkout_redirect', { plan, price });

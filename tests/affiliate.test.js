@@ -85,6 +85,16 @@ function makeFakeDb() {
       out.sort((x, y) => (x.clicked_at < y.clicked_at ? 1 : -1));
       return mode === 'all' ? out.slice(0, 200) : out[0];
     }
+    // Attribution by referral code: most recent click for the code within window.
+    // SELECT id, clicked_at FROM referral_clicks WHERE referral_code = ? AND clicked_at > ? ORDER BY clicked_at DESC LIMIT 1
+    if (s.includes('from referral_clicks') && s.includes('where referral_code = ?') && s.includes('clicked_at > ?')) {
+      const code = params[0];
+      const since = params[1];
+      const matches = db.referral_clicks
+        .filter(c => c.referral_code === code && c.clicked_at > since)
+        .sort((x, y) => (x.clicked_at < y.clicked_at ? 1 : -1));
+      return mode === 'first' ? (matches[0] || null) : matches;
+    }
     // UPDATE commissions SET status = 'refunded' WHERE transaction_id = ?
     if (s.includes("update commissions set status = 'refunded'") && s.includes('where transaction_id')) {
       db.commissions.forEach(r => { if (r.transaction_id === params[0]) r.status = 'refunded'; });
@@ -250,6 +260,7 @@ describe('processAffiliateAttribution', () => {
 
     const rec = {
       email: 'newbie@example.com', transactionId: 'DODO-001',
+      referralCode: 'ABCD12',
       eventType: 'subscription_created', grossAmount: 9.99, plan: 'monthly'
     };
     const result = await processAffiliateAttribution(env, rec);
@@ -278,6 +289,7 @@ describe('processAffiliateAttribution', () => {
     });
     const rec = {
       email: 'self@peakora.life', transactionId: 'DODO-002',
+      referralCode: 'SELF12',
       eventType: 'invoice_paid', grossAmount: 4.99
     };
     const result = await processAffiliateAttribution(env, rec);
@@ -317,6 +329,7 @@ describe('processAffiliateAttribution', () => {
     });
     const rec = {
       email: 'dup@example.com', transactionId: 'DODO-DUP',
+      referralCode: 'DBL123',
       eventType: 'invoice_paid', grossAmount: 4.99
     };
     const r1 = await processAffiliateAttribution(env, rec);
@@ -352,6 +365,7 @@ describe('processAffiliateAttribution', () => {
     });
     const rec1 = {
       email: 'flatcust@example.com', transactionId: 'DODO-F1',
+      referralCode: 'FLAT12',
       eventType: 'subscription_created', grossAmount: 4.99
     };
     const r1 = await processAffiliateAttribution(env, rec1);
@@ -359,6 +373,7 @@ describe('processAffiliateAttribution', () => {
     assert.equal(r1.amount, 5);
     const rec2 = {
       email: 'flatcust@example.com', transactionId: 'DODO-F2',
+      referralCode: 'FLAT12',
       eventType: 'invoice_paid', grossAmount: 4.99
     };
     const r2 = await processAffiliateAttribution(env, rec2);
@@ -371,11 +386,69 @@ describe('processAffiliateAttribution', () => {
     const env = { DB: db };
     const rec = {
       email: 'orphan@example.com', transactionId: 'DODO-ORPH',
+      referralCode: 'GHOST12',
       eventType: 'subscription_created', grossAmount: 4.99
     };
     const result = await processAffiliateAttribution(env, rec);
     assert.equal(result.action, 'no_attribution');
     assert.equal(db.commissions.length, 0);
+  });
+
+  test('no attribution when checkout carries no referral code (pay no one, not the wrong one)', async () => {
+    const db = makeFakeDb();
+    const env = { DB: db };
+    const other = {
+      id: 'aff_other', user_email: 'other@peakora.life', referral_code: 'OTHER1',
+      status: 'active', commission_type: 'percentage', commission_rate: 0.50,
+      cookie_days: 90
+    };
+    db.affiliates.push(other);
+    db.referral_clicks.push({
+      id: 'clk_other', affiliate_id: 'aff_other', referral_code: 'OTHER1',
+      clicked_at: new Date(Date.now() - 3600 * 1000).toISOString()
+    });
+    // A payment with NO referral code must never credit a random affiliate,
+    // even though clicks exist for others. This is the core reliability rule.
+    const rec = {
+      email: 'buyer@example.com', transactionId: 'DODO-NOCODE',
+      referralCode: null,
+      eventType: 'subscription_created', grossAmount: 9.99
+    };
+    const result = await processAffiliateAttribution(env, rec);
+    assert.equal(result.action, 'no_attribution');
+    assert.equal(db.commissions.length, 0);
+  });
+
+  test('attributes to the affiliate whose code the customer used at checkout, not another recent clicker', async () => {
+    const db = makeFakeDb();
+    const env = { DB: db };
+    const alice = {
+      id: 'aff_alice', user_email: 'alice@peakora.life', referral_code: 'ALICE1',
+      status: 'active', commission_type: 'percentage', commission_rate: 0.50,
+      cookie_days: 90
+    };
+    const bob = {
+      id: 'aff_bob', user_email: 'bob@peakora.life', referral_code: 'BOBBY1',
+      status: 'active', commission_type: 'percentage', commission_rate: 0.30,
+      cookie_days: 90
+    };
+    db.affiliates.push(alice, bob);
+    // Bob clicked more recently than Alice, but the customer used ALICE's code
+    // at checkout (metadata.via). Commission must go to Alice, not Bob.
+    db.referral_clicks.push(
+      { id: 'clk_alice', affiliate_id: 'aff_alice', referral_code: 'ALICE1', clicked_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString() },
+      { id: 'clk_bob', affiliate_id: 'aff_bob', referral_code: 'BOBBY1', clicked_at: new Date(Date.now() - 1 * 3600 * 1000).toISOString() }
+    );
+    const rec = {
+      email: 'conv@example.com', transactionId: 'DODO-CONV',
+      referralCode: 'ALICE1',
+      eventType: 'subscription_created', grossAmount: 9.99
+    };
+    const result = await processAffiliateAttribution(env, rec);
+    assert.equal(result.action, 'accrued');
+    assert.equal(result.affiliateId, 'aff_alice');
+    assert.equal(db.commissions.length, 1);
+    assert.equal(db.commissions[0].affiliate_id, 'aff_alice');
   });
 });
 

@@ -118,7 +118,7 @@
           <li>All mood themes &amp; soundscapes</li>
           <li>Cancel anytime</li>
         </ul>
-        <a href="https://checkout.dodopayments.com/buy/pdt_0Nly8uZGIn2kDXKM1Lpit?quantity=1&redirect_url=https://peakora.life/thankyou.html%3Fstatus%3Dsuccess%26plan%3Dmonthly" class="pricing-btn pricing-btn-primary" rel="noopener noreferrer">Subscribe Monthly</a>
+        <button type="button" class="pricing-btn pricing-btn-primary" onclick="peakoraStartCheckout('monthly')">Subscribe Monthly</button>
       </div>
 
       <!-- YEARLY -->
@@ -134,7 +134,7 @@
           <li>Priority new-feature access</li>
           <li>Cancel anytime</li>
         </ul>
-        <a href="https://checkout.dodopayments.com/buy/pdt_0Nly8uRkxK0Fkfg3SSu5B?quantity=1&redirect_url=https://peakora.life/thankyou.html%3Fstatus%3Dsuccess%26plan%3Dyearly" class="pricing-btn pricing-btn-primary" rel="noopener noreferrer">Subscribe Yearly</a>
+        <button type="button" class="pricing-btn pricing-btn-primary" onclick="peakoraStartCheckout('yearly')">Subscribe Yearly</button>
       </div>
     </div>
 
@@ -221,6 +221,53 @@
 </footer>
 
 <script src="script.js"></script>
+
+<script>
+  // Route subscribe buttons through the Worker's /dodo/create-checkout so the
+  // affiliate referral code (if any) is carried into the checkout metadata and
+  // echoed back in the webhook for correct commission attribution.
+  (function () {
+    var PEAKORA_API = 'https://peakora-api.peakora.workers.dev';
+    function getVia() {
+      try {
+        if (window.PeakoraAffiliate && window.PeakoraAffiliate.getReferralCode) {
+          var c = window.PeakoraAffiliate.getReferralCode();
+          if (c) return c;
+        }
+      } catch (e) {}
+      try {
+        var raw = localStorage.getItem('peakora_referral_attribution');
+        if (raw) { var atr = JSON.parse(raw); if (atr && atr.code) return atr.code; }
+      } catch (e) {}
+      try {
+        var p = new URLSearchParams(window.location.search);
+        var v = p.get('via') || p.get('ref') || '';
+        if (v) return v;
+      } catch (e) {}
+      return '';
+    }
+    window.peakoraStartCheckout = function (plan) {
+      var via = getVia();
+      var btn = event && event.target;
+      if (btn) { btn.disabled = true; var orig = btn.textContent; btn.textContent = 'Redirecting...'; }
+      fetch(PEAKORA_API + '/dodo/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: plan, via: via || undefined })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.success && d.checkout_url) {
+          window.location.href = d.checkout_url;
+        } else {
+          if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
+          alert(d.error || 'Checkout is unavailable right now. Please try again.');
+        }
+      }).catch(function () {
+        if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
+        alert('Network error. Please try again.');
+      });
+    };
+  })();
+</script>
 
 <script src="cookie-banner.js?v=1"></script>
 </body>

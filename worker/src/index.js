@@ -133,6 +133,10 @@ function mapDodoEvent(payload, env) {
   const data = payload.data || payload;
   const sub = data.subscription || data;
   const customer = data.customer || {};
+  // Dodo echoes the checkout metadata back verbatim. The affiliate referral
+  // code set at checkout (metadata.via) is the authoritative attribution signal
+  // for "which affiliate referred THIS customer".
+  const metadata = data.metadata || sub.metadata || payload.metadata || {};
 
   const email = (customer.email || data.email || sub.email || '').toLowerCase() || null;
   const productId = sub.product_id || data.product_id || null;
@@ -146,9 +150,17 @@ function mapDodoEvent(payload, env) {
   if (t.includes('cancel') || t.includes('paused') || t.includes('expired')) status = 'canceled';
   else if (t.includes('failed') || t.includes('past_due')) status = 'past_due';
 
+  // Deterministic transaction id: prefer the stable Dodo ids; only fall back to
+  // the webhook event id (also stable), never to Date.now() (which let replays
+  // double-accrue commission by generating a fresh id each time).
+  const webhookId = payload.id || payload.webhook_id || '';
+  const transactionId = sub.id || data.subscription_id || data.payment_id || data.id || webhookId || ('DODO-' + type);
+
   return {
     email, status, plan, productId,
-    transactionId: sub.id || data.subscription_id || data.payment_id || data.id || ('DODO-' + Date.now().toString().slice(-6)),
+    transactionId,
+    webhookId,
+    referralCode: (String(metadata.via || '').trim().toUpperCase()) || null,
     eventType: type,
     method: data.payment_method || sub.payment_method || 'Dodo Payments',
     grossAmount: resolveGrossAmount(data, sub),
@@ -210,6 +222,71 @@ async function handleDodoConfig(_request, env) {
     monthlyLink: env.DODO_MONTHLY_PAYMENT_LINK,
     yearlyLink: env.DODO_YEARLY_PAYMENT_LINK
   });
+}
+
+// Resolve the Dodo API base URL + secret API key for the configured environment.
+function dodoApiCreds(env) {
+  const live = (env.DODO_ENVIRONMENT || 'test_mode') === 'live_mode';
+  return {
+    baseUrl: live ? 'https://live.dodopayments.com' : 'https://test.dodopayments.com',
+    apiKey: live
+      ? (env.DODO_PAYMENTS_LIVE_API_KEY || env.DODO_PAYMENTS_API_KEY)
+      : env.DODO_PAYMENTS_API_KEY
+  };
+}
+
+/**
+ * Create a Dodo hosted checkout session with metadata. The affiliate referral
+ * code rides along as metadata.via so the webhook can attribute the payment to
+ * the affiliate who actually referred the converting customer — not the most
+ * recent click globally. This is the professional, reusable attribution pattern.
+ *
+ * Body: { plan: 'monthly'|'yearly', email?, via? }
+ * Returns: { success, checkout_url }
+ */
+async function handleDodoCreateCheckout(request, env) {
+  let body;
+  try { body = await readJson(request); }
+  catch { return json({ success: false, error: 'Invalid JSON body' }, 400); }
+  const plan = body.plan === 'yearly' ? 'yearly' : 'monthly';
+  const email = (String(body.email || '')).toLowerCase().slice(0, 320);
+  const via = String(body.via || '').trim().toUpperCase().slice(0, 32);
+  const productId = plan === 'yearly' ? env.DODO_YEARLY_PRODUCT_ID : env.DODO_MONTHLY_PRODUCT_ID;
+  if (!productId) return json({ success: false, error: 'Payment product not configured' }, 500);
+
+  const { baseUrl, apiKey } = dodoApiCreds(env);
+  if (!apiKey) return json({ success: false, error: 'Dodo Payments not configured' }, 500);
+
+  const publicUrl = (env.APP_PUBLIC_URL || '').replace(/\/+$/, '');
+  const returnUrl = publicUrl
+    ? `${publicUrl}/thankyou.html?status=success&plan=${encodeURIComponent(plan)}`
+    : '/thankyou.html?status=success&plan=' + encodeURIComponent(plan);
+
+  const reqBody = {
+    product_cart: [{ product_id: productId, quantity: 1 }],
+    return_url: returnUrl,
+    // metadata is echoed back verbatim in the webhook payload — the source of
+    // truth for "which affiliate referred THIS customer".
+    metadata: { via, plan, app: 'peakora-assistant' }
+  };
+  if (email) reqBody.customer = { email };
+
+  let resp;
+  try {
+    resp = await fetch(`${baseUrl}/checkouts`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(reqBody)
+    });
+  } catch (netErr) {
+    return json({ success: false, error: 'Unable to reach Dodo Payments' }, 502);
+  }
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '');
+    return json({ success: false, error: `Dodo API error ${resp.status}` }, 502);
+  }
+  const data = await resp.json();
+  return json({ success: true, checkout_url: data.checkout_url, session_id: data.session_id || data.id || null });
 }
 
 async function handleDodoWebhook(request, env) {
@@ -470,6 +547,8 @@ export default {
     try {
       if (path === '/dodo/config' && method === 'GET') {
         response = await handleDodoConfig(request, env);
+      } else if (path === '/dodo/create-checkout' && method === 'POST') {
+        response = await handleDodoCreateCheckout(request, env);
       } else if (path === '/dodo/webhook' && method === 'POST') {
         response = await handleDodoWebhook(request, env);
       } else if (path === '/subscription-status' && method === 'GET') {
