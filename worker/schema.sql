@@ -24,6 +24,21 @@ CREATE TABLE IF NOT EXISTS subscribers (
   last_seen_at  TEXT
 );
 
+-- Self-hosted email sequence sends (replaces MailerLite). One row per email
+-- actually dispatched via Resend, keyed by (email, sequence, step) so the cron
+-- tick is idempotent and never double-sends.
+CREATE TABLE IF NOT EXISTS email_sends (
+  id         TEXT PRIMARY KEY,
+  email      TEXT NOT NULL,
+  sequence   TEXT NOT NULL,
+  step       INTEGER NOT NULL,
+  status     TEXT NOT NULL DEFAULT 'sent',   -- sent | failed
+  resend_id  TEXT,
+  sent_at    TEXT NOT NULL,
+  error      TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_email_sends_lookup ON email_sends (email, sequence, step);
+
 -- User feedback
 CREATE TABLE IF NOT EXISTS feedback (
   id        TEXT PRIMARY KEY,

@@ -18,6 +18,9 @@ id = "5e3516b101da423f919aae4c77111511"
 # DODO_PAYMENTS_WEBHOOK_SECRET — Standard Webhooks signing secret
 # ADMIN_TOKEN — protects admin endpoints (also accepted: signed-in admin partner)
 # GOOGLE_CLIENT_SECRET — Google OAuth client secret (for Google sign-in)
+# RESEND_API_KEY — Resend API key for the self-hosted email sequence engine.
+#                  The FROM address (hello@peakora.life) must be on a verified
+#                  Resend domain. Without this key the sequence silently no-ops.
 
 # Non-secret env vars (set directly here or via dashboard)
 [vars]

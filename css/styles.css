@@ -2415,3 +2415,84 @@ header .brand img.brand-logo:hover,
   .story-card h3 { font-size: 1rem; }
 }
 
+/* ===== MOBILE TIGHTENING PASS =====
+   Aggressive phone reductions so cards/sections are not "annoyingly big"
+   and no text or edges clip on small screens (<=600px). Safe to layer on
+   top of the existing per-component rules above. */
+@media (max-width: 600px) {
+  /* Section vertical rhythm: 64/72/88px is far too tall on phones. */
+  .hero,
+  .why,
+  .real-life,
+  .assistant-showcase,
+  .peakora-crown-cta,
+  .stories,
+  .peakora-affiliate-teaser,
+  .pricing-section,
+  .pricing-hero,
+  .pricing-cta-section,
+  .more-features-section,
+  .peakora-crown-section { padding-top: 36px; padding-bottom: 36px; }
+
+  /* Headings scale down further than the 1080px breakpoint. */
+  .hero-title { font-size: 26px; line-height: 1.15; }
+  .section-title { font-size: 22px; line-height: 1.2; }
+  .section-lead { font-size: 15px; }
+
+  /* Inner card padding stays compact (overrides larger defaults). */
+  .what-card,
+  .showcase-feature-card,
+  .story-card,
+  .aff-teaser-point,
+  .why-card,
+  .more-features-panel,
+  .peakora-crown-card { padding: 18px 15px; }
+
+  /* Buttons: smaller tap targets that still meet 44px min height via line-height. */
+  .btn-primary,
+  .peakora-crown-button-new,
+  .aff-teaser-btn { padding: 13px 24px; font-size: 14px; }
+
+  /* Guarantee nothing inside cards forces horizontal overflow. */
+  .what-card *,
+  .showcase-feature-card *,
+  .story-card *,
+  .aff-teaser-point *,
+  .why-card *,
+  .more-features-panel *,
+  .peakora-crown-card * {
+    max-width: 100%;
+  }
+  .what-card h3,
+  .showcase-feature-card h3,
+  .story-card h3,
+  .why-card h3,
+  .aff-teaser-point h3 { font-size: 1.05rem; }
+
+  /* Illustration mockups must shrink with their card. */
+  .aff-dash-mock { padding: 18px 14px 14px; }
+  .aff-dash-balance strong { font-size: 26px; }
+}
+
+@media (max-width: 380px) {
+  .hero-title { font-size: 23px; }
+  .section-title { font-size: 20px; }
+  .what-card,
+  .showcase-feature-card,
+  .story-card,
+  .aff-teaser-point,
+  .why-card { padding: 15px 12px; }
+  .hero,
+  .why,
+  .real-life,
+  .assistant-showcase,
+  .peakora-crown-cta,
+  .stories,
+  .peakora-affiliate-teaser,
+  .pricing-section,
+  .pricing-hero,
+  .pricing-cta-section,
+  .more-features-section,
+  .peakora-crown-section { padding-top: 28px; padding-bottom: 28px; }
+}
+

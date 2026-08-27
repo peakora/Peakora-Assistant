@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
 import { sendWebPush } from './webpush.js';
+import { sendWelcomeImmediate, runSequenceTick, previewEmail, sendTestEmail } from './emaillist.js';
 /**
  * Peakora shared API backend — Cloudflare Worker.
  *
@@ -11,6 +12,10 @@ import { sendWebPush } from './webpush.js';
  *   POST /feedback                 — user feedback
  *   POST /event                   — usage telemetry
  *   GET  /stats                    — admin dashboard stats (admin token)
+ *   GET  /admin/emails             — unified email insights dashboard data (admin)
+ *   GET  /admin/emails/export.csv  — export the full email list as CSV (admin)
+ *   GET  /admin/email/preview      — preview a sequence email as HTML (admin)
+ *   POST /admin/email/test         — send a test sequence email (admin)
  *   POST /push-subscribe           — web push subscription
  *   POST /push-unsubscribe         — remove web push subscription
  *   GET  /push-key                 — VAPID public key (for the browser subscribe() call)
@@ -361,6 +366,13 @@ async function handleSubscribe(request, env) {
   ).bind(email, source, now, now).run();
 
   const count = await env.DB.prepare('SELECT COUNT(*) as n FROM subscribers').first();
+
+  // Fire email #1 of the welcome sequence immediately (best-effort; a failure
+  // here must never block the signup response). The cron advances steps 2 and 3.
+  try { await sendWelcomeImmediate(env, email); } catch (e) {
+    console.warn('[Subscribe] welcome email error (non-blocking):', e && e.message);
+  }
+
   return json({ success: true, total: count?.n || 0 });
 }
 
@@ -410,6 +422,257 @@ async function handleStats(_request, env) {
     activeLast24h: active24?.n || 0,
     activeSubscriptions: activeSubs?.n || 0,
     topActions: (topActions.results || []).map(r => [r.action, r.cnt])
+  });
+}
+
+// ── Email insights dashboard data ─────────────────────────────────────────
+// Unifies every email-bearing table into one admin view: subscribers,
+// paying subscriptions, affiliates, feedback, and the users table. Returns
+// per-email records plus aggregate insights (growth, sources, conversion,
+// funnel, plan mix, geography from email domain, sequence state).
+
+function domainOf(email) {
+  if (!email || typeof email !== 'string') return null;
+  const at = email.lastIndexOf('@');
+  if (at < 1) return null;
+  const d = email.slice(at + 1).toLowerCase();
+  return d || null;
+}
+
+function providerOf(domain) {
+  if (!domain) return 'unknown';
+  const free = ['gmail.com','yahoo.com','outlook.com','hotmail.com','live.com','msn.com',
+    'icloud.com','me.com','mac.com','aol.com','proton.me','protonmail.com','zoho.com',
+    'gmx.com','mail.com','yandex.com','tutanota.com','fastmail.com'];
+  if (free.includes(domain)) return 'free';
+  return 'business';
+}
+
+/** Merge every email-bearing table into one unified per-email record set.
+ *  Returns { records, byEmail } where records already has a derived `stage`. */
+async function buildEmailRecords(env) {
+  const [subsRows, payRows, affRows, fbRows, userRows] = await Promise.all([
+    env.DB.prepare('SELECT email, source, consent, sequence, subscribed_at, last_seen_at FROM subscribers').all(),
+    env.DB.prepare("SELECT email, status, plan, transaction_id, event_type, method, product_id, updated_at, created_at FROM subscriptions").all(),
+    env.DB.prepare("SELECT user_email AS email, display_name, referral_code, status, commission_rate, created_at FROM affiliates").all(),
+    env.DB.prepare('SELECT email, message, rating, page, timestamp FROM feedback').all(),
+    env.DB.prepare('SELECT email, display_name, created_at FROM users').all(),
+  ]);
+
+  const byEmail = new Map();
+  function ensure(email) {
+    const e = String(email || '').toLowerCase();
+    if (!EMAIL_RE.test(e)) return null;
+    let rec = byEmail.get(e);
+    if (!rec) {
+      const domain = domainOf(e);
+      rec = {
+        email: e, domain, provider: providerOf(domain),
+        sources: [], firstSeen: null, lastSeen: null,
+        isNewsletter: false, newsletterSource: null, newsletterAt: null, sequence: null,
+        isPaid: false, payStatus: null, plan: null, paidAt: null, transactionId: null,
+        isAffiliate: false, affStatus: null, referralCode: null, affCreatedAt: null, displayName: null,
+        hasFeedback: false, feedbackCount: 0, lastFeedbackAt: null,
+        hasAccount: false, accountCreatedAt: null,
+      };
+      byEmail.set(e, rec);
+    }
+    return rec;
+  }
+  function touch(rec, iso) {
+    if (!iso) return;
+    if (!rec.firstSeen || iso < rec.firstSeen) rec.firstSeen = iso;
+    if (!rec.lastSeen || iso > rec.lastSeen) rec.lastSeen = iso;
+  }
+
+  for (const r of (subsRows.results || [])) {
+    const rec = ensure(r.email); if (!rec) continue;
+    rec.isNewsletter = true;
+    rec.newsletterSource = r.source || rec.newsletterSource;
+    rec.sequence = r.sequence || rec.sequence;
+    rec.newsletterAt = r.subscribed_at || rec.newsletterAt;
+    if (r.source && !rec.sources.includes(r.source)) rec.sources.push(r.source);
+    touch(rec, r.subscribed_at); touch(rec, r.last_seen_at);
+  }
+  for (const r of (payRows.results || [])) {
+    const rec = ensure(r.email); if (!rec) continue;
+    rec.isPaid = true; rec.payStatus = r.status; rec.plan = r.plan;
+    rec.transactionId = r.transaction_id; rec.paidAt = r.updated_at || r.created_at;
+    touch(rec, r.updated_at); touch(rec, r.created_at);
+  }
+  for (const r of (affRows.results || [])) {
+    const rec = ensure(r.email); if (!rec) continue;
+    rec.isAffiliate = true; rec.affStatus = r.status; rec.referralCode = r.referral_code;
+    rec.affCreatedAt = r.created_at; rec.displayName = r.display_name || rec.displayName;
+    touch(rec, r.created_at);
+  }
+  for (const r of (fbRows.results || [])) {
+    const rec = ensure(r.email); if (!rec) continue;
+    rec.hasFeedback = true; rec.feedbackCount++; rec.lastFeedbackAt = r.timestamp;
+    touch(rec, r.timestamp);
+  }
+  for (const r of (userRows.results || [])) {
+    const rec = ensure(r.email); if (!rec) continue;
+    rec.hasAccount = true; rec.accountCreatedAt = r.created_at;
+    rec.displayName = r.display_name || rec.displayName;
+    touch(rec, r.created_at);
+  }
+
+  for (const r of byEmail.values()) {
+    if (r.isPaid) r.stage = r.payStatus === 'active' ? 'customer' : (r.payStatus === 'refunded' ? 'churned' : 'lapsed');
+    else if (r.isAffiliate) r.stage = 'partner';
+    else if (r.hasFeedback) r.stage = 'engaged';
+    else if (r.isNewsletter) r.stage = 'subscriber';
+    else r.stage = 'lead';
+  }
+  return { records: Array.from(byEmail.values()), byEmail };
+}
+
+/** CSV export of the full unified email list (admin only). */
+async function handleEmailsExportCsv(request, env) {
+  const { records } = await buildEmailRecords(env);
+  records.sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''));
+  const header = ['email','name','domain','provider','stage','sources','newsletter','sequence','newsletterAt',
+    'paid','payStatus','plan','paidAt','transactionId','affiliate','affStatus','referralCode','affCreatedAt',
+    'feedbackCount','lastFeedbackAt','hasAccount','firstSeen','lastSeen'];
+  const esc = (v) => {
+    if (v == null) return '';
+    const s = Array.isArray(v) ? v.join('; ') : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const rows = records.map(r => [
+    r.email, r.displayName, r.domain, r.provider, r.stage, r.sources.join('; '),
+    r.isNewsletter ? 'yes' : '', r.sequence, r.newsletterAt,
+    r.isPaid ? 'yes' : '', r.payStatus, r.plan, r.paidAt, r.transactionId,
+    r.isAffiliate ? 'yes' : '', r.affStatus, r.referralCode, r.affCreatedAt,
+    r.feedbackCount, r.lastFeedbackAt, r.hasAccount ? 'yes' : '',
+    r.firstSeen, r.lastSeen
+  ].map(esc).join(','));
+  const csv = header.join(',') + '\n' + rows.join('\n');
+  return new Response(csv, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="peakora-emails.csv"',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+
+
+async function handleEmailInsights(request, env) {
+  const q = (param) => new URL(request.url).searchParams.get(param) || '';
+  const search = q('search').trim().toLowerCase();
+  const sourceFilter = q('source').trim().toLowerCase();
+  const segment = q('segment').trim().toLowerCase(); // all|newsletter|paid|affiliate|feedback
+  const page = Math.max(1, parseInt(q('page') || '1', 10) || 1);
+  const perPage = Math.min(200, Math.max(1, parseInt(q('perPage') || '50', 10) || 50));
+
+  const { records: allRecords, byEmail } = await buildEmailRecords(env);
+
+  // Apply segment + search + source filters to the paged view.
+  let records = allRecords.slice();
+  if (segment && segment !== 'all') {
+    records = records.filter(r =>
+      segment === 'newsletter' ? r.isNewsletter :
+      segment === 'paid' ? r.isPaid :
+      segment === 'affiliate' ? r.isAffiliate :
+      segment === 'feedback' ? r.hasFeedback :
+      segment === 'customer' ? (r.isPaid && r.payStatus === 'active') :
+      segment === 'churned' ? (r.isPaid && r.payStatus !== 'active') :
+      true
+    );
+  }
+  if (sourceFilter) records = records.filter(r => r.sources.some(s => s.includes(sourceFilter)));
+  if (search) records = records.filter(r =>
+    r.email.includes(search) ||
+    (r.displayName || '').toLowerCase().includes(search) ||
+    (r.domain || '').includes(search)
+  );
+
+  records.sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''));
+
+  // ── Aggregate insights (computed over the FULL set, not the filtered view) ──
+  const all = Array.from(byEmail.values());
+  const totalEmails = all.length;
+  const newsletter = all.filter(r => r.isNewsletter).length;
+  const paid = all.filter(r => r.isPaid).length;
+  const activePaid = all.filter(r => r.isPaid && r.payStatus === 'active').length;
+  const refunded = all.filter(r => r.payStatus === 'refunded').length;
+  const partners = all.filter(r => r.isAffiliate).length;
+  const withFeedback = all.filter(r => r.hasFeedback).length;
+  const withAccount = all.filter(r => r.hasAccount).length;
+
+  // Conversion funnel
+  const funnel = {
+    leads: totalEmails,
+    newsletter: newsletter,
+    engaged: all.filter(r => r.hasFeedback).length,
+    paid: paid,
+    active: activePaid,
+    partners: partners,
+  };
+  const newsletterToPaid = newsletter > 0 ? +(paid / newsletter * 100).toFixed(1) : 0;
+  const leadToPaid = totalEmails > 0 ? +(paid / totalEmails * 100).toFixed(1) : 0;
+
+  // Sources breakdown
+  const sourceCounts = {};
+  for (const r of all) for (const s of r.sources) sourceCounts[s] = (sourceCounts[s] || 0) + 1;
+  const sources = Object.entries(sourceCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ source: k, count: v }));
+
+  // Plan mix (paid)
+  const planCounts = {};
+  for (const r of all) if (r.plan) planCounts[r.plan] = (planCounts[r.plan] || 0) + 1;
+  const plans = Object.entries(planCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ plan: k, count: v }));
+
+  // Email provider mix (free vs business)
+  const providerCounts = { free: 0, business: 0, unknown: 0 };
+  for (const r of all) providerCounts[r.provider] = (providerCounts[r.provider] || 0) + 1;
+
+  // Top domains
+  const domainCounts = {};
+  for (const r of all) if (r.domain) domainCounts[r.domain] = (domainCounts[r.domain] || 0) + 1;
+  const topDomains = Object.entries(domainCounts).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => ({ domain: k, count: v }));
+
+  // Stage distribution
+  const stageCounts = {};
+  for (const r of all) stageCounts[r.stage] = (stageCounts[r.stage] || 0) + 1;
+  const stages = Object.entries(stageCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ stage: k, count: v }));
+
+  // Growth: signups per day for last 30 days (newsletter subscribed_at)
+  const days = {};
+  const now = Date.now();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now - i * 86400000).toISOString().slice(0, 10);
+    days[d] = 0;
+  }
+  for (const r of all) {
+    if (!r.newsletterAt) continue;
+    const d = r.newsletterAt.slice(0, 10);
+    if (days.hasOwnProperty(d)) days[d]++;
+  }
+  const growth = Object.entries(days).map(([date, count]) => ({ date, count }));
+
+  // Sequence state (for the email engine — chunk E)
+  const seqCounts = {};
+  for (const r of all) if (r.sequence) seqCounts[r.sequence] = (seqCounts[r.sequence] || 0) + 1;
+  const sequences = Object.entries(seqCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ sequence: k, count: v }));
+
+  // Pagination
+  const total = records.length;
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const slice = records.slice((page - 1) * perPage, page * perPage);
+
+  return json({
+    success: true,
+    insights: {
+      totalEmails, newsletter, paid, activePaid, refunded, partners, withFeedback, withAccount,
+      conversion: { newsletterToPaid, leadToPaid },
+      funnel,
+      sources, plans, providerCounts, topDomains, stages, growth, sequences,
+    },
+    records: slice,
+    pagination: { page, perPage, total, totalPages },
   });
 }
 
@@ -565,6 +828,27 @@ export default {
       } else if (path === '/stats' && method === 'GET') {
         if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
         else response = await handleStats(request, env);
+      } else if (path === '/admin/emails' && method === 'GET') {
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleEmailInsights(request, env);
+      } else if (path === '/admin/emails/export.csv' && method === 'GET') {
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleEmailsExportCsv(request, env);
+      } else if (path === '/admin/email/preview' && method === 'GET') {
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
+        else {
+          const step = new URL(request.url).searchParams.get('step') || '1';
+          response = new Response(previewEmail(step), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        }
+      } else if (path === '/admin/email/test' && method === 'POST') {
+        if (!(await requireAdminOrPartner(request, env))) response = json({ success: false, error: 'Admin token required' }, 403);
+        else {
+          const body = await readJson(request);
+          const to = (body.to || '').trim().toLowerCase();
+          const step = body.step || 1;
+          if (!EMAIL_RE.test(to)) response = json({ success: false, error: 'Valid to email required.' }, 400);
+          else response = json(await sendTestEmail(env, to, step));
+        }
       } else if (path === '/push-subscribe' && method === 'POST') {
         response = await handlePushSubscribe(request, env);
       } else if (path === '/push-unsubscribe' && method === 'POST') {
@@ -646,8 +930,12 @@ export default {
     return cors(response, request);
   },
 
-  // Cron Trigger: one gentle daily nudge to all subscribed devices.
+  // Cron Trigger: one gentle daily nudge to all subscribed devices + the
+  // self-hosted email welcome sequence advance.
   async scheduled(_event, env, _ctx) {
     await sendDailyNudge(env);
+    try { await runSequenceTick(env); } catch (e) {
+      console.warn('[Cron] email sequence tick error (non-blocking):', e && e.message);
+    }
   }
 };

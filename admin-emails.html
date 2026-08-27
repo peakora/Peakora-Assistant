@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<!-- Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE. -->
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/hub-logo.png?v=3">
+  <link rel="apple-touch-icon" href="./assets/hub-logo.png?v=3">
+  <title>Email Insights — Peakora Management Panel</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/affiliate.css" />
+  <link rel="stylesheet" href="css/portal.css" />
+  <style>
+    /* Page-local styles for the email insights dashboard. Uses design tokens. */
+    .email-dash { max-width: 1180px; margin: 0 auto; padding: 28px 0 60px; }
+    .email-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .email-stat-card {
+      background: var(--theme-card-bg, #151122);
+      border: 1px solid var(--theme-card-border, rgba(255,255,255,0.08));
+      border-radius: 18px; padding: 18px 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .email-stat-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 30px; font-weight: 800; color: #fff; line-height: 1.1;
+    }
+    .email-stat-label { font-size: 12px; color: #a0aec0; margin-top: 6px; letter-spacing: 0.3px; }
+    .email-section {
+      background: var(--theme-card-bg, #151122);
+      border: 1px solid var(--theme-card-border, rgba(255,255,255,0.08));
+      border-radius: 20px; padding: 22px; margin-bottom: 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .email-section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px; font-weight: 700; color: #fff; margin: 0 0 14px;
+    }
+    .email-funnel { display: flex; flex-direction: column; gap: 8px; }
+    .funnel-row { display: flex; align-items: center; gap: 12px; }
+    .funnel-label { width: 110px; font-size: 13px; color: #a0aec0; flex-shrink: 0; }
+    .funnel-bar-track { flex: 1; height: 16px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; min-width: 0; }
+    .funnel-bar-fill { height: 100%; background: linear-gradient(90deg, #e07a5f, #f4a261, #a78bfa); border-radius: 8px; }
+    .funnel-count { width: 52px; text-align: right; font-size: 13px; color: #fff; font-weight: 700; flex-shrink: 0; }
+    .insight-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .insight-chip {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px; padding: 6px 12px; font-size: 12px; color: #e2e8f0;
+    }
+    .insight-chip b { color: #f4a261; }
+    .growth-chart { width: 100%; height: 120px; display: block; }
+    .email-table-wrap { overflow-x: auto; }
+    table.email-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.email-table th {
+      text-align: left; padding: 10px 8px; color: #a0aec0; font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap;
+    }
+    table.email-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; vertical-align: top; }
+    table.email-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .stage-pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .stage-lead { background: rgba(160,174,192,0.15); color: #a0aec0; }
+    .stage-subscriber { background: rgba(129,140,248,0.18); color: #a5b4fc; }
+    .stage-engaged { background: rgba(244,162,97,0.18); color: #f4a261; }
+    .stage-customer { background: rgba(52,211,153,0.18); color: #34d399; }
+    .stage-churned { background: rgba(251,113,133,0.18); color: #fb7185; }
+    .stage-lapsed { background: rgba(250,204,21,0.15); color: #facc15; }
+    .stage-partner { background: rgba(192,132,252,0.18); color: #c084fc; }
+    .email-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .email-filters input, .email-filters select {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 9px 12px; color: #fff; font-size: 13px; font-family: inherit;
+    }
+    .email-filters input { min-width: 220px; flex: 1; }
+    .email-pager { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; color: #a0aec0; flex-wrap: wrap; gap: 10px; }
+    .email-pager button {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 8px 14px; color: #fff; cursor: pointer; font-size: 13px;
+    }
+    .email-pager button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) {
+      .email-dash { padding: 16px 12px 40px; }
+      .email-stat-card { padding: 14px; }
+      .email-stat-num { font-size: 24px; }
+      .email-section { padding: 16px; }
+      .funnel-label { width: 90px; font-size: 12px; }
+      table.email-table { font-size: 12px; }
+      table.email-table th, table.email-table td { padding: 8px 6px; }
+      .email-filters input { min-width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="top"></div>
+
+<header class="header">
+  <div class="container header-inner">
+    <a href="index.html" class="brand">
+      <img src="assets/peakora-logo.png" alt="Peakora logo" class="brand-logo">
+    </a>
+    <nav class="nav" id="mainNav">
+      <a href="pricing.html" class="nav-link">Pricing</a>
+      <a href="affiliate.html" class="nav-link">Affiliates</a>
+      <a href="admin-affiliates.html" class="nav-link">Affiliate Admin</a>
+      <a href="aboutus.html" class="nav-link">About Us</a>
+    </nav>
+    <div class="header-right-actions">
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Navigation Menu">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- TOKEN GATE -->
+<section class="portal-login-section" id="admin-gate">
+  <div class="container">
+    <div class="portal-login-card">
+      <h1 class="portal-login-title">Email Insights</h1>
+      <p class="portal-login-sub">Sign in with your admin account, or enter the admin token to view every email collected across Peakora.</p>
+
+      <button type="button" class="aff-google-btn" onclick="adminGoogleSignIn()">
+        <svg class="aff-google-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+        </svg>
+        <span>Sign in with Google (Admin)</span>
+      </button>
+      <div class="aff-auth-divider"><span>or</span></div>
+
+      <form class="portal-login-form" onsubmit="return adminAuth(event)">
+        <input type="password" id="admin-token-input" placeholder="Admin token" required>
+        <button type="submit" class="btn-hero-primary portal-login-btn">Unlock Panel</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL -->
+<section class="portal-dash" id="admin-panel" style="display:none;">
+  <div class="container email-dash">
+    <div class="portal-dash-head">
+      <div>
+        <h1 class="portal-dash-title">Email Insights</h1>
+        <p class="portal-dash-sub">Every email across the brand: newsletter signups, paying customers, partners, and feedback. One unified list with full lifecycle data.</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="aff-btn-ghost" onclick="loadEmails()">Refresh</button>
+        <a class="aff-btn-ghost" id="export-link" href="#" target="_blank">Export CSV</a>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="email-stat-grid" id="stat-grid"></div>
+
+    <!-- FUNNEL + CONVERSION -->
+    <div class="two-col">
+      <div class="email-section">
+        <h2 class="email-section-title">Lifecycle Funnel</h2>
+        <div class="email-funnel" id="funnel"></div>
+        <div class="insight-row" id="conversion-chips" style="margin-top:14px;"></div>
+      </div>
+      <div class="email-section">
+        <h2 class="email-section-title">Newsletter Growth (30 days)</h2>
+        <svg class="growth-chart" id="growth-chart" viewBox="0 0 600 120" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+
+    <!-- BREAKDOWNS -->
+    <div class="two-col">
+      <div class="email-section">
+        <h2 class="email-section-title">Signup Sources</h2>
+        <div class="insight-row" id="sources-row"></div>
+      </div>
+      <div class="email-section">
+        <h2 class="email-section-title">Stage Distribution</h2>
+        <div class="insight-row" id="stages-row"></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="email-section">
+        <h2 class="email-section-title">Plan Mix (paid)</h2>
+        <div class="insight-row" id="plans-row"></div>
+      </div>
+      <div class="email-section">
+        <h2 class="email-section-title">Top Email Domains</h2>
+        <div class="insight-row" id="domains-row"></div>
+      </div>
+    </div>
+
+    <!-- EMAIL SEQUENCE ENGINE -->
+    <div class="email-section">
+      <h2 class="email-section-title">Email Sequence Engine (self-hosted, replaces MailerLite)</h2>
+      <p style="font-size:13px;color:#a0aec0;line-height:1.6;margin:0 0 14px;">
+        A 3-email welcome drip sent over the first week after signup, then weekly nurture. Templates are version-controlled in the repo with the Peakora design. Sending uses Resend and rides the existing daily cron. Add the <code style="color:#f4a261">RESEND_API_KEY</code> secret and verify the <code style="color:#f4a261">hello@peakora.life</code> sender domain in Resend to activate.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+        <a class="aff-btn-ghost" id="preview-1" href="#" target="_blank">Preview email 1</a>
+        <a class="aff-btn-ghost" id="preview-2" href="#" target="_blank">Preview email 2</a>
+        <a class="aff-btn-ghost" id="preview-3" href="#" target="_blank">Preview email 3</a>
+        <input type="email" id="test-email-input" placeholder="your@email.com" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:9px 12px;color:#fff;font-size:13px;font-family:inherit;min-width:220px;">
+        <select id="test-step-select" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:9px 12px;color:#fff;font-size:13px;font-family:inherit;">
+          <option value="1">Email 1</option>
+          <option value="2">Email 2</option>
+          <option value="3">Email 3</option>
+        </select>
+        <button class="aff-btn-ghost" onclick="sendTest()">Send test</button>
+      </div>
+      <div id="seq-status" style="font-size:12px;color:#a0aec0;margin-top:10px;"></div>
+    </div>
+
+    <!-- EMAIL TABLE -->
+    <div class="email-section">
+      <h2 class="email-section-title">All Emails</h2>
+      <div class="email-filters">
+        <input type="text" id="search-input" placeholder="Search email, name, or domain..." oninput="debouncedSearch()">
+        <select id="segment-select" onchange="loadEmails()">
+          <option value="all">All emails</option>
+          <option value="newsletter">Newsletter only</option>
+          <option value="paid">Any paid</option>
+          <option value="customer">Active customers</option>
+          <option value="churned">Churned / lapsed</option>
+          <option value="affiliate">Affiliates</option>
+          <option value="feedback">Left feedback</option>
+        </select>
+        <select id="source-select" onchange="loadEmails()">
+          <option value="">All sources</option>
+        </select>
+      </div>
+      <div class="email-table-wrap">
+        <table class="email-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Stage</th>
+              <th>Newsletter</th>
+              <th>Paid</th>
+              <th>Plan</th>
+              <th>Partner</th>
+              <th>Feedback</th>
+              <th>First seen</th>
+              <th>Last seen</th>
+            </tr>
+          </thead>
+          <tbody id="emails-body"></tbody>
+        </table>
+      </div>
+      <div class="email-pager">
+        <span id="pager-info"></span>
+        <div>
+          <button id="prev-btn" onclick="changePage(-1)">Previous</button>
+          <button id="next-btn" onclick="changePage(1)">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-columns">
+
+      <!-- Column 1: Navigation -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Navigation</h4>
+        <ul class="footer-col-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#why">Why Peakora</a></li>
+          <li><a href="index.html#dashboard-showcase">The Assistant</a></li>
+          <li><a href="index.html#stories">Stories</a></li>
+          <li><a href="pricing.html">Pricing</a></li>
+          <li><a href="affiliate.html">Affiliate Program</a></li>
+          <li><a href="affiliate-portal.html">Partner Portal</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 2: Affiliate -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Affiliate</h4>
+        <ul class="footer-col-links">
+          <li><a href="affiliate.html#commissions">Commission</a></li>
+          <li><a href="affiliate.html#how-it-works">How It Works</a></li>
+          <li><a href="affiliate.html#calculator">Earnings Calculator</a></li>
+          <li><a href="affiliate.html#faq">FAQ</a></li>
+          <li><a href="affiliate.html#apply">Apply Now</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 3: Company & Legal -->
+      <div class="footer-col">
+        <h4 class="footer-col-title">Company</h4>
+        <ul class="footer-col-links">
+          <li><a href="aboutus.html">About Us</a></li>
+          <li><a href="contactus.html">Contact Us</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="refund.html">Refund &amp; Guarantee</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Brand & Logo (Right Side) -->
+      <div class="footer-col footer-col-brand">
+        <div class="footer-logo">
+          <a href="index.html" class="brand">
+            <img src="assets/peakora-logo.png" alt="Peakora logo" class="brand-logo">
+          </a>
+        </div>
+        <p class="footer-brand-desc">
+          Gentle guidance for real momentum. Peakora helps you reset, one small step at a time.
+        </p>
+        <form onsubmit="event.preventDefault(); var b=this.querySelector('button'); var e=this.querySelector('input'); fetch('https://peakora-api.peakora.workers.dev/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value,source:'landing-footer'})}).catch(function(){}); b.textContent='You are in'; b.disabled=true; e.disabled=true;" style="display:flex; gap:8px; margin-top:14px; margin-bottom:22px; max-width:320px;">
+          <input type="email" required placeholder="Your email, one gentle note a week" style="flex:1; padding:10px 12px; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#fff; font-size:12px;">
+          <button type="submit" style="padding:10px 14px; border-radius:var(--radius-sm); border:none; background:linear-gradient(135deg,#e07a5f,#f4a261); color:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">Keep me posted</button>
+        </form>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/peakora.life/" target="_blank" rel="noopener noreferrer" title="Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#f4a261" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4" stroke="#f4a261" stroke-width="2" fill="none"/><circle cx="17" cy="7" r="1.5" fill="#f4a261"/></svg>
+          </a>
+          <a href="https://www.youtube.com/@Peakora-r1h" target="_blank" rel="noopener noreferrer" title="YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3" stroke="#f4a261" stroke-width="2" fill="none"/><polygon points="10,9 16,12 10,15" fill="#f4a261"/></svg>
+          </a>
+          <a href="https://www.facebook.com/PeakoraLife/" target="_blank" rel="noopener noreferrer" title="Facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M14 8h3V4h-3c-2 0-4 2-4 4v3H7v4h3v7h4v-7h3l1-4h-4V8c0-.5.5-1 1-1z" fill="#f4a261"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Peakora, For a Better You. All rights reserved. Billed securely via Dodo Payments.</span>
+    </div>
+  </div>
+</footer>
+<script src="affiliate.js"></script>
+<script src="script.js"></script>
+<script>
+  var AFFILIATE_API = (function () {
+    var host = window.location.hostname || '';
+    if (host.indexOf('localhost') !== -1 || host.indexOf('127.0.0.1') !== -1) return 'http://localhost:3000';
+    return 'https://peakora-api.peakora.workers.dev';
+  })();
+
+  var adminToken = sessionStorage.getItem('peakora_admin_token') || '';
+  var partnerToken = localStorage.getItem('peakora_aff_token') || '';
+  var partnerEmail = localStorage.getItem('peakora_aff_email') || '';
+
+  function adminHeaders() {
+    var h = { 'Content-Type': 'application/json' };
+    if (adminToken) h['x-admin-token'] = adminToken;
+    if (partnerToken && partnerEmail) {
+      h['x-affiliate-token'] = partnerToken;
+      h['x-affiliate-email'] = partnerEmail;
+    }
+    return h;
+  }
+
+  // ── Auth ────────────────────────────────────────────────────────────────
+  function adminAuth(e) {
+    e.preventDefault();
+    var token = document.getElementById('admin-token-input').value.trim();
+    if (!token) return false;
+    adminToken = token;
+    sessionStorage.setItem('peakora_admin_token', token);
+    fetch(AFFILIATE_API + '/admin/emails?token=' + encodeURIComponent(token))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.success) { showPanel(); loadEmails(); }
+        else { alert('Invalid admin token.'); sessionStorage.removeItem('peakora_admin_token'); adminToken = ''; }
+      }).catch(function () { alert('Network error.'); });
+    return false;
+  }
+
+  function adminGoogleSignIn() {
+    if (partnerToken && partnerEmail) { tryAdminPartnerUnlock(); return; }
+    window.location.href = 'affiliate-portal.html?then=admin-emails';
+  }
+
+  function tryAdminPartnerUnlock() {
+    fetch(AFFILIATE_API + '/affiliate/admin/verify', {
+      headers: { 'x-affiliate-token': partnerToken, 'x-affiliate-email': partnerEmail }
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.success) { adminToken = ''; showPanel(); loadEmails(); }
+      else { alert('This account is not an admin. Sign in with the admin account or use the admin token.'); }
+    }).catch(function () { alert('Network error.'); });
+  }
+
+  function showPanel() {
+    document.getElementById('admin-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = '';
+    var ex = document.getElementById('export-link');
+    var q = adminToken ? ('?token=' + encodeURIComponent(adminToken)) : '';
+    ex.href = AFFILIATE_API + '/admin/emails/export.csv' + q;
+    // Wire up the sequence email preview links.
+    var previewBase = AFFILIATE_API + '/admin/email/preview';
+    var pq = adminToken ? ('&token=' + encodeURIComponent(adminToken)) : '';
+    ['preview-1', 'preview-2', 'preview-3'].forEach(function (id, i) {
+      var el = document.getElementById(id);
+      if (el) el.href = previewBase + '?step=' + (i + 1) + pq;
+    });
+  }
+
+  function sendTest() {
+    var to = document.getElementById('test-email-input').value.trim();
+    var step = document.getElementById('test-step-select').value;
+    var status = document.getElementById('seq-status');
+    if (!to) { status.textContent = 'Enter an email address first.'; status.style.color = '#fb7185'; return; }
+    status.textContent = 'Sending test email ' + step + ' to ' + to + '...'; status.style.color = '#a0aec0';
+    fetch(AFFILIATE_API + '/admin/email/test', {
+      method: 'POST', headers: adminHeaders(),
+      body: JSON.stringify({ to: to, step: Number(step) })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok) {
+        status.textContent = 'Sent. Resend id: ' + (d.id || '(none)') + '. Check the inbox (and spam folder).';
+        status.style.color = '#34d399';
+      } else {
+        status.textContent = 'Failed: ' + (d.error || ('HTTP ' + d.status));
+        status.style.color = '#fb7185';
+      }
+    }).catch(function () { status.textContent = 'Network error.'; status.style.color = '#fb7185'; });
+  }
+
+  // ── State ───────────────────────────────────────────────────────────────
+  var currentPage = 1;
+  var perPage = 50;
+  var searchTimer = null;
+
+  function debouncedSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () { currentPage = 1; loadEmails(); }, 300);
+  }
+
+  function changePage(delta) {
+    currentPage = Math.max(1, currentPage + delta);
+    loadEmails();
+  }
+
+  // ── Load ────────────────────────────────────────────────────────────────
+  function loadEmails() {
+    var search = document.getElementById('search-input').value.trim();
+    var segment = document.getElementById('segment-select').value;
+    var source = document.getElementById('source-select').value;
+    var qs = 'page=' + currentPage + '&perPage=' + perPage;
+    if (search) qs += '&search=' + encodeURIComponent(search);
+    if (segment) qs += '&segment=' + encodeURIComponent(segment);
+    if (source) qs += '&source=' + encodeURIComponent(source);
+    if (adminToken) qs += '&token=' + encodeURIComponent(adminToken);
+
+    fetch(AFFILIATE_API + '/admin/emails?' + qs, { headers: adminHeaders() })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success) { alert(d.error || 'Failed to load'); return; }
+        renderInsights(d.insights);
+        renderTable(d.records, d.pagination);
+        populateSourceFilter(d.insights.sources);
+      }).catch(function () { alert('Network error loading emails.'); });
+  }
+
+  function renderInsights(ins) {
+    var cards = [
+      { n: ins.totalEmails, l: 'Total emails' },
+      { n: ins.newsletter, l: 'Newsletter signups' },
+      { n: ins.paid, l: 'Any paid' },
+      { n: ins.activePaid, l: 'Active customers' },
+      { n: ins.partners, l: 'Affiliate partners' },
+      { n: ins.withFeedback, l: 'Left feedback' },
+      { n: ins.withAccount, l: 'Has account' },
+      { n: ins.refunded, l: 'Refunded' },
+    ];
+    document.getElementById('stat-grid').innerHTML = cards.map(function (c) {
+      return '<div class="email-stat-card"><div class="email-stat-num">' + c.n + '</div><div class="email-stat-label">' + c.l + '</div></div>';
+    }).join('');
+
+    // Funnel
+    var f = ins.funnel;
+    var max = Math.max(f.leads, f.newsletter, f.engaged, f.paid, f.active, f.partners, 1);
+    var rows = [
+      ['Leads', f.leads], ['Newsletter', f.newsletter], ['Engaged', f.engaged],
+      ['Paid', f.paid], ['Active', f.active], ['Partners', f.partners]
+    ];
+    document.getElementById('funnel').innerHTML = rows.map(function (r) {
+      var pct = (r[1] / max) * 100;
+      return '<div class="funnel-row"><div class="funnel-label">' + r[0] + '</div>' +
+        '<div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="funnel-count">' + r[1] + '</div></div>';
+    }).join('');
+
+    document.getElementById('conversion-chips').innerHTML =
+      chip('Newsletter to paid', ins.conversion.newsletterToPaid + '%') +
+      chip('Lead to paid', ins.conversion.leadToPaid + '%');
+
+    document.getElementById('sources-row').innerHTML = ins.sources.map(function (s) {
+      return chip(s.source, s.count);
+    }).join('') || '<span style="color:#a0aec0;font-size:13px">No sources yet.</span>';
+
+    document.getElementById('stages-row').innerHTML = ins.stages.map(function (s) {
+      return chip(s.stage, s.count);
+    }).join('') || '<span style="color:#a0aec0;font-size:13px">No data.</span>';
+
+    document.getElementById('plans-row').innerHTML = (ins.plans.length ? ins.plans.map(function (p) {
+      return chip(p.plan, p.count);
+    }).join('') : '<span style="color:#a0aec0;font-size:13px">No paid plans yet.</span>');
+
+    document.getElementById('domains-row').innerHTML = (ins.topDomains.length ? ins.topDomains.map(function (d) {
+      return chip(d.domain, d.count);
+    }).join('') : '<span style="color:#a0aec0;font-size:13px">No domains yet.</span>');
+
+    renderGrowth(ins.growth);
+  }
+
+  function chip(label, value) {
+    return '<span class="insight-chip">' + label + ' <b>' + value + '</b></span>';
+  }
+
+  function renderGrowth(growth) {
+    var svg = document.getElementById('growth-chart');
+    if (!growth || !growth.length) { svg.innerHTML = ''; return; }
+    var w = 600, h = 120, pad = 8;
+    var max = Math.max.apply(null, growth.map(function (g) { return g.count; }).concat([1]));
+    var step = (w - pad * 2) / Math.max(1, growth.length - 1);
+    var pts = growth.map(function (g, i) {
+      var x = pad + i * step;
+      var y = h - pad - (g.count / max) * (h - pad * 2);
+      return [x, y];
+    });
+    var line = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    var area = line + ' L' + (pad + (growth.length - 1) * step).toFixed(1) + ',' + (h - pad) + ' L' + pad + ',' + (h - pad) + ' Z';
+    svg.innerHTML =
+      '<defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#f4a261" stop-opacity="0.5"/>' +
+      '<stop offset="100%" stop-color="#f4a261" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#gg)"/>' +
+      '<path d="' + line + '" fill="none" stroke="#f4a261" stroke-width="2" stroke-linejoin="round"/>';
+  }
+
+  function stagePill(stage) {
+    return '<span class="stage-pill stage-' + stage + '">' + stage + '</span>';
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d)) return iso.slice(0, 10);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function renderTable(records, pg) {
+    var body = document.getElementById('emails-body');
+    if (!records.length) {
+      body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#a0aec0;padding:24px">No emails match these filters.</td></tr>';
+    } else {
+      body.innerHTML = records.map(function (r) {
+        return '<tr>' +
+          '<td>' + esc(r.email) + '</td>' +
+          '<td>' + esc(r.displayName || '') + '</td>' +
+          '<td>' + stagePill(r.stage) + '</td>' +
+          '<td>' + (r.isNewsletter ? '<span style="color:#a5b4fc">yes</span>' + (r.newsletterSource ? ' <span style="color:#a0aec0;font-size:11px">(' + esc(r.newsletterSource) + ')</span>' : '') : '') + '</td>' +
+          '<td>' + (r.isPaid ? '<span style="color:#34d399">yes</span>' : '') + '</td>' +
+          '<td>' + esc(r.plan || '') + '</td>' +
+          '<td>' + (r.isAffiliate ? '<span style="color:#c084fc">' + esc(r.referralCode || 'yes') + '</span>' : '') + '</td>' +
+          '<td>' + (r.hasFeedback ? r.feedbackCount : '') + '</td>' +
+          '<td>' + fmtDate(r.firstSeen) + '</td>' +
+          '<td>' + fmtDate(r.lastSeen) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+    document.getElementById('pager-info').textContent =
+      'Page ' + pg.page + ' of ' + pg.totalPages + ' (' + pg.total + ' emails)';
+    document.getElementById('prev-btn').disabled = pg.page <= 1;
+    document.getElementById('next-btn').disabled = pg.page >= pg.totalPages;
+  }
+
+  function populateSourceFilter(sources) {
+    var sel = document.getElementById('source-select');
+    var current = sel.value;
+    var opts = '<option value="">All sources</option>' + sources.map(function (s) {
+      return '<option value="' + esc(s.source) + '">' + esc(s.source) + ' (' + s.count + ')</option>';
+    }).join('');
+    sel.innerHTML = opts;
+    sel.value = current;
+  }
+
+  // ── Boot ────────────────────────────────────────────────────────────────
+  (function boot() {
+    if (adminToken) {
+      fetch(AFFILIATE_API + '/admin/emails?token=' + encodeURIComponent(adminToken))
+        .then(function (r) { return r.json(); })
+        .then(function (d) { if (d.success) { showPanel(); loadEmails(); } })
+        .catch(function () {});
+    } else if (partnerToken && partnerEmail) {
+      tryAdminPartnerUnlock();
+    }
+  })();
+</script>
+</body>
+</html>
