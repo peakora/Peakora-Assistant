@@ -617,18 +617,55 @@ export async function handleAffiliateDashboard(request, env) {
   // number that disagrees with the commissions it accrues.
   if (aff.commission_type === 'percentage') tier.rate = Number(aff.commission_rate) || tier.rate;
 
-  const [clicks, conversions, pending, approved, paid, commissions, payouts] = await Promise.all([
+  const [clicks, conversions, pending, approved, paid, refunded, commissions, payouts, clickSeries, earningsSeries, topSources, statusCounts] = await Promise.all([
     env.DB.prepare('SELECT COUNT(*) AS n FROM referral_clicks WHERE affiliate_id = ?').bind(aff.id).first(),
     env.DB.prepare(`SELECT COUNT(DISTINCT customer_email) AS n FROM commissions WHERE affiliate_id = ? AND status != 'refunded'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'pending'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'approved'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'paid'`).bind(aff.id).first(),
+    env.DB.prepare(`SELECT COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status = 'refunded'`).bind(aff.id).first(),
     env.DB.prepare(`SELECT * FROM commissions WHERE affiliate_id = ? ORDER BY created_at DESC LIMIT 50`).bind(aff.id).all(),
-    env.DB.prepare(`SELECT * FROM payouts WHERE affiliate_id = ? ORDER BY created_at DESC LIMIT 50`).bind(aff.id).all()
+    env.DB.prepare(`SELECT * FROM payouts WHERE affiliate_id = ? ORDER BY created_at DESC LIMIT 50`).bind(aff.id).all(),
+    // Daily click series, last 30 days. clicked_at is datetime('now') UTC text.
+    env.DB.prepare(`SELECT substr(clicked_at,1,10) AS d, COUNT(*) AS n FROM referral_clicks WHERE affiliate_id = ? AND clicked_at >= datetime('now','-30 days') GROUP BY d ORDER BY d`).bind(aff.id).all(),
+    // Daily earnings series, last 30 days (excludes refunded).
+    env.DB.prepare(`SELECT substr(created_at,1,10) AS d, COALESCE(SUM(commission_amount),0) AS n FROM commissions WHERE affiliate_id = ? AND status != 'refunded' AND created_at >= datetime('now','-30 days') GROUP BY d ORDER BY d`).bind(aff.id).all(),
+    // Top traffic sources by click count (referrer_url host). NULL/direct grouped as Direct.
+    env.DB.prepare(`SELECT CASE WHEN referrer_url IS NULL OR referrer_url = '' THEN 'Direct' ELSE substr(replace(replace(referrer_url,'https://',''),'http://',''),1,instr(replace(replace(referrer_url,'https://',''),'http://','')||'/','/')-1) END AS source, COUNT(*) AS n FROM referral_clicks WHERE affiliate_id = ? GROUP BY source ORDER BY n DESC LIMIT 8`).bind(aff.id).all(),
+    // Commission-status counts for the status donut.
+    env.DB.prepare(`SELECT status, COUNT(*) AS n, COALESCE(SUM(commission_amount),0) AS amt FROM commissions WHERE affiliate_id = ? GROUP BY status`).bind(aff.id).all()
   ]);
 
   // Auto-approve commissions past their hold window (best-effort, idempotent).
   await autoApproveHeld(env.DB, aff.id);
+
+  // Build full 30-day date-keyed series so the chart has no gaps. D1 returns
+  // dates as UTC 'YYYY-MM-DD' text from substr; walk the window explicitly.
+  const seriesDays = [];
+  const now = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const dt = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i);
+    seriesDays.push(dt.getUTCFullYear() + '-' + String(dt.getUTCMonth() + 1).padStart(2, '0') + '-' + String(dt.getUTCDate()).padStart(2, '0'));
+  }
+  const clickIdx = {};
+  (clickSeries.results || []).forEach(r => { clickIdx[r.d] = r.n; });
+  const earnIdx = {};
+  (earningsSeries.results || []).forEach(r => { earnIdx[r.d] = r.n; });
+  const daily_series = seriesDays.map(d => ({
+    date: d,
+    clicks: clickIdx[d] || 0,
+    earnings: round2(earnIdx[d] || 0)
+  }));
+
+  const totalEarnings = round2((pending?.n || 0) + (approved?.n || 0) + (paid?.n || 0));
+  const totalClicks = clicks?.n || 0;
+  const epc = totalClicks > 0 ? round2(totalEarnings / totalClicks) : 0;
+
+  const statusMap = {};
+  (statusCounts.results || []).forEach(r => { statusMap[r.status] = { count: r.n, amount: round2(r.amt) }; });
+  ['pending', 'approved', 'paid', 'refunded'].forEach(s => { if (!statusMap[s]) statusMap[s] = { count: 0, amount: 0 }; });
+  const totalCommissionCount = (statusMap.pending.count + statusMap.approved.count + statusMap.paid.count + statusMap.refunded.count);
+  const refundRate = totalCommissionCount > 0 ? round2((statusMap.refunded.count / totalCommissionCount) * 100) : 0;
 
   return json({
     success: true,
@@ -643,12 +680,19 @@ export async function handleAffiliateDashboard(request, env) {
     tier: { name: tier.name, rate: tier.rate, cookie_days: tier.cookieDays, payout_min: tier.payoutMin, payout_schedule: tier.payoutSchedule },
     active_referrals: activeRefs,
     totals: {
-      clicks: clicks?.n || 0,
+      clicks: totalClicks,
       conversions: conversions?.n || 0,
       pending_balance: round2(pending?.n || 0),
       available_balance: round2(approved?.n || 0),
-      paid_balance: round2(paid?.n || 0)
+      paid_balance: round2(paid?.n || 0),
+      refunded_balance: round2(refunded?.n || 0),
+      total_earnings: totalEarnings,
+      epc,
+      refund_rate: refundRate
     },
+    daily_series,
+    top_sources: (topSources.results || []).map(r => ({ source: r.source || 'Direct', clicks: r.n })),
+    status_breakdown: statusMap,
     recent_commissions: commissions.results || [],
     recent_payouts: payouts.results || []
   });
