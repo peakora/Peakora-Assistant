@@ -11,6 +11,7 @@
 
   <!-- Assistant theme -->
   <link rel="stylesheet" href="assistant.css">
+  <link rel="stylesheet" href="css/styles.css">
 
   <!-- Dodo Payments hosted checkout (no client-side SDK; server creates checkout session) -->
 
@@ -585,9 +586,20 @@
     function goToStepKey(key) {
       const index = steps.indexOf(key);
       if (index >= 0) {
+        // Save scroll position when leaving Home, restore it when returning so
+        // the user lands where they were instead of jumping to the top.
+        const currentKey = steps[state.stepIndex];
+        if (currentKey === "home" && key !== "home") {
+          window.__peakoraHomeScroll = window.scrollY || window.pageYOffset || 0;
+        }
         state.stepIndex = index;
         saveState();
         renderStep();
+        if (key === "home" && typeof window.__peakoraHomeScroll === "number") {
+          const target = window.__peakoraHomeScroll;
+          window.__peakoraHomeScroll = null;
+          requestAnimationFrame(() => window.scrollTo(0, target));
+        }
         if (window.PeakoraTracker) {
           window.PeakoraTracker.track("step_viewed", { step: key });
         }

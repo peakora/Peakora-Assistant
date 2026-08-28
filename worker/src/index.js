@@ -454,7 +454,7 @@ async function buildEmailRecords(env) {
   const [subsRows, payRows, affRows, fbRows, userRows] = await Promise.all([
     env.DB.prepare('SELECT email, source, consent, sequence, subscribed_at, last_seen_at FROM subscribers').all(),
     env.DB.prepare("SELECT email, status, plan, transaction_id, event_type, method, product_id, updated_at, created_at FROM subscriptions").all(),
-    env.DB.prepare("SELECT user_email AS email, display_name, referral_code, status, commission_rate, created_at FROM affiliates").all(),
+    env.DB.prepare("SELECT user_email AS email, display_name, referral_code, status, commission_rate, applied_at AS created_at FROM affiliates").all(),
     env.DB.prepare('SELECT email, message, rating, page, timestamp FROM feedback').all(),
     env.DB.prepare('SELECT email, display_name, created_at FROM users').all(),
   ]);

@@ -2199,3 +2199,39 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .assistant-card:not(.is-dashboard-mode) { padding: 18px 14px; }
   .dash-welcome-h1 { font-size: 17px; }
 }
+
+/* ===== TIMELINE MOBILE OVERFLOW FIX (7-Day Reset Plan Timeline) =====
+   On phones the 7 day nodes + labels can clip the card edges. Make the row
+   scroll horizontally, shrink each node, cap label width, and constrain the
+   popover so it never spills past the card. */
+@media (max-width: 600px) {
+  .timeline-arc-wrap { min-height: 116px; }
+  .timeline-nodes-row {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 0 4px 8px;
+  }
+  .timeline-node-item { flex-shrink: 0; }
+  .node-desc { max-width: 44px; font-size: 10px; }
+  .node-day-label { font-size: 9px; }
+  /* The active node grows with padding; keep it inside the row width. */
+  .timeline-node-item.active-glow { padding: 6px 8px; transform: translateY(-4px); }
+  /* Popover: cap width to the card and let text wrap, never overflow right. */
+  .timeline-popover {
+    width: min(220px, 86vw);
+    max-width: 100%;
+    left: 0;
+    right: auto;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* The card itself must clip its children rather than widen the page. */
+  .dash-card { overflow-x: hidden; }
+}
+@media (max-width: 380px) {
+  .node-desc { max-width: 38px; font-size: 9px; }
+  .timeline-popover { width: min(190px, 84vw); }
+}
