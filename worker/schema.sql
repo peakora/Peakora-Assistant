@@ -191,14 +191,7 @@ UPDATE affiliates SET payout_min = 25.0 WHERE payout_min <> 25.0 AND (notes IS N
 UPDATE affiliates SET status = 'active', approved_at = datetime('now')
  WHERE status = 'pending' AND (notes IS NULL OR notes NOT LIKE '%custom_rate%');
 
--- Add columns to the existing affiliates table. SQLite/D1 has no ADD COLUMN IF
--- NOT EXISTS, so each errors harmlessly if the column already exists (the deploy
--- pipeline ignores the error). password_hash is nullable: Google-only accounts
--- and legacy accounts start NULL. google_sub links a Google sign-in account.
--- is_admin flags the program owner so the admin panel can unlock via sign-in.
-ALTER TABLE affiliates ADD COLUMN password_hash TEXT;
-ALTER TABLE affiliates ADD COLUMN google_sub TEXT;
-ALTER TABLE affiliates ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;
-
--- Mark the program owner as admin. Idempotent on every deploy.
-UPDATE affiliates SET is_admin = 1 WHERE user_email = 'peakora.network@gmail.com';
+-- Affiliate program owner / column additions live in schema-alters.sql (run
+-- separately with per-statement error tolerance, since SQLite has no
+-- ADD COLUMN IF NOT EXISTS and a duplicate column would otherwise abort the
+-- whole batch when run via `wrangler d1 execute --file`).
