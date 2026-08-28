@@ -2143,3 +2143,59 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   font-style: italic;
   line-height: 1.35;
 }
+
+/* ===== MOBILE TIGHTENING + OVERFLOW SAFETY =====
+   Keeps onboarding cards and dashboard cards compact on phones and
+   guarantees no text or edges clip horizontally. Layers on top of the
+   existing 1100/900/600/520/480/400 breakpoints above. */
+@media (max-width: 600px) {
+  /* Onboarding step headings: 26px is too tall on a 360px screen. */
+  .step h1 { font-size: 21px; line-height: 1.2; }
+  .step h2 { font-size: 17px; }
+  .step p  { font-size: 14px; line-height: 1.55; }
+
+  /* Dashboard welcome heading. */
+  .dash-welcome-h1 { font-size: 19px; }
+
+  /* The centered onboarding card already shrinks at 480px; tighten further. */
+  .assistant-shell:not(.is-dashboard-mode) { padding: 12px 10px; }
+  .assistant-card:not(.is-dashboard-mode) { padding: 20px 16px; border-radius: var(--radius-md); }
+
+  /* Modals: reduce padding so the card fits a short viewport without scroll. */
+  .peakora-modal-standard,
+  .modal-card,
+  .peakora-popup-card { padding: 22px 16px !important; }
+
+  /* Hard overflow guard for every dashboard card and its children. */
+  .dash-card,
+  .dash-card * { max-width: 100%; }
+  .dash-card h1,
+  .dash-card h2,
+  .dash-card h3,
+  .dash-card h4,
+  .dash-card p,
+  .dash-card span,
+  .dash-card li,
+  .dash-card td,
+  .dash-card th {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* Tables/grids inside cards must not push past the card width. */
+  .dash-card table { width: 100%; table-layout: fixed; }
+  .dash-card pre,
+  .dash-card code { white-space: pre-wrap; word-break: break-word; }
+
+  /* Fixed-width chips/badges shrink to content and wrap. */
+  .dash-card .badge,
+  .dash-card .chip { white-space: normal; }
+}
+
+@media (max-width: 380px) {
+  .step h1 { font-size: 19px; }
+  .step h2 { font-size: 16px; }
+  .step p  { font-size: 13px; }
+  .assistant-shell:not(.is-dashboard-mode) { padding: 8px 8px; }
+  .assistant-card:not(.is-dashboard-mode) { padding: 18px 14px; }
+  .dash-welcome-h1 { font-size: 17px; }
+}
