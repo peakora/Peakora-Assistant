@@ -9,7 +9,7 @@
     "deploy:pages": "npx wrangler pages deploy . --project-name peakora-assistant",
     "db:init": "cd worker && npx wrangler d1 execute peakora-db --remote --file=schema.sql",
     "build": "echo 'No build step needed'",
-    "test": "node --test \"tests/*.test.js\""
+    "test": "node --test tests/*.test.js"
   },
   "devDependencies": {
     "wrangler": "^4.125.0"
