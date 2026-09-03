@@ -40,7 +40,7 @@ input) over internal utilities.
    URLs fetched server-side), path traversal (user input in file paths).
 5. **Input validation & output encoding.** Is external input validated
    before trust? Is output encoded for its context (HTML/JS/URL/SQL)?
-   CORS policy — is it `*` with credentials? CSRF protection on state-changing
+   CORS policy  -  is it `*` with credentials? CSRF protection on state-changing
    POSTs?
 6. **Webhook/integrity.** HMAC signature verification? Timestamp freshness
    to prevent replay? Timing-safe compare?
@@ -51,19 +51,19 @@ input) over internal utilities.
    public? DB connection over TLS? Cloudflare/origin exposure?
 
 ## Finding severity (CVSS-flavored, pragmatic)
-- **CRITICAL** — directly exploitable: RCE, SQLi with data exfil, auth
+- **CRITICAL**  -  directly exploitable: RCE, SQLi with data exfil, auth
   bypass, secret in source. Fix immediately.
-- **HIGH** — exploitable under realistic conditions: IDOR on sensitive data,
+- **HIGH**  -  exploitable under realistic conditions: IDOR on sensitive data,
   weak JWT, missing authz on admin route, webhook without signature check.
-- **MEDIUM** — needs conditions or defense-in-depth gap: missing rate limit
+- **MEDIUM**  -  needs conditions or defense-in-depth gap: missing rate limit
   on auth, overly-permissive CORS, info disclosure (stack traces, email
   enumeration).
-- **LOW** — hardening improvement: missing HSTS, verbose error messages,
+- **LOW**  -  hardening improvement: missing HSTS, verbose error messages,
   floating dependency version.
 
 ## Output format
 ```
-## Security Audit — <scope>
+## Security Audit  -  <scope>
 ## Verdict
 PASS / FIX BEFORE DEPLOY / DO NOT DEPLOY
 
@@ -72,12 +72,12 @@ PASS / FIX BEFORE DEPLOY / DO NOT DEPLOY
 - Location: file:line
 - Vulnerability: <what's exploitable, and the attack in one sentence>
 - Proof: <the concrete code/condition that makes it exploitable>
-- Remediation: <the exact fix — code-level, not "add validation">
+- Remediation: <the exact fix  -  code-level, not "add validation">
 
 (ordered CRITICAL -> LOW)
 
 ## Confirmed secure
-<what you explicitly checked and found sound — be specific, e.g.
+<what you explicitly checked and found sound  -  be specific, e.g.
 "webhook HMAC verified with timing-safe compare and 5min freshness
 (worker/src/index.js:142)">)
 
@@ -85,12 +85,31 @@ PASS / FIX BEFORE DEPLOY / DO NOT DEPLOY
 <what you didn't audit and why>
 ```
 
+## Skills to apply (read the SKILL.md from the hub skills/ dir and follow inline)
+- `skill-inspector` (skills/skill-inspector/SKILL.md`` - pre-install safety
+   gate whenever the audit touches installing/trusting a new skill, dependency, or
+   tool (or reviewing a repo that vendors agent skills). Check provenance,
+   license, and exec content BEFORE adoption. Not a substitute for your
+   supply-chain pass; it is the repo-level gate for AI-agent skills specifically.
+- `codebase-standards` (skills/codebase-standards/SKILL.md`` - severity-
+   tagged issue list ((BROKEN/RISK/NOT DONE/UNKNOWN))and the one-convention
+   lens for findings about config sprawl, unparsed boundary data, or
+   inconsistent error handling across the codebase. Your findings use its
+   severity vocabulary when the issue is repo-standard drift, not an
+   exploitable vulnerability.
+- `pit-of-success` (skills/pit-of-success/SKILL.md`` - when auditing an API
+   seam (endpoints, webhook shapes, auth interfaces), run the footgun
+   check: does it make the secure path easy (typed inputs, least privilege,
+   explicit scopes)and the insecure path hard? Fold that into remediation.
+
+
+
 ## Rules
 - No false confidence. "Looks secure" without listing what you checked is a
   failed audit.
-- Every finding must be exploitable or a recognized hardening standard — no
+- Every finding must be exploitable or a recognized hardening standard  -  no
   hypothetical "an attacker might" without a concrete path.
 - Remediation must be code-level and specific. "Validate input" is not a fix.
   "Use parameterized query via .bind() at handlers.js:88" is.
 - If you find a real secret in source, flag it CRITICAL and tell the caller
-  to rotate it — do not echo the secret value in your output.
+  to rotate it  -  do not echo the secret value in your output.
