@@ -302,3 +302,6 @@ Writes are atomic (write to a `.tmp` file then rename). Back up the `data/` dire
 Questions, feedback, or subscription support are welcome at **peakora.network@gmail.com** (see `contactus.html`). A response is typically sent within 24-48 hours.
 
 ---
+
+## Peakora Hub
+This repo consumes the [Peakora-Cortex](https://github.com/peakora/Peakora-Cortex) skills hub. Skills/agents auto-mirror into `.agents/` and are invoked by name. Refresh: run `bash .agents/hub-sync.sh`.
