@@ -302,6 +302,12 @@ Run these phases in order. Each phase either delegates to a sub-agent via
   - Content/script-led app (story/lesson/podcast tooling): `story-writer`,
     `script-writer` (whiteboard-drawing trigger tags for PeakoraEngine per the
     hub registry rule).
+  - Marketing-led app (landing/sales page, funnel, email, lead-capture
+    tooling,or any app whose core behavior is converting visitors into
+    leads/buyers): `peakora-marketing` (read its principles + matching
+    playbook BEFORE building the copy/funnel/pages;sidebar the hub registry
+    overlap rule: `humanizer` owns brand voice, `no-ai-slop` owns the
+    de-slopping edit pass)..
   - Phone-control app (analyzing/automating the user's phone via desktop
     mirroring or adb): `phone-harness`.
   - Scientific/ML app (bio, chem, imaging, neuroscience, ML): the

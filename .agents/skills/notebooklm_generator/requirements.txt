@@ -1,0 +1,34 @@
+# Peakora pipeline dependencies for the open_source engine.
+# The google_native engine uses the notebooklm-py package instead.
+#
+# CPU/free-first stack: Gemini free tier for the LLM script, edge-tts (free)
+# as the default multi-voice TTS, ElevenLabs as the premium multi-voice
+# option, and moviepy + ffmpeg for video assembly.
+
+# LLM script generation (instructor structured output)
+instructor>=1.4.0
+pydantic>=2.7.0
+
+# Gemini free tier (default LLM for the open_source engine)
+google-genai>=1.0.0
+
+# OpenAI (alternative LLM + premium TTS via openai.audio.speech)
+openai>=1.40.0
+
+# Multi-voice TTS
+edge-tts>=6.1.0          # free, no API key, good multi-voice support
+elevenlabs>=1.0.0        # premium multi-voice; only used when ELEVENLABS_API_KEY set
+
+# Text extraction from Position-1 source documents
+pypdf>=4.0.0
+python-docx>=1.1.0
+beautifulsoup4>=4.12.0
+markdownify>=0.13.0
+
+# Audio concat + video assembly
+pydub>=0.25.1
+moviepy>=2.0.0
+pillow>=10.0.0
+
+# google_native engine
+notebooklm-py>=0.3.0
