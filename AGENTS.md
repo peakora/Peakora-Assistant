@@ -325,7 +325,7 @@ This repo consumes the central skills hub: **github.com/peakora/peakora-cortex**
 (branch: master). The hub holds the master system blueprint, the shared skills,
 and the cross-repo memory layers. User preference: call the owner **Ala** (never "user" or "users"). We are partners. No emoji anywhere (chat, code, copy, commits).
 
-### Session start — recall (NEVER SKIP)
+### Session start - recall (NEVER SKIP)
 1. Fetch and read `MEMORY.md` from the hub (guaranteed layer, plain text).
    The hub is PRIVATE, so `raw.githubusercontent` 404s. Fetch via the GitHub
    Contents API (authenticated):
@@ -333,22 +333,15 @@ and the cross-repo memory layers. User preference: call the owner **Ala** (never
    with `Authorization: Bearer $GITHUB_TOKEN`, then base64-decode the
    `content` field. (Fallback: shallow-clone the repo.)
 2. Read this repo's `AGENTS.md` in full.
-3. Best-effort Cognee recall (semantic layer, may be empty on the free tier):
-   use `skills/cognee-memory/cognee_client.py` from the hub —
-   `recall_safe("cross-repo architecture constraints, tech stack, coding preferences")`.
+3. If you need context from ANOTHER repo - stack, conventions, prior decisions -
+   fetch its AGENTS.md/README.md/ARCHITECTURE.md - or a targeted source file -
+   via the same GitHub Contents API. Read what you need; do not dump whole repos.
+   No Cognee anymore - dormant.
 
-### Session end — remember (NEVER SKIP, before finishing)
+### Session end - remember (NEVER SKIP, before finishing)
 1. GUARANTEED: append a dated entry to the Session Log in the hub's `MEMORY.md`
    (commit to peakora/peakora-cortex master, via git or GitHub API)
    summarizing decisions, API/schema changes, and gotchas for this repo.
-2. Best-effort: `cognee_client.remember_safe(summary)` — add-only. NEVER call
-   cognify automatically (burns the 20/day Gemini free quota; cognify is a
-   manual, deliberate run).
-3. Memory sync never blocks task completion — the MEMORY.md write is the
-   fallback that always works.
-
-### Cognee access (cloud agent — no local .env needed)
-- URL auto-discovered from `tunnel_url.txt` in the hub repo.
-- Auth: registered secret `COGNEE_API_KEY` sent as `X-Api-Key` header
-  (fallback: `COGNEE_AUTH_EMAIL` / `COGNEE_AUTH_PASSWORD` Bearer login).
-- Dataset: `global_user_memory`.
+2. No Cognee remember/cognify calls. Cognee is DORMANT - see hub AGENTS.md.
+3. Memory sync never blocks task completion - the MEMORY.md write is the
+   layer that always works.
