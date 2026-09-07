@@ -3841,7 +3841,6 @@ window.launchLibrary = function(kind) {
   openGuidedSessionOverlay(chosen.label, chosen.copy);
   if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, track: chosen.track });
 };
-    };
 
     function openGuidedSessionOverlay(title, copy) {
       closeGuidedSessionOverlay();
