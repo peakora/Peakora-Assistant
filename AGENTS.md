@@ -5,6 +5,8 @@
 - CRITICAL INSTRUCTION: Do not output raw parameter tags, DSML tags, or XML tool closing tags in text. Execute tool actions cleanly without echoing parser parameters.
 - Commit every finished task immediately (so the owner never has to chase progress across sessions). No task is done until it is committed and pushed.
 - No em-dashes (use plain hyphens or restructure). No emoji anywhere (chat, code, copy, commits).
+- ALWAYS check the peakora-cortex hub (github.com/peakora/peakora-cortex) at the start of every new task to pick the best skills and agents for the job (fetch MEMORY.md, read the registry, invoke matching skills from `.agents/skills/` before writing code).
+- ALWAYS divide and categorize prompts into logical chunks (state PROMPT A, B..., confirm the split when asked), finish and verify one chunk before starting the next.
 - Big prompts: divide into chunks and confirm the split before executing; finish and verify one chunk before starting the next.
 
 ## Architecture (Cloudflare stack)
