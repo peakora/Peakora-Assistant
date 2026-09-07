@@ -1788,24 +1788,28 @@
               </div>
             </div>
 
-            <!-- STANDALONE INHALE • EXHALE CARD -->
-            <div class="dash-card" style="margin-bottom:24px; position:relative; overflow:hidden; text-align:center;">
-              <div class="dash-card-title" style="letter-spacing:0.08em;">INHALE &bull; EXHALE</div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 auto 6px; max-width:460px; line-height:1.6;">
-                A gentle 4-2-6 rhythm — breathe in for 4, hold for 2, let go for 6. Ten slow cycles, about two minutes. Tap the ring to begin, tap again to pause.
-              </p>
-              <div class="breathing-ring-outer" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer; margin:10px auto;" title="Tap to start or pause">
-                <div class="breathing-ring-circle" id="dash-breath-circle"></div>
-                <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
-                <div class="breathing-center-info">
-                  <div class="breathing-action-label" id="dash-breath-state">READY</div>
-                  <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
-                  <div style="font-size:13px; color:#ffffff; font-weight:700; margin-top:4px;" id="dash-breath-total">0:00 / 2:00</div>
+            <!-- STANDALONE INHALE * EXHALE CARD (compact: ring left, copy and controls right) -->
+            <div class="dash-card inhale-compact-card" style="margin-bottom:24px; position:relative; overflow:hidden;">
+              <div class="inhale-compact-row">
+                <div class="breathing-ring-outer inhale-compact-ring" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer; margin:0; flex-shrink:0;" title="Tap to start or pause">
+                  <div class="breathing-ring-circle" id="dash-breath-circle"></div>
+                  <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
+                  <div class="breathing-center-info">
+                    <div class="breathing-action-label" id="dash-breath-state">READY</div>
+                    <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
+                    <div style="font-size:12px; color:#ffffff; font-weight:700; margin-top:3px;" id="dash-breath-total">0:00 / 2:00</div>
+                  </div>
                 </div>
-              </div>
-              <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
-                <button class="btn ghost" style="font-size:13px; padding:6px 14px;" onclick="resetDashBreathing()">Reset session</button>
-                <span style="font-size:13px; color:var(--theme-text-muted);">Works fully on the free plan — no sound needed, just follow the ring.</span>
+                <div class="inhale-compact-copy">
+                  <div class="dash-card-title" style="letter-spacing:0.08em;">INHALE &bull; EXHALE</div>
+                  <p class="inhale-compact-desc">
+                    A gentle 4-2-6 rhythm - breathe in for 4, hold for 2, let go for  6. Ten slow cycles, about two minutes. Tap the ring to begin, tap again to pause
+                  </p>
+                  <div class="inhale-compact-actions">
+                    <button class="btn ghost" style="font-size:12px; padding:5px 12px;" onclick="resetDashBreathing()">Reset session</button>
+                    <span style="font-size:12px; color:var(--theme-text-muted);">Free, no sound needed - just follow the ring.</span>
+                  </div>
+                </div>
               </div>
             </div>
           `;
