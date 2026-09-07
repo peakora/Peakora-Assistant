@@ -3722,6 +3722,83 @@
       if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
       openGuidedSessionOverlay(chosen.label, chosen.copy);
       if (window.PeakoraTracker) window.PeakoraTracker.track("guided_session_started", { kind, track: chosen.track });
+const LIBRARY_SESSIONS = {
+  // SOUNDSCAPE LIBRARY (paid presets, layered from the synth engine)
+  s1: { track: 'bowl', label: 'Soundscape - Deep Tide', copy: 'A low singing bowl over a slow ocean swell. Feel every exhale soften into the tide. Rest here five minutes or longer.' },
+  s2: { track: 'rain', label: 'Soundscape - Candlelight Rain', copy: 'Rain against a quiet window, warm and unhurried. Let your shoulders drop as the patter steadies your breath.' },
+  s3: { track: 'fire', label: 'Soundscape - Hearth', copy: 'A slow evening fire, embers breathing low. Each pop is a small permission to let the day go.' },
+  s4: { track: 'om', label: 'Soundscape - Temple Drone', copy: 'A deep harmonium drone, steady as a heartbeat. Rest the mind against it and simply ride.' },
+  s5: { track: 'wind', label: 'Soundscape - Open Valley', copy: 'Wind crossing a wide valley, clean and slow. Let it move through you, no resistance.' },
+  s6: { track: 'binaural', label: 'Soundscape - Deep Focus Theta', copy: 'A 6Hz theta drift for headsets - focus without forcing, calm without fading.' },
+  s7: { track: 'ocean', label: 'Soundscape - Night Shore', copy: 'Soft surf under a dark sky, patience in every wave. Breathe out with the retreating foam.' },
+  s8: { track: 'night', label: 'Soundscape - Summer Meadow', copy: 'Crickets and a warm breeze, the hum of a contented night. Let it hold you while you unwind.' },
+  s9: { track: 'bowl', label: 'Soundscape - Singing Bowl Dawn', copy: 'A single bowl rung slowly, morning quiet around it. Three long notes and a soft bell. Begin.' },
+  s10: { track: 'rain', label: 'Soundscape - Garden Drizzle', copy: 'Fine rain on leaves, a gentle green hush. Let the cool air settle your thoughts one at a time.' },
+
+  // MEDITATIONS (guided text sessions over ambient beds)
+  m1: { track: 'bowl', label: 'Meditation - Arrive (3 min)', copy: 'Settle wherever you are. Bell rings once. Breathe in slow count of four, out of six. Repeat four times, letting anchor sounds hold you. Softly, you have arrived.' },
+  m2: { track: 'rain', label: 'Meditation - One Breath at a Time (5 min)', copy: 'Nothing to fix. Each breath fills you, each exhale empties the noise. When your mind wanders, come home to one breath, then the next.' },
+  m3: { track: 'om', label: 'Meditation - Anchor the Mind (6 min', copy: 'The drone is your anchor. Thoughts drift by like boats - you watch, you do not board. Return to the hum, over and over, kindly.' },
+  m4: { track: 'binaural', label: 'Meditation - Focus Reset (4 min', copy: 'A short theta reset for deep work. Eyes closed, jaw soft. Theta hum steadies your attention into one clean channel.' },
+  m5: { track: 'ocean', label: 'Meditation - Tidal Release (7 min', copy: 'Each wave = one held tension. Breathe in with the swell, let it go with the pull. Name it, exhale it, wave after wave.' },
+  m6: { track: 'fire', label: 'Meditation - Warm Rest (5 min', copy: 'Rest your attention on the fire. Slow, steady warmth - the same gentleness you would offer someone you love.' },
+  m7: { track: 'night', label: 'Meditation - Nightfall (6 min', copy: 'Crickets hum, day dims. Let each exhale take one worry with it until the sound is all thats left.' },
+  m8: { track: 'bowl', label: 'Meditation - Heart Softening (8 min', copy: 'Hands over your heart, breath slow. With every out-breath, widen yourself one degree. You are allowed to feel this much.' },
+  m9: { track: 'wind', label: 'Meditation - Open Space (5 min', copy: 'Become the valley - spacious, unhurried, unbothered. Thoughts pass like weather;you stay open.' },
+  m10: { track: 'rain', label: 'Meditation - Enough (4 min', copy: 'For three minutes, you need nothing. Rain falls, you breathe, and that is enough.' },
+
+  // BODY SCANS
+  b1: { track: 'bowl', label: 'Body Scan - Whole Body Reset (8 min', copy: 'Bell rings. From the crown of your head to the soles of your feet, travel slowly. At each stop, breathe in and soften one degree.' },
+  b2: { track: 'rain', label: 'Body Scan - Feet to Crown (8 min', copy: 'Begin at your feet - notice them, thank them. Move up: calves, knees, hips, belly, chest, hands, shoulders, neck, jaw, eyes, crown. No fixing, only noticing.' },
+  b3: { track: 'ocean', label: 'Body Scan - Tension Map (6 min', copy: 'Scan for the places you hold: jaw, shoulders, hands, belly. At each, breathe in, and on the exhale let that spot soften like a wave pulling back.' },
+  b4: { track: 'om', label: 'Body Scan - Resting Breath (7 min', copy: 'Rest your attention on your breath at your belly. When sensation calls, visit it softly, then return home to your breath.' },
+  b5: { track: 'bowl', label: 'Body Scan - Sleep Wind-Down (10 min', copy: 'Darker and slower as you go. Feet, legs, hips, chest, arms, face. Each stop heavier, softer, readier for sleep.' },
+  b6: { track: 'fire', label: 'Body Scan - Warm Release (6 min', copy: 'Imagine warmth rising from your feet like a fire glowing low. It melts each knot as it climbs. Soft shoulders, soft jaw, soft mind.' },
+  b7: { track: 'wind', label: 'Body Scan - Space Between (5 min', copy: 'Notice not just your body but the space around it - air behind your knees, above your shoulders. Rest in that space. You are allowed to take up room.' },
+  b8: { track: 'night', label: 'Body Scan - Grounding (6 min', copy: 'Feel your feet on the floor, your seat beneath you, the evening hum around you. Heavier and steadier, you are here.' },
+
+  // HEALING FREQUENCY STUDIO (binaural theta presets by intention,
+  //  each a real 6Hz theta drift from our engine, named by its effect)
+  f1: { track: 'binaural', label: 'Frequency - Release & Reset', copy: 'A steady 6Hz theta drift, headphones on. Let go of the day in three long exhales. Reset, then rise.' },
+  f2: { track: 'binaural', label: 'Frequency - Deep Calm', copy: 'Theta drift for a nervous system that forgot how to slow down. Five minutes, eyes closed, breath long.' },
+  f3: { track: 'binaural', label: 'Frequency - Focus Flow', copy: 'Steady low theta for work that needs depth. Put your task in front of you, start the drift, and sink in.' },
+  f4: { track: 'binaural', label: 'Frequency - Sleep Prep', copy: 'A slow theta descent ten minutes before bed. Dim lights, headphones low, let the hum carry you under.' },
+  f5: { track: 'binaural', label: 'Frequency - Gentle Energy', copy: 'A lighter theta lift for the afternoon slump. Breathe brighter with it - alert, soft, unhurried.' },
+  f6: { track: 'binaural', label: 'Frequency - Anxiety Settle', copy: 'For the tight-chest moments. Theta drift steadies your edges. Inhale four, exhale eight, let the hum hold you.' },
+  f7: { track: 'binaural', label: 'Frequency - Heart Coherence', copy: 'Slow theta with a steady six-count breath - in six, out six - to bring your heart and mind into the same quiet room.' },
+  f8: { track: 'binaural', label: 'Frequency - Creative Access', copy: 'Theta sits at the door of the subconscious. Let the drift open it a crack, then let whatever wants to come through.' },
+  f9: { track: 'binaural', label: 'Frequency - Evening Wind-Down', copy: 'After dinner, before screens: a ten-minute theta glide to close the loop on the day and hand you over to rest.' },
+  f10: { track: 'binaural', label: 'Frequency - Morning Stillness', copy: 'Before the world wakes, theta holds you in neutral. A quiet runway for the day ahead.' },
+
+  // READINGS (short guided texts to read back softly over ambient beds)
+  r1: { track: 'rain', label: 'Reading - The Permission Slip', copy: 'Read slowly, out loud if you can. You do not need to earn rest. Rest is not a reward;itisa baseline. Tonight, give yourself the thing you keep postponing, and let it count.' },
+  r2: { track: 'bowl', label: 'Reading - The Long Game', copy: 'Whatever you are building does not need to be finished today. It needs one honest step, then another. The person you are becoming is built in unremarkable Tuesdays.' },
+  r3: { track: 'om', label: 'Reading - Enough Already', copy: 'You have enough. Enough time, if you spend it wisely. Enough capacity, if you stop measuring it against everyone else. Say it once, aloud: I have enough.' },
+  r4: { track: 'fire', label: 'Reading - The Warm Start', copy: 'Begin the way you would warm a cold room: gently, repeatedly, without judgment. Every small beginning counts. You do not need to be on fire - only warm enough to move.' },
+  r5: { track: 'ocean', label: 'Reading - Tide of the Day', copy: 'Some days arrive high and loud like a storm tide. They pass. You are not the tide;you are the shore that remains. Hold your ground, then wait for morning.' },
+  r6: { track: 'wind', label: 'Reading - The Quiet Yes', copy: 'The most powerful word this week might be no. No to the extra, the urgent, the draining - to clear room for one soft yes to what matters. Choose that one yes today.' },
+  r7: { track: 'night', label: 'Reading - Rest as Practice', copy: 'Rest is a skill you rebuild on purpose. Ten minutes of nothing, on purpose, is not laziness - it is reps for a calmer nervous system. Train it like you would anything.' },
+  r8: { track: 'bowl', label: 'Reading - The Next Small Thing', copy: 'When everything feels heavy, the only instruction worth following is the next small thing: a glass of water, one stretch, one breath. Stack those, and let them become a day.' },
+  r9: { track: 'rain', label: 'Reading - Weather and You', copy: 'Your mood is weather, not climate. It moves through, and it changes. You do not have to act on every storm - only to keep walking through it, umbrella or not.' },
+  r10: { track: 'om', label: 'Reading - The Evening Ledger', copy: 'At day close, count what you actually did, not what you failed to:. I showed up, I breathed, I rested, I tried again. Write one line. That is the ledger. Close it kindly.' }
+};
+
+window.launchLibrary = function(kind) {
+  if (typeof isPeakoraPlusActive === 'function' && !isPeakoraPlusActive()) {
+    if (typeof openPlanSelectionModal === 'function') openPlanSelectionModal();
+    return;
+  }
+  const chosen = LIBRARY_SESSIONS[kind];
+  if (!chosen) {
+    if (typeof showToastNotification === 'function') showToastNotification('That session is not available yet');
+    return;
+  }
+  stopAmbientAudio();
+  if (typeof playAmbientAudio === 'function') playAmbientAudio(chosen.track);
+  if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
+  openGuidedSessionOverlay(chosen.label, chosen.copy);
+  if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, track: chosen.track });
+};
     };
 
     function openGuidedSessionOverlay(title, copy) {
@@ -3793,13 +3870,6 @@
     }
 
     function playAmbientAudio(type) {
-      if (!isPeakoraPlusActive()) {
-        if (typeof showToastNotification === 'function') {
-          showToastNotification('The Soundscape Studio is a Peakora+ treat');
-        }
-        openPlanSelectionModal();
-        return;
-      }
       if (currentlyPlayingTrack === type) {
         stopAmbientAudio();
         return;
@@ -4285,13 +4355,6 @@
 
     window.toggleAmbientLayer = function(key) {
       const existing = ambientLayers[key];
-      if (!(existing && existing.playing) && !isPeakoraPlusActive()) {
-        if (typeof showToastNotification === 'function') {
-          showToastNotification('Ambient mixing is a Peakora+ treat');
-        }
-        openPlanSelectionModal();
-        return;
-      }
       if (existing && existing.playing) {
         existing.nodes.forEach(n => {
           try { if (n.stop) n.stop(); if (n.disconnect) n.disconnect(); } catch (e) {}
