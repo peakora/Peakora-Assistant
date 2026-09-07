@@ -3762,7 +3762,9 @@
       if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
       openGuidedSessionOverlay(chosen.label, chosen.copy);
       if (window.PeakoraTracker) window.PeakoraTracker.track("guided_session_started", { kind, track: chosen.track });
-const LIBRARY_SESSIONS = {
+    };
+
+    const LIBRARY_SESSIONS = {
   // SOUNDSCAPE LIBRARY (paid presets, layered from the synth engine)
   s1: { track: 'bowl', label: 'Soundscape - Deep Tide', copy: 'A low singing bowl over a slow ocean swell. Feel every exhale soften into the tide. Rest here five minutes or longer.' },
   s2: { track: 'rain', label: 'Soundscape - Candlelight Rain', copy: 'Rain against a quiet window, warm and unhurried. Let your shoulders drop as the patter steadies your breath.' },
@@ -4777,14 +4779,7 @@ window.launchLibrary = function(kind) {
       window.currentDashTab = tabName;
       toggleDashDrawer(false);
       if (typeof renderStep === "function") {
-        try {
-          renderStep();
-        } catch (err) {
-          var c = document.getElementById("step-container");
-          if (c) {
-            c.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#111;color:#ff6b6b;padding:10px;font-family:monospace;font-size:12px;line-height:1.5;white-space:pre-wrap;">DEBUG-PROBE ' + (err && err.message ? err.message : err) + '\n\n' + (err && err.stack ? err.stack : '');
-          }
-        }
+        renderStep();
       }
     };
 
