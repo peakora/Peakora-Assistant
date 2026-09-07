@@ -1481,9 +1481,13 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     Plans
                   </button>
+                  <button class="dash-nav-btn ${activeTab === 'insights' ? 'active' : ''}" onclick="switchDashTab('insights')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v10M5.6 7.5a8 8 0 1 0 12.8 0"/></svg>
+                    Insights
+                  </button>
                   <button class="dash-nav-btn ${activeTab === 'soundscapes' ? 'active' : ''}" onclick="switchDashTab('soundscapes')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                    Insights
+                    Soundscape
                   </button>
                   <button class="dash-nav-btn ${activeTab === 'picks' || activeTab === 'library' ? 'active' : ''}" onclick="switchDashTab('picks')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -1521,7 +1525,7 @@
             },
             anxious: {
               title: "A little wired right now",
-              text: "That's okay — it happens. Try the 60-second breathing ring in Insights, and let the 528Hz tone take the edge off.",
+              text: "That's okay — it happens. Try the breathing ring on Home, and let the 528Hz tone take the edge off.",
               color: "#c084fc"
             },
             sleepy: {
@@ -1816,21 +1820,9 @@
           }, 50);
         }
 
-        // TAB 2: INSIGHTS & SOUNDSCAPES (SCREENSHOT 2 EXACT OVERHAUL + SOUNDSCAPE CONTROLS)
-        if (activeTab === "soundscapes") {
+        // TAB 2a: INSIGHTS (MOOD PATTERN + MOOD BALANCE)
+        if (activeTab === "insights") {
           html += `
-            <div class="soundscape-top-bar">
-              <div class="soundscape-brand">
-                <div class="soundscape-brand-icon"></div>
-                <span>${getBrandName()}</span>
-              </div>
-              <div style="display:flex; gap:16px; align-items:center;">
-                <span id="ss-battery">Battery: --</span>
-                <span id="ss-clock">--:--</span>
-                <span id="ss-net">Online</span>
-              </div>
-            </div>
-
             <!-- INSIGHTS HERO: YOUR MOOD PATTERN + MOOD BALANCE (moved here from Home) -->
             <div class="dash-card" style="margin-bottom:24px; padding:4px 24px 18px;">
               <div class="dash-card-title" style="letter-spacing:0.08em; margin-bottom:14px; padding-top:14px;">Your Insights</div>
@@ -1901,6 +1893,25 @@
                   <p style="font-size:12px; color:var(--theme-text-muted); font-style:italic; margin:12px 0 0; line-height:1.5;">${read}</p>
                 </div>`;
               })()}
+            </div>
+          `;
+
+          setTimeout(() => { if (typeof initInsightsTab === 'function') initInsightsTab(); }, 60);
+        }
+
+        // TAB 2b: SOUNDSCAPE STUDIO (the app's audio home)
+        if (activeTab === "soundscapes") {
+          html += `
+            <div class="soundscape-top-bar">
+              <div class="soundscape-brand">
+                <div class="soundscape-brand-icon"></div>
+                <span>${getBrandName()}</span>
+              </div>
+              <div style="display:flex; gap:16px; align-items:center;">
+                <span id="ss-battery">Battery: --</span>
+                <span id="ss-clock">--:--</span>
+                <span id="ss-net">Online</span>
+              </div>
             </div>
 
             <!-- SOUNDSCAPE STUDIO & AMBIENT FLOW SECTION (the app's audio home) -->
