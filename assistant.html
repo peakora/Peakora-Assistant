@@ -4907,6 +4907,11 @@ window.launchLibrary = function(kind) {
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      // Legacy flow decommissioned: the old standalone onboarding wrote an
+      // orphaned `peakora_onboarding` key. Remove any residue so it can
+      // never gate a future render.
+      try { localStorage.removeItem("peakora_onboarding"); } catch (e) {}
+
       const hasState = loadState();
 
       // Open the Quiet Start one-time pack iff navigated here with ?open=tripwire
@@ -4945,7 +4950,7 @@ window.launchLibrary = function(kind) {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=17").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=18").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

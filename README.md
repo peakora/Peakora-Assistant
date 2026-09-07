@@ -42,7 +42,8 @@ Peakora Assistant runs on two complementary halves:
 
 **Assistant PWA (`assistant.html` + `assistant.css`)**
 - Installable, standalone PWA with a custom manifest and offline support (`service-worker.js`)
-- 7-day reset plan with a visual timeline and onboarding flow (`assistant-onboarding.html`, `assistant-home.html`)
+- 7-day reset plan with a visual timeline and onboarding flow (in-app, in `assistant.html`)
+- Legacy standalone assistant pages (`assistant-home.html`, `assistant-onboarding.html`) are now redirect stubs to `assistant.html`
 - Mood tracking with a bubble-canvas visualizer and analytics bars showing brightest moments
 - Guided breathing exercises with animated breathing rings
 - Solfeggio soundscape player (ocean, rainforest, fireplace, night crickets, wind, om chant)
@@ -89,9 +90,9 @@ Peakora Assistant runs on two complementary halves:
 ```
 peakora-assistant/
 ├── index.html              # Marketing landing page (entry point)
-├── assistant.html          # Full assistant dashboard PWA
-├── assistant-home.html     # Assistant home view
-├── assistant-onboarding.html
+├── assistant.html          # Full assistant dashboard PWA (monolith, onboarding in-app)
+├── assistant-home.html     # Redirect stub -> assistant.html (legacy flow decommissioned)
+├── assistant-onboarding.html # Redirect stub -> assistant.html (legacy flow decommissioned)
 ├── pricing.html            # Peakora Plus pricing + checkout
 ├── thankyou.html           # Post-checkout confirmation (sets verified flag)
 ├── script.js               # Landing-page assistant modal + knowledge base
