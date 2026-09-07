@@ -363,3 +363,6 @@ and the cross-repo memory layers. User preference: call the owner **Ala** (never
 - Auth: registered secret `COGNEE_API_KEY` sent as `X-Api-Key` header
   (fallback: `COGNEE_AUTH_EMAIL` / `COGNEE_AUTH_PASSWORD` Bearer login).
 - Dataset: `global_user_memory`.
+
+## 2026-09-06 session handoff ( unfinished restructure
+- USER asked: make Soundscape Studio its own standalone section ( move Mood Balance + Mood Pattern to Insights( INHALE compact. Progress:footer cosmetics, build v17 tag, footer-form strip, INHALE glow removal, page-mode onboarding, SW v17 lane( all DONE+live. NOT done:the Soundscape block currently still sits under the Insights header area in home render ( attempts to cut/move caused a template-state inversion breaking script#1 ( syntax error at extracted line ~1845 / file line 1882 ( Mood Balance card return template parses OUT-of-template due to an unclosed backtick opener EARLIER( probably at the cut seam( approach:restore div clo balance AND backtick parity via a proper lexer( or move the block with fewer seams( NOT pushing broken code; tree reverted to clean,

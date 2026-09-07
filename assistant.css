@@ -1469,8 +1469,8 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 
 .breathing-ring-outer {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: min(200px, 72vw);
+  height: auto; aspect-ratio: 1;
   margin: 20px auto;
   display: flex;
   align-items: center;
