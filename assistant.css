@@ -1481,11 +1481,11 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(from 180deg, #f4a261, #a78bfa, #e07a5f, #f4a261);
-  mask: radial-gradient(transparent 68%, #000 70%);
-  -webkit-mask: radial-gradient(transparent 68%, #000 70%);
-  box-shadow: 0 0 30px rgba(244, 162, 97, 0.5);
-  animation: rotateConic 12s linear infinite;
+  background: conic-gradient(from 180deg, #ffd497, #f4a261, #e07a5f, #a78bfa, #ffd497);
+  mask: radial-gradient(transparent 65%, #000 68%);
+  -webkit-mask: radial-gradient(transparent 65%, #000 68%);
+  box-shadow: 0 0 6px rgba(255,212,151,0.14), 0 0 38px rgba(244,162,97,0.5), 0 0 110px rgba(224,122,95,0.30);
+  animation: rotateConic 10s linear infinite;
 }
 
 @keyframes rotateConic {
@@ -1517,7 +1517,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 
 /* INHALE compact card (Home dashboard) */
 .inhale-compact-card {
-  padding: 18px 22px;
+  padding: 14px 20px;  text-align:center;
 }
 
 .inhale-compact-row {
@@ -1528,27 +1528,27 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 }
 
 .inhale-compact-ring {
-  width: 112px;
-  height: 112px;
-  min-width: 112px;
-  margin: 0;
+  width: min(185px, 58vw);
+  height: auto;
+  min-width: 0;
+  margin:  2px auto 4px;
 }
 
 .inhale-compact-copy {
   flex:  1;
   min-width: 0;
-  text-align: left;
+  text-align: center;
 }
 
 .inhale-compact-desc {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--theme-text-muted);
   margin:  6px 0 10px;
   line-height: 1.5;
 }
 
 .inhale-compact-actions {
-  display: flex;
+  display: flex;  justify-content:center;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
@@ -1560,9 +1560,9 @@ body[data-theme="sunset"], [data-theme="sunset"] {
     text-align: center;
   }
   .inhale-compact-ring {
-    width: 94px;
-    height: 94px;
-    min-width: 94px;
+  width: min(140px, 54vw);
+  min-width: 0;
+  height: auto;
   }
   .inhale-compact-copy {
     text-align: center;

@@ -1788,27 +1788,25 @@
               </div>
             </div>
 
-            <!-- STANDALONE INHALE * EXHALE CARD (compact: ring left, copy and controls right) -->
+<!-- INHALE * EXHALE CARD (screenshot look: centered breathing ring, warm glow, slim card) -->
             <div class="dash-card inhale-compact-card" style="margin-bottom:24px; position:relative; overflow:hidden;">
-              <div class="inhale-compact-row">
-                <div class="breathing-ring-outer inhale-compact-ring" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer; margin:0; flex-shrink:0;" title="Tap to start or pause">
-                  <div class="breathing-ring-circle" id="dash-breath-circle"></div>
-                  <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
-                  <div class="breathing-center-info">
-                    <div class="breathing-action-label" id="dash-breath-state">READY</div>
-                    <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
-                    <div style="font-size:12px; color:#ffffff; font-weight:700; margin-top:3px;" id="dash-breath-total">0:00 / 2:00</div>
-                  </div>
+              <div class="breathing-ring-outer inhale-compact-ring" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer;" title="Tap to start or pause">
+                <div class="breathing-ring-circle" id="dash-breath-circle"></div>
+                <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
+                <div class="breathing-center-info">
+                  <div class="breathing-action-label" id="dash-breath-state">READY</div>
+                  <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
+                  <div style="font-size:12px; color:#ffffff; font-weight:700; margin-top:3px;" id="dash-breath-total">0:00 / 2:00</div>
                 </div>
-                <div class="inhale-compact-copy">
-                  <div class="dash-card-title" style="letter-spacing:0.08em;">INHALE &bull; EXHALE</div>
-                  <p class="inhale-compact-desc">
-                    A gentle 4-2-6 rhythm - breathe in for 4, hold for 2, let go for  6. Ten slow cycles, about two minutes. Tap the ring to begin, tap again to pause
-                  </p>
-                  <div class="inhale-compact-actions">
-                    <button class="btn ghost" style="font-size:12px; padding:5px 12px;" onclick="resetDashBreathing()">Reset session</button>
-                    <span style="font-size:12px; color:var(--theme-text-muted);">Free, no sound needed - just follow the ring.</span>
-                  </div>
+              </div>
+              <div class="inhale-compact-copy">
+                <div class="dash-card-title" style="letter-spacing:0.08em; text-align:center;">INHALE &bull; EXHALE</div>
+                <p class="inhale-compact-desc">
+                  A gentle 4-2-6 rhythm - breathe in for  4, hold for  2, let go for  6. Ten slow cycles, about two minutes. Tap the ring to begin, tap again to pause
+                </p>
+                <div class="inhale-compact-actions">
+                  <button class="btn ghost" style="font-size:12px; padding:5px 12px;" onclick="resetDashBreathing()">Reset session</button>
+                  <span style="font-size:12px; color:var(--theme-text-muted);">Free, no sound needed - just follow the ring.</span>
                 </div>
               </div>
             </div>
@@ -4037,26 +4035,29 @@
         waveEnvelope *= 0.96;
       }
 
-      waveIdlePhase += 0.006;
+      waveIdlePhase +=  0.002;
 
       const paint = (color, amp, opacity, phaseShift) => {
         ctx2d.beginPath();
         for (let x = 0; x <= w; x += 2) {
           const base = Math.sin((x / w) * Math.PI * 2 + waveIdlePhase + phaseShift);
           const detail = Math.sin((x / w) * Math.PI * 5 + waveIdlePhase * 1.6 + phaseShift) * 0.35;
-          const height = mid * (0.12 + level * 0.8) * amp;
+          const height = mid * (0.10 + level *  0.55) * amp;
           const y = mid + (base + detail * (0.4 + level)) * height;
           x === 0 ? ctx2d.moveTo(x, y) : ctx2d.lineTo(x, y);
         }
         ctx2d.strokeStyle = color;
-        ctx2d.globalAlpha = opacity;
-        ctx2d.lineWidth = 2.2;
+        ctx2d.globalAlpha = opacity *  0.14;
+        ctx2d.lineWidth =  7;
         ctx2d.stroke();
-        ctx2d.globalAlpha = 1;
+        ctx2d.globalAlpha = opacity;
+        ctx2d.lineWidth =  2.6;
+        ctx2d.stroke();
+        ctx2d.globalAlpha =  1;
       };
 
-      paint('#f4a261', 1, 0.95, 0);
-      paint('#a78bfa', 0.65, 0.6, Math.PI / 3);
+      paint('#f7edf6',  1,  0.9,  0);
+      paint('#fec4ae',  0.55,  0.35, Math.PI /  3);
 
       const nameEl = document.getElementById('wave-track-name');
       const timeEl = document.getElementById('wave-track-time');
