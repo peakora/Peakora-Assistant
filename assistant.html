@@ -4777,7 +4777,14 @@ window.launchLibrary = function(kind) {
       window.currentDashTab = tabName;
       toggleDashDrawer(false);
       if (typeof renderStep === "function") {
-        renderStep();
+        try {
+          renderStep();
+        } catch (err) {
+          var c = document.getElementById("step-container");
+          if (c) {
+            c.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#111;color:#ff6b6b;padding:10px;font-family:monospace;font-size:12px;line-height:1.5;white-space:pre-wrap;">DEBUG-PROBE ' + (err && err.message ? err.message : err) + '\n\n' + (err && err.stack ? err.stack : '');
+          }
+        }
       }
     };
 
