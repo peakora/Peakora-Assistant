@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Peakora Assistant · build v17</title>
+  <title>Peakora Assistant</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="./assets/hub-logo.png?v=3">
@@ -66,10 +66,7 @@
         <!-- Steps render here dynamically -->
       </main>
 
-      <footer class="assistant-footer">
-        © 2026 Peakora™ - For a Better You. · build v17
-      </footer>
-    </div>
+      </div>
   </div>
 
   <script src="affiliate.js"></script>
@@ -959,7 +956,6 @@
       const outerCard = document.querySelector(".assistant-card");
       const outerShell = document.querySelector(".assistant-shell");
       const outerHeader = document.querySelector(".assistant-header");
-      const outerFooter = document.querySelector(".assistant-footer");
 
       if (key === "home") {
         if (outerCard) outerCard.classList.add("is-dashboard-mode");
@@ -982,7 +978,7 @@
 
       const brandEl = document.getElementById("header-brand-name");
       if (brandEl) {
-        brandEl.innerHTML = (isPlusActive ? 'PEAKORA <span style="color:var(--accent-color, #7c3aed); font-weight:900; margin-left:2px;">+</span>' : 'PEAKORA') + ' <span style="font-size:11px; font-weight:700; letter-spacing:0.08em; color:var(--accent-color, #f4a261);">build v17</span>';
+        brandEl.innerHTML = isPlusActive ? 'PEAKORA <span style="color:var(--accent-color, #7c3aed); font-weight:900; margin-left:2px;">+</span>' : 'PEAKORA';
       }
 
       const container = document.getElementById("step-container");
