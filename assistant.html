@@ -2265,18 +2265,41 @@
         // TAB 3: PLANS & PAST PLANS HISTORY
         if (activeTab === "plans" || activeTab === "programs") {
           const pastPlans = getPastPlans();
+          const goalRaw = (state.answers && state.answers.goal) ? state.answers.goal : 'feeling a little more steady';
+          const paceRaw = (state.answers && state.answers.time) ? state.answers.time : '5-10 minutes';
+          const daysDone = plan.filter((p, i) => i < todayIndex).length;
+          const weekPct = Math.round((daysDone / Math.max(plan.length, 1)) * 100);
+          const lastMood = localStorage.getItem('peakora_last_mood') || null;
+          const moodLine = lastMood ? `, and today you logged <strong style="color:var(--theme-accent);">${lastMood}</strong>` : '';
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
               <h1 class="dash-welcome-h1">Your Plans & Past Weeks</h1>
               <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Your current 7-day reset lives here, along with any weeks you've saved for later.</p>
             </div>
-            
-            <div class="dash-card mb-16">
-              <div class="dash-card-title">This Week's Reset Plan</div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Working toward: ${(state.answers && state.answers.goal) ? state.answers.goal : 'feeling a little more steady'} • Daily pace: ${(state.answers && state.answers.time) ? state.answers.time : '5–10 minutes'} a day</p>
-              <div style="display:flex; flex-direction:column; gap:10px;">
+
+            <div class="dash-card mb-16" style="overflow:hidden; padding:0;">
+              <div style="background:linear-gradient(135deg, rgba(224,122,95,0.22), rgba(244,162,97,0.10) 45%, rgba(167,139,250,0.16)); padding:20px 22px 18px; border-bottom:1px solid var(--theme-card-border);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+                  <div style="min-width:0;">
+                    <div class="dash-card-title" style="margin:0 0 4px;">This Week's Reset Plan</div>
+                    <div style="font-size:13px; color:var(--theme-text-main); line-height:1.5;">Working toward <strong style="color:var(--theme-accent);">${goalRaw}</strong>${moodLine}.</div>
+                    <div style="font-size:12px; color:var(--theme-text-muted); margin-top:2px;">Daily pace: ${paceRaw} a day. Small on purpose, steady on purpose.</div>
+                  </div>
+                  <div style="text-align:center; flex-shrink:0;">
+                    <div style="font-size:26px; font-weight:900; color:var(--theme-accent); line-height:1;">${weekPct}%</div>
+                    <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; color:var(--theme-text-muted); margin-top:2px;">WEEK</div>
+                    <div style="width:74px; height:5px; border-radius:999px; background:rgba(255,255,255,0.12); margin:6px auto 0; overflow:hidden;">
+                      <div style="width:${weekPct}%; height:100%; border-radius:999px; background:var(--theme-primary-grad);"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="padding:16px 18px 20px; display:flex; flex-direction:column; gap:12px;">
                 ${plan.map((p, idx) => {
                   const isToday = idx === todayIndex;
+                  const isPast = idx < todayIndex;
+                  const dayNames = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
                   const dayIcons = [
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M8 12h8"/></svg>',
@@ -2287,30 +2310,30 @@
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
                   ];
                   const icon = dayIcons[idx % dayIcons.length];
+                  const stepsHtml = (p.steps || []).map((s, si) => `
+                    <div style="display:flex; gap:8px; align-items:flex-start; font-size:13px; color:var(--theme-text-main); line-height:1.5; margin-top:6px;">
+                      <span style="flex-shrink:0; width:18px; height:18px; border-radius:50%; background:rgba(244,162,97,0.14); border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent); font-size:10px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; margin-top:1px;">${si + 1}</span>
+                      <span>${s}</span>
+                    </div>`).join('');
                   return `
-                    <div class="plan-choice-btn ${isToday ? 'is-today' : ''}">
+                    <div class="plan-choice-btn ${isToday ? 'is-today' : ''}" style="margin:0; ${isPast ? 'opacity:0.72;' : ''}">
                       <div class="plan-choice-icon">${icon}</div>
                       <div class="plan-choice-content">
                         <div class="plan-choice-header">
-                          <span class="plan-choice-title">${p.title}</span>
+                          <span class="plan-choice-title">${dayNames[idx]} - ${p.title}</span>
                           ${isToday ? '<span class="plan-choice-pill active-pill">Today</span>' : ''}
+                          ${isPast ? '<span class="plan-choice-pill" style="font-size:9px; color:#34d399;">Done</span>' : ''}
                           ${p.duration ? `<span class="plan-choice-pill" style="font-size:9px;">${p.duration}</span>` : ''}
                         </div>
                         <div class="plan-choice-action"><strong>Focus:</strong> ${p.focus || ''}</div>
                         <div class="plan-choice-action"><strong>How:</strong> ${p.action}</div>
-                        ${(p.steps || []).map(s => `<div style="font-size:13px; color:var(--theme-text-muted); padding-left:10px; border-left:2px solid rgba(255,255,255,0.12); margin:3px 0;">• ${s}</div>`).join('')}
+                        ${stepsHtml}
                         <div class="plan-choice-action" style="color:var(--theme-text-muted); font-size:13px;"><strong>Reflection:</strong> ${p.reflection || ''}</div>
                         <div class="plan-choice-quote">"${p.forgiveness}"</div>
                       </div>
                     </div>
                   `;
                 }).join('')}
-
-                <!-- START A NEW PLAN -->
-                <button class="btn secondary" style="width:100%; font-weight:700; font-size:13px; margin-top:6px; padding:14px; border:1.5px dashed var(--theme-accent); color:var(--theme-accent); background:rgba(244,162,97,0.06);" onclick="startNewPlan()">
-                  + Start a New Plan
-                </button>
-                <p style="font-size:13px; color:var(--theme-text-muted); text-align:center; margin:2px 0 0;">Finished this week, or life changed? Begin a fresh onboarding and we'll shape a new 7 days around where you are now. Your current plan is saved to history first, so nothing is lost.</p>
               </div>
             </div>
 
