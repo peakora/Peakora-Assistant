@@ -777,7 +777,7 @@ export async function handleAffiliateLink(request, env) {
   const aff = await getAffiliateByEmail(env.DB, email);
   if (!aff) return json({ success: false, error: 'Not found' }, 404);
   const body = await readJson(request);
-  const target = String(body.target || env.APP_PUBLIC_URL || 'https://peakora.life').replace(/\/+$/, '');
+  const target = String(body.target || env.APP_PUBLIC_URL || 'https://peakora.network').replace(/\/+$/, '');
   const utm = body.utm && typeof body.utm === 'object' ? body.utm : null;
   let url = `${target}/?via=${encodeURIComponent(aff.referral_code)}`;
   if (utm) {

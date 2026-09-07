@@ -4,15 +4,15 @@
  *
  * Responsibilities (zero dependencies, ~self-contained):
  *  - Parse ?via=<code> or ?ref=<code> from the landing URL.
- *  - Persist attribution in a first-party cookie (domain=.peakora.life so it
+ *  - Persist attribution in a first-party cookie (domain=.peakora.network so it
  *    survives the marketing -> app subdomain hop) and localStorage, for 90
  *    days (configurable via PEAKORA_AFF.cookieDays).
  *  - Surface a global window.PeakoraAffiliate API: getReferralCode(),
  *    getAttribution(), attachToUrl(url), and auto-attach the referral token
  *    to Dodo checkout links.
  *
- * Cross-subdomain persistence: the cookie is written with domain=.peakora.life
- * so peakora.life + app.peakora.life share it. On localhost (no apex), the
+ * Cross-subdomain persistence: the cookie is written with domain=.peakora.network
+ * so peakora.network + app.peakora.network share it. On localhost (no apex), the
  * cookie is host-only as a fallback and localStorage carries attribution
  * within the same origin.
  *
@@ -45,7 +45,7 @@
   function nowSec() { return Math.floor(Date.now() / 1000); }
 
   function getApexDomain(host) {
-    // peakora.life, www.peakora.life, app.peakora.life -> peakora.life
+    // peakora.network, www.peakora.network, app.peakora.network -> peakora.network
     var parts = (host || '').split('.');
     if (parts.length <= 2) return host;
     return parts.slice(-2).join('.');

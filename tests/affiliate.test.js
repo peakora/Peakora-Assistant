@@ -127,20 +127,20 @@ function makeFakeDb() {
 // ── Tests: pure functions ──────────────────────────────────────────────────
 describe('referral token parsing', () => {
   test('extracts ?via= code', () => {
-    assert.equal(parseReferralToken('https://peakora.life/?via=ABC123'), 'ABC123');
+    assert.equal(parseReferralToken('https://peakora.network/?via=ABC123'), 'ABC123');
   });
   test('extracts ?ref= code', () => {
-    assert.equal(parseReferralToken('https://peakora.life/?ref=XYZ789'), 'XYZ789');
+    assert.equal(parseReferralToken('https://peakora.network/?ref=XYZ789'), 'XYZ789');
   });
   test('returns null when no token present', () => {
-    assert.equal(parseReferralToken('https://peakora.life/'), null);
+    assert.equal(parseReferralToken('https://peakora.network/'), null);
   });
   test('returns null for empty/garbage input', () => {
     assert.equal(parseReferralToken(''), null);
     assert.equal(parseReferralToken(null), null);
   });
   test('prefers via when present before ref', () => {
-    assert.equal(parseReferralToken('https://peakora.life/?via=AAA&ref=BBB'), 'AAA');
+    assert.equal(parseReferralToken('https://peakora.network/?via=AAA&ref=BBB'), 'AAA');
   });
 });
 
@@ -198,7 +198,7 @@ describe('referral code generation', () => {
 
 describe('email normalization', () => {
   test('lowercases and trims', () => {
-    assert.equal(normalizeEmail('  Ala@Peakora.LIFE  '), 'ala@peakora.life');
+    assert.equal(normalizeEmail('  Ala@Peakora.NETWORK  '), 'ala@peakora.network');
   });
   test('rejects invalid', () => {
     assert.equal(normalizeEmail('not-an-email'), null);
@@ -248,7 +248,7 @@ describe('processAffiliateAttribution', () => {
     const db = makeFakeDb();
     const env = { DB: db };
     const affiliate = {
-      id: 'aff_1', user_email: 'partner@peakora.life', referral_code: 'ABCD12',
+      id: 'aff_1', user_email: 'partner@peakora.network', referral_code: 'ABCD12',
       status: 'active', commission_type: 'percentage', commission_rate: 0.50,
       cookie_days: 90
     };
@@ -278,7 +278,7 @@ describe('processAffiliateAttribution', () => {
     const db = makeFakeDb();
     const env = { DB: db };
     const affiliate = {
-      id: 'aff_2', user_email: 'self@peakora.life', referral_code: 'SELF12',
+      id: 'aff_2', user_email: 'self@peakora.network', referral_code: 'SELF12',
       status: 'active', commission_type: 'percentage', commission_rate: 0.50,
       cookie_days: 90
     };
@@ -288,7 +288,7 @@ describe('processAffiliateAttribution', () => {
       clicked_at: new Date(Date.now() - 3600 * 1000).toISOString()
     });
     const rec = {
-      email: 'self@peakora.life', transactionId: 'DODO-002',
+      email: 'self@peakora.network', transactionId: 'DODO-002',
       referralCode: 'SELF12',
       eventType: 'invoice_paid', grossAmount: 4.99
     };
@@ -318,7 +318,7 @@ describe('processAffiliateAttribution', () => {
     const db = makeFakeDb();
     const env = { DB: db };
     const affiliate = {
-      id: 'aff_3', user_email: 'p3@peakora.life', referral_code: 'DBL123',
+      id: 'aff_3', user_email: 'p3@peakora.network', referral_code: 'DBL123',
       status: 'active', commission_type: 'percentage', commission_rate: 0.30,
       cookie_days: 90
     };
@@ -354,7 +354,7 @@ describe('processAffiliateAttribution', () => {
     const db = makeFakeDb();
     const env = { DB: db };
     const affiliate = {
-      id: 'aff_flat', user_email: 'flat@peakora.life', referral_code: 'FLAT12',
+      id: 'aff_flat', user_email: 'flat@peakora.network', referral_code: 'FLAT12',
       status: 'active', commission_type: 'flat', commission_rate: 5,
       cookie_days: 90
     };
@@ -398,7 +398,7 @@ describe('processAffiliateAttribution', () => {
     const db = makeFakeDb();
     const env = { DB: db };
     const other = {
-      id: 'aff_other', user_email: 'other@peakora.life', referral_code: 'OTHER1',
+      id: 'aff_other', user_email: 'other@peakora.network', referral_code: 'OTHER1',
       status: 'active', commission_type: 'percentage', commission_rate: 0.50,
       cookie_days: 90
     };
@@ -423,12 +423,12 @@ describe('processAffiliateAttribution', () => {
     const db = makeFakeDb();
     const env = { DB: db };
     const alice = {
-      id: 'aff_alice', user_email: 'alice@peakora.life', referral_code: 'ALICE1',
+      id: 'aff_alice', user_email: 'alice@peakora.network', referral_code: 'ALICE1',
       status: 'active', commission_type: 'percentage', commission_rate: 0.50,
       cookie_days: 90
     };
     const bob = {
-      id: 'aff_bob', user_email: 'bob@peakora.life', referral_code: 'BOBBY1',
+      id: 'aff_bob', user_email: 'bob@peakora.network', referral_code: 'BOBBY1',
       status: 'active', commission_type: 'percentage', commission_rate: 0.30,
       cookie_days: 90
     };

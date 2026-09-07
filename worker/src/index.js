@@ -190,8 +190,8 @@ function json(data, status = 200) {
 
 const ALLOWED_ORIGINS = [
   'https://peakora-assistant.pages.dev',
-  'https://peakora.life',
-  'https://www.peakora.life',
+  'https://peakora.network',
+  'https://www.peakora.network',
   'https://peakora-api.peakora.workers.dev',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
@@ -341,7 +341,7 @@ async function handleSubscriptionStatus(request, env) {
   if (!email) return json({ success: true, status: 'free', isPlus: false });
 
   // Master account — always full access, bypasses all paywalls
-  const MASTER_EMAIL = 'peakora.network@gmail.com';
+  const MASTER_EMAIL = 'peakora.life@gmail.com';
   if (email === MASTER_EMAIL) {
     return json({ success: true, email, status: 'active', plan: 'master', isPlus: true, isMaster: true });
   }
