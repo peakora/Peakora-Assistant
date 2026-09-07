@@ -1528,7 +1528,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 }
 
 .inhale-compact-ring {
-  width: min(185px, 58vw);
+  width: min(150px, 42vw);
   height: auto;
   min-width: 0;
   margin:  2px auto 4px;

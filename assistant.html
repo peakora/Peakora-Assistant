@@ -67,7 +67,7 @@
       </main>
 
       <footer class="assistant-footer">
-        © 2026 Peakora™ — For a Better You. · build v17
+        © 2026 Peakora™ - For a Better You. · build v17
       </footer>
     </div>
   </div>
@@ -96,7 +96,7 @@
           if (events.length > 100) events.shift();
           localStorage.setItem("peakora_usage_events", JSON.stringify(events));
           console.log("[Peakora Telemetry]", action, details);
-          // Anonymous usage ping to the server (no email, no identity — action names only)
+          // Anonymous usage ping to the server (no email, no identity - action names only)
           try {
             if (navigator.sendBeacon) {
               navigator.sendBeacon("https://peakora-api.peakora.workers.dev/event", new Blob([JSON.stringify({ action, details })], { type: "application/json" }));
@@ -570,7 +570,7 @@
           return '<span class="mood-family-legend-item"><span class="mood-family-legend-dot" style="background:' + c + ';"></span>' + lbl + '</span>';
         }).join('') + '</div>';
 
-      // Show the "Preview" tag only when literally nothing has shaped this week yet —
+      // Show the "Preview" tag only when literally nothing has shaped this week yet -
       // once ANY entry exists (real or seeded-from-plan), it is this user's data, not a sample..
       const hasAnyData = (real && real.length > 0) || data.some(c => c.seeded);
       host.innerHTML = (usingSample && !hasAnyData) ? '<span class="mood-sample-tag">Preview</span>' : '' + chips + svg + legend;
@@ -612,7 +612,7 @@
       }
     }
 
-    // Master account — bypasses all paywalls and role restrictions across all
+    // Master account - bypasses all paywalls and role restrictions across all
     // Peakora SaaS apps. Used by Ala for full access to every feature.
     const MASTER_EMAIL = "peakora.network@gmail.com";
 
@@ -636,7 +636,7 @@
     }
 
     // Dev/test affordances (plan preview toggle) only appear with ?dev=1 or
-    // localStorage peakora_dev_mode=true — hidden from members and reviewers.
+    // localStorage peakora_dev_mode=true - hidden from members and reviewers.
     function isDevMode() {
       return localStorage.getItem("peakora_dev_mode") === "true" ||
              (window.location.search || "").indexOf("dev=1") !== -1;
@@ -705,7 +705,7 @@
       if (diffDays < 0) return 0;
 
       // ADAPTIVE WEEK (Peakora+): the plan moves forward one day per day you
-      // actually show up. Miss a few days and it simply waits — no catching
+      // actually show up. Miss a few days and it simply waits - no catching
       // up, no broken streak, no guilt.
       if (isPeakoraPlusActive()) {
         const startStr = state.planStartDate;
@@ -757,37 +757,37 @@
       const profiles = {
         calm: {
           opening: "Before anything else, give your nervous system a reason to feel safe. Sit somewhere comfortable, drop your shoulders, and breathe out longer than you breathe in.",
-          day2: "Yesterday you simply arrived. Today, add one gentle layer: after your breathing, spend " + timePhrase + " on something that usually calms you — a warm drink, a slow stretch, a quiet corner.",
-          whyCalm: "Because you told us you want " + goalRaw + ", every day this week starts small on purpose — calm grows from safety, not effort.",
-          win: "Your gentle win — “" + gentleWin + "” — is your anchor today. Do it slowly, and let it count fully.",
+          day2: "Yesterday you simply arrived. Today, add one gentle layer: after your breathing, spend " + timePhrase + " on something that usually calms you - a warm drink, a slow stretch, a quiet corner.",
+          whyCalm: "Because you told us you want " + goalRaw + ", every day this week starts small on purpose - calm grows from safety, not effort.",
+          win: "Your gentle win - “" + gentleWin + "” - is your anchor today. Do it slowly, and let it count fully.",
           sound: "harmony"
         },
         rhythm: {
-          opening: "Routines stick when they’re attached to something you already do. Pick one everyday moment — morning coffee, brushing your teeth — and pair it with one slow breath.",
+          opening: "Routines stick when they’re attached to something you already do. Pick one everyday moment - morning coffee, brushing your teeth - and pair it with one slow breath.",
           day2: "Same anchor moment as yesterday, same breath. Then spend " + timePhrase + " writing down what your ideal simple morning actually looks like.",
-          whyCalm: "Because you’re working toward " + goalRaw + ", this week repeats the same tiny anchor daily — rhythm comes from repetition, not willpower.",
-          win: "Your gentle win — “" + gentleWin + "” — becomes part of the routine today. Do it right after your anchor moment.",
+          whyCalm: "Because you’re working toward " + goalRaw + ", this week repeats the same tiny anchor daily - rhythm comes from repetition, not willpower.",
+          win: "Your gentle win - “" + gentleWin + "” - becomes part of the routine today. Do it right after your anchor moment.",
           sound: "rain"
         },
         clarity: {
-          opening: "A cluttered mind clears fastest when it can empty out. Before anything else today, write down everything circling in your head — no organizing, just emptying.",
+          opening: "A cluttered mind clears fastest when it can empty out. Before anything else today, write down everything circling in your head - no organizing, just emptying.",
           day2: "Repeat yesterday’s brain-dump, then circle the one thing that actually matters today. Give it " + timePhrase + " of your honest attention, nothing else.",
           whyCalm: "Because you told us you want " + goalRaw + ", every day this week protects one small pocket of single-tasked attention.",
-          win: "Your gentle win — “" + gentleWin + "” — is today’s one thing. Close every other tab, literal and mental, while you do it.",
+          win: "Your gentle win - “" + gentleWin + "” - is today’s one thing. Close every other tab, literal and mental, while you do it.",
           sound: "binaural"
         },
         energy: {
           opening: "Energy follows movement, even tiny movement. Stand up, roll your shoulders back, and take five slow breaths with your feet flat on the floor.",
-          day2: "Repeat yesterday’s wake-up breaths, then add " + timePhrase + " of light movement — a walk around the block, stretching, whatever your body asks for.",
+          day2: "Repeat yesterday’s wake-up breaths, then add " + timePhrase + " of light movement - a walk around the block, stretching, whatever your body asks for.",
           whyCalm: "Because you’re reaching for " + goalRaw + ", this week builds energy through small physical wins instead of waiting for motivation.",
-          win: "Your gentle win — “" + gentleWin + "” — is today’s spark. Notice how your body feels right after you do it.",
+          win: "Your gentle win - “" + gentleWin + "” - is today’s spark. Notice how your body feels right after you do it.",
           sound: "ocean"
         },
         balance: {
-          opening: "Start where you are, not where you think you should be. Take " + timePhrase + " today to do one tiny thing that points toward " + goalRaw + " — so small it almost feels too easy.",
+          opening: "Start where you are, not where you think you should be. Take " + timePhrase + " today to do one tiny thing that points toward " + goalRaw + " - so small it almost feels too easy.",
           day2: "Repeat yesterday’s tiny action, then add one more small step that supports it. Think of it as stacking kindness, not effort.",
-          whyCalm: "Because you told us you want " + goalRaw + ", every day this week is built to be finishable — momentum loves small wins.",
-          win: "Your gentle win — “" + gentleWin + "” — is today’s focus. Do the smallest version of it, even if it’s imperfect.",
+          whyCalm: "Because you told us you want " + goalRaw + ", every day this week is built to be finishable - momentum loves small wins.",
+          win: "Your gentle win - “" + gentleWin + "” - is today’s focus. Do the smallest version of it, even if it’s imperfect.",
           sound: "harmony"
         }
       };
@@ -798,10 +798,10 @@
 
       return [
         {
-          title: "Day 1 — Arrive",
+          title: "Day 1 - Arrive",
           focus: "Start gently, not perfectly.",
           why: P.whyCalm,
-          action: P.opening + " That’s the whole task — let it be enough.",
+          action: P.opening + " That’s the whole task - let it be enough.",
           steps: [
             "Find a quiet spot and set a timer for " + timeShort + ".",
             "Follow the breathing or grounding step above, slowly.",
@@ -813,25 +813,25 @@
           sound: P.sound
         },
         {
-          title: "Day 2 — First threads",
+          title: "Day 2 - First threads",
           focus: "Build a little movement without forcing it.",
           why: "Repeating yesterday’s step on purpose tells your brain: this is safe, we can keep it.",
           action: P.day2,
           steps: [
-            "Redo yesterday’s small action first — same time if you can.",
+            "Redo yesterday’s small action first - same time if you can.",
             "Add the one new layer described above.",
             "Keep the total under " + timeShort + "; stop while it still feels easy."
           ],
           reflection: "Ask yourself: “What made this feel easier or harder today?”",
-          forgiveness: "If you didn’t get to it, imagine how you’d speak to a friend in your exact situation — then offer yourself the same tone.",
+          forgiveness: "If you didn’t get to it, imagine how you’d speak to a friend in your exact situation - then offer yourself the same tone.",
           duration: timeShort,
           sound: P.sound
         },
         {
-          title: "Day 3 — Soften the weight",
+          title: "Day 3 - Soften the weight",
           focus: "Make space for how you actually feel.",
-          why: "You named “" + challengeRaw + "” as what’s been heavy. Today we don’t fix it — we just give it some air.",
-          action: "Take a short pause — one slow breath in, one softer breath out, a few times. Then say or write one honest sentence about how “" + challengeRaw + "” has been showing up for you lately.",
+          why: "You named “" + challengeRaw + "” as what’s been heavy. Today we don’t fix it - we just give it some air.",
+          action: "Take a short pause - one slow breath in, one softer breath out, a few times. Then say or write one honest sentence about how “" + challengeRaw + "” has been showing up for you lately.",
           steps: [
             "Do one slow 4-2-6 breathing cycle (inhale 4s, hold 2s, exhale 6s).",
             "Write or say your one honest sentence about the heaviness.",
@@ -843,13 +843,13 @@
           sound: "om"
         },
         {
-          title: "Day 4 — Your gentle win",
+          title: "Day 4 - Your gentle win",
           focus: "Give yourself a clear, kind win.",
-          why: "You picked this win yourself on a hard-weather day in your life — today it gets to happen.",
+          why: "You picked this win yourself on a hard-weather day in your life - today it gets to happen.",
           action: P.win,
           steps: [
             "Name the smallest possible version of “" + gentleWin + "”.",
-            "Do that version now — imperfect is perfect.",
+            "Do that version now - imperfect is perfect.",
             "Mark it done somewhere you’ll see it."
           ],
           reflection: "Notice how it feels in your body to follow through on something small you chose for yourself.",
@@ -858,10 +858,10 @@
           sound: "bowl"
         },
         {
-          title: "Day 5 — Sidestep the pattern",
+          title: "Day 5 - Sidestep the pattern",
           focus: "Work with your patterns, not against them.",
           why: "You told us “" + obstacles + "” usually throws you off. Today is about designing around it, not fighting it.",
-          action: "Look honestly at “" + obstacles + "”. Pick one tiny way to soften or sidestep it just for today — move the charger to another room, tell someone your plan, set one gentle boundary.",
+          action: "Look honestly at “" + obstacles + "”. Pick one tiny way to soften or sidestep it just for today - move the charger to another room, tell someone your plan, set one gentle boundary.",
           steps: [
             "Name the exact moment the pattern usually kicks in.",
             "Choose one small environmental tweak for that moment.",
@@ -873,11 +873,11 @@
           sound: "night"
         },
         {
-          title: "Day 6 — Listen and adjust",
+          title: "Day 6 - Listen and adjust",
           focus: "Let your real energy set the pace.",
-          why: "Halfway through, honest information beats forced consistency — today the plan bends to fit you.",
+          why: "Halfway through, honest information beats forced consistency - today the plan bends to fit you.",
           action: "Check in with yourself: in one sentence, how’s your energy today? " +
-            (insight ? "Earlier you said you wanted more “" + insight + "” — does that still feel true? " : "") +
+            (insight ? "Earlier you said you wanted more “" + insight + "” - does that still feel true? " : "") +
             "Then choose: repeat your favorite day so far, or take the full day as rest. Both count.",
           steps: [
             "Rate your energy out loud from 1 to 10.",
@@ -890,10 +890,10 @@
           sound: "fire"
         },
         {
-          title: "Day 7 — Gather and carry forward",
+          title: "Day 7 - Gather and carry forward",
           focus: "Keep one thing. Just one.",
-          why: "Integration beats intensity — one habit kept for a month changes more than seven habits kept for a week.",
-          action: "Look back over your week. Choose the single day that felt most doable or most nourishing — that one thing is what you carry into next week. No more than that.",
+          why: "Integration beats intensity - one habit kept for a month changes more than seven habits kept for a week.",
+          action: "Look back over your week. Choose the single day that felt most doable or most nourishing - that one thing is what you carry into next week. No more than that.",
           steps: [
             "Skim your week and pick your one keeper.",
             "Decide exactly when it will happen next week (day + rough time).",
@@ -994,7 +994,7 @@
           <div class="step step-centered">
             <h2>Welcome to Peakora</h2>
             <p class="soft-note">A gentle corner of your day to breathe, reset, and get back to yourself.</p>
-            <p>In a few short questions, we'll shape a 7-day plan that actually fits your life — no pressure, no perfection.</p>
+            <p>In a few short questions, we'll shape a 7-day plan that actually fits your life - no pressure, no perfection.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="goToStepKey('explanation')">Let's begin</button>
               <button class="btn ghost" onclick="goToStepKey('home')" style="margin-top:10px;">Back to your space</button>
@@ -1011,7 +1011,7 @@
             <h2>How Peakora works</h2>
             <p class="soft-note">Made to fit into your day, not take it over.</p>
             <ul class="preview-list">
-              <li><strong>Gentle by design:</strong> No guilt, no pressure — you set the pace.</li>
+              <li><strong>Gentle by design:</strong> No guilt, no pressure - you set the pace.</li>
               <li><strong>Made for real life:</strong> Your plan flexes with messy days, not against them.</li>
               <li><strong>Small steps, real change:</strong> Tiny daily wins that quietly add up.</li>
             </ul>
@@ -1075,7 +1075,7 @@
         container.innerHTML = `
           <div class="step">
             <h2>How much time can you honestly give each day?</h2>
-            <p class="soft-note">Go with what feels realistic — a few honest minutes beats a heroic plan you can't keep.</p>
+            <p class="soft-note">Go with what feels realistic - a few honest minutes beats a heroic plan you can't keep.</p>
             <div class="options vertical mt-16">
               <button class="btn secondary" onclick="handleTime('5–10 minutes')">5–10 minutes (Gentle & Light)</button>
               <button class="btn secondary" onclick="handleTime('15–20 minutes')">15–20 minutes (Steady Momentum)</button>
@@ -1215,13 +1215,13 @@
         container.innerHTML = `
           <div class="step">
             <h2>Pick how deep you want to go</h2>
-            <p class="soft-note">The core stuff — your full 7-day plan and daily toolkit — is free. Always.</p>
+            <p class="soft-note">The core stuff - your full 7-day plan and daily toolkit - is free. Always.</p>
             <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:var(--radius-md); padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
                 <span style="background:var(--theme-primary-grad); color:#fff; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
               </div>
-              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood check-in, breathing ring, micro-journal, analytics, offline mode & unlimited resets — the essentials, on us.</p>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood check-in, breathing ring, micro-journal, analytics, offline mode & unlimited resets - the essentials, on us.</p>
             </div>
             <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -1261,7 +1261,7 @@
         container.innerHTML = `
           <div class="step step-centered">
             <h2>A moment for yourself</h2>
-            <p class="soft-note">Sixty seconds to check how you're actually doing — mind and body.</p>
+            <p class="soft-note">Sixty seconds to check how you're actually doing - mind and body.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="goToStepKey('daily_checkin')">Let's check in</button>
               <button class="btn ghost mt-8" onclick="goToStepKey('home')">Back to Home</button>
@@ -1284,7 +1284,7 @@
               <button class="btn ghost" onclick="selectMoodTag('Hopeful / Light')">Hopeful / Light</button>
               <button class="btn ghost" onclick="selectMoodTag('Energized / Strong')">Energized / Strong</button>
             </div>
-            <textarea id="daily-checkin-input" class="input" placeholder="What's behind that feeling? (Optional — no pressure)"></textarea>
+            <textarea id="daily-checkin-input" class="input" placeholder="What's behind that feeling? (Optional - no pressure)"></textarea>
             <div class="actions mt-16">
               <button class="btn secondary" onclick="goToStepKey('home')">Not now</button>
               <button class="btn primary" onclick="handleDailyCheckin()">Save my check-in</button>
@@ -1300,7 +1300,7 @@
         container.innerHTML = `
           <div class="step step-centered">
             <h2>Thanks for checking in</h2>
-            <p>I’ve noted <strong>"${feeling}"</strong> — little by little, this builds a real picture of your days.</p>
+            <p>I’ve noted <strong>"${feeling}"</strong> - little by little, this builds a real picture of your days.</p>
             <p class="soft-note mt-12">Honesty in small moments is how clarity grows.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="goToStepKey('home')">Return to Home</button>
@@ -1367,7 +1367,7 @@
         container.innerHTML = `
           <div class="step step-centered">
             <h2>Keep Peakora close</h2>
-            <p class="soft-note">Add it to your home screen — one tap and you're in your calm place.</p>
+            <p class="soft-note">Add it to your home screen - one tap and you're in your calm place.</p>
             <div class="actions vertical mt-20">
               <button class="btn primary" onclick="triggerInstall()">Install App</button>
               <button class="btn ghost mt-8" onclick="goToStepKey('home')">Maybe Later</button>
@@ -1515,7 +1515,7 @@
           const moodInsightMap = {
             happy: {
               title: "You're in a good place",
-              text: "Lovely — days like this are made for the things you enjoy. A great moment to create something, call a friend, or simply soak it in.",
+              text: "Lovely - days like this are made for the things you enjoy. A great moment to create something, call a friend, or simply soak it in.",
               color: "#f4a261"
             },
             calm: {
@@ -1525,7 +1525,7 @@
             },
             anxious: {
               title: "A little wired right now",
-              text: "That's okay — it happens. Try the breathing ring on Home, and let the 528Hz tone take the edge off.",
+              text: "That's okay - it happens. Try the breathing ring on Home, and let the 528Hz tone take the edge off.",
               color: "#c084fc"
             },
             sleepy: {
@@ -1535,7 +1535,7 @@
             },
             energized: {
               title: "Full of spark",
-              text: "You've got real energy today — channel it into that one thing you've been putting off, or move your body while it lasts.",
+              text: "You've got real energy today - channel it into that one thing you've been putting off, or move your body while it lasts.",
               color: "#facc15"
             },
             joyful: {
@@ -1610,7 +1610,7 @@
                 </div>
                 ${isAdaptiveWeekActive() ? `
                 <div style="margin-top:8px; font-size:13px; color:var(--theme-text-muted); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.35); border-radius:var(--radius-sm); padding:7px 12px; line-height:1.5;">
-                  <strong style="color:#34d399;">Adaptive Week:</strong> your plan quietly waited for you — nothing skipped, nothing to catch up on. Just today.
+                  <strong style="color:#34d399;">Adaptive Week:</strong> your plan quietly waited for you - nothing skipped, nothing to catch up on. Just today.
                 </div>` : ''}
 
                 <div class="timeline-arc-wrap" style="margin-top:12px;">
@@ -1621,7 +1621,7 @@
                   
                   <div class="timeline-nodes-row">
                     ${plan.map((p, idx) => {
-                      const shortTitle = (p.title || ('Day ' + (idx + 1))).split('—')[1] ? (p.title.split('—')[1] || '').trim() : (p.title || '').trim();
+                      const shortTitle = (p.title || ('Day ' + (idx + 1))).split('-')[1] ? (p.title.split('-')[1] || '').trim() : (p.title || '').trim();
                       const shortDesc = (p.focus || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                       return `
                     <div class="timeline-node-item ${todayIndex === idx ? 'active-glow' : ''}" id="day-node-${idx + 1}" onclick="clickTimelineDay(${idx + 1})">
@@ -1674,7 +1674,7 @@
               <div class="dash-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div class="dash-card-title">7-Day Reset Progress</div>
-                  <span style="font-size:13px; font-weight:700; color:#a78bfa; background:rgba(167,139,250,0.15); padding:3px 10px; border-radius:999px;">${todayIndex + 1}/7 Days — ${Math.round(((todayIndex + 1)/7)*100)}% complete</span>
+                  <span style="font-size:13px; font-weight:700; color:#a78bfa; background:rgba(167,139,250,0.15); padding:3px 10px; border-radius:999px;">${todayIndex + 1}/7 Days - ${Math.round(((todayIndex + 1)/7)*100)}% complete</span>
                 </div>
                 
                 <div class="progress-bar-container">
@@ -1748,7 +1748,7 @@
                         <span class="toolkit-btn-title">Single-Task Focus Anchor</span>
                         <span class="toolkit-pill-badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.3);">1-Task Priority</span>
                       </div>
-                      <div class="toolkit-btn-row2">One priority for the next hour — nothing more, no guilt</div>
+                      <div class="toolkit-btn-row2">One priority for the next hour - nothing more, no guilt</div>
                     </div>
                   </button>
 
@@ -1769,6 +1769,7 @@
               </div>
             </div>
 
+            <div class="dash-grid-equal" style="margin-bottom:24px;">
             <!-- SECTION 4: REFLECTION SPACE -->
               <!-- REFLECTION SPACE CARD -->
               <div class="dash-card">
@@ -1779,14 +1780,13 @@
                     Saved Quotes (<span id="reflections-count-badge">0</span>)
                   </button>
                 </div>
-                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:8px;">A thought, a small win, or just a moment — drop it here:</p>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:8px;">A thought, a small win, or just a moment - drop it here:</p>
                 <textarea id="story-input" class="input" style="min-height:60px; font-size:12px;" placeholder="What felt good (or honestly, what didn't) today?"></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                  <span style="font-size:13px; color:var(--theme-text-muted);">Kept private — only on this device</span>
+                  <span style="font-size:13px; color:var(--theme-text-muted);">Kept private - only on this device</span>
                   <button class="btn primary" style="font-size:13px; padding:6px 14px;" onclick="handleShareStory()">Keep this thought</button>
                 </div>
               </div>
-            </div>
 
 <!-- INHALE * EXHALE CARD (screenshot look: centered breathing ring, warm glow, slim card) -->
             <div class="dash-card inhale-compact-card" style="margin-bottom:24px; position:relative; overflow:hidden;">
@@ -1809,6 +1809,7 @@
                   <span style="font-size:12px; color:var(--theme-text-muted);">Free, no sound needed - just follow the ring.</span>
                 </div>
               </div>
+            </div>
             </div>
           `;
           
@@ -1842,7 +1843,7 @@
               ${(() => {
                 const real = getCheckins();
                 const usingSample = !real || real.length === 0;
-                // Same 7-day real+seeded window as the Mood Pattern — never an empty week..
+                // Same 7-day real+seeded window as the Mood Pattern - never an empty week..
                 const week = getLast7CheckinsOrPlaceholder();
                 const expansiveFamilies = ['hopeful', 'energized'];
                 const contractiveFamilies = ['heavy', 'anxious'];
@@ -1898,7 +1899,7 @@
                 ${(() => {
                   const real = getCheckins();
                   const usingSample = !real || real.length === 0;
-                  // Same 7-day real+seeded window as the Mood Pattern — never an empty week..
+                  // Same 7-day real+seeded window as the Mood Pattern - never an empty week..
                   const week = getLast7CheckinsOrPlaceholder();
                   const energyScore = { heavy: 22, anxious: 45, neutral: 55, hopeful: 74, energized: 92 };
                   const familyLabels = {
@@ -1961,21 +1962,21 @@
                     });
 
                   const insightByFamily = {
-                    hopeful: "Your week is trending bright. Whatever you've been doing — keep a little of it every day.",
-                    energized: "Lots of spark in your check-ins lately. Lovely — just remember to spend some of it on rest too.",
+                    hopeful: "Your week is trending bright. Whatever you've been doing - keep a little of it every day.",
+                    energized: "Lots of spark in your check-ins lately. Lovely - just remember to spend some of it on rest too.",
                     neutral: "A steady, even week. If you'd like a lift, a short morning breathing round is the gentlest place to start.",
                     anxious: "Your check-ins show some tension this week. The breathing ring and a slow OM chant are your best friends right now.",
-                    heavy: "Things have felt heavy lately. Nothing to fix — small steps and early nights are real progress too."
+                    heavy: "Things have felt heavy lately. Nothing to fix - small steps and early nights are real progress too."
                   };
                   const breathSessions = (PeakoraTracker.getSummary().counts.breath_session_completed) || 0;
                   const breathNote = breathSessions > 0
-                    ? " You've finished " + breathSessions + " breathing session" + (breathSessions > 1 ? "s" : "") + " — your future self says thanks."
-                    : " You haven't tried the breathing ring yet — two quiet minutes is all it asks.";
+                    ? " You've finished " + breathSessions + " breathing session" + (breathSessions > 1 ? "s" : "") + " - your future self says thanks."
+                    : " You haven't tried the breathing ring yet - two quiet minutes is all it asks.";
 
                   return `
                 <div class="dash-card">
                   <div class="dash-card-title">Deep Mood & Energy Analytics</div>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' — showing a sample week until you log your first mood' : ''}:</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin-bottom:10px;">A living picture of your week, drawn from your own check-ins${usingSample ? ' - showing a sample week until you log your first mood' : ''}:</p>
 
                   <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; margin-bottom:10px;">
                     <div style="background:linear-gradient(135deg, rgba(244,162,97,0.14), rgba(167,139,250,0.10)); border:1px solid rgba(244,162,97,0.25); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
@@ -1985,7 +1986,7 @@
                     </div>
                     <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:#ffffff;">${streak}</div>
-                      <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Day streak${streak > 1 ? ' — keep it alive' : ''}</div>
+                      <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600;">Day streak${streak > 1 ? ' - keep it alive' : ''}</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:10px 8px; text-align:center;">
                       <div style="font-size:22px; font-weight:800; color:#ffffff;">${total}</div>
@@ -2006,7 +2007,7 @@
                       ${bars.map(b => {
                         const dayName = b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'narrow' }) : '';
                         return `
-                        <rect x="${b.x}" y="${b.y}" width="${barW}" height="${b.h}" rx="4" fill="${b.color}" opacity="0.9" class="analytics-grow"><title>${b.label}${b.date ? ' — ' + b.date : ''}</title></rect>
+                        <rect x="${b.x}" y="${b.y}" width="${barW}" height="${b.h}" rx="4" fill="${b.color}" opacity="0.9" class="analytics-grow"><title>${b.label}${b.date ? ' - ' + b.date : ''}</title></rect>
                         ${dayName ? `<text x="${b.x + barW / 2}" y="74" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">${dayName}</text>` : ''}`;
                       }).join('')}
                       ${bars.length > 1 ? `<path d="M ${linePts}" fill="none" stroke="#f4a261" stroke-width="2.5" stroke-dasharray="3,3"/>` : ''}
@@ -2024,7 +2025,7 @@
                       <div style="width:100%; height:5px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
                         <div class="analytics-bar" style="width:${r.pct}%; height:100%; background:${r.color}; border-radius:999px; box-shadow:0 0 8px ${r.color}66;"></div>
                       </div>
-                    </div>`).join('') || '<div style="font-size:13px; color:var(--theme-text-muted);">No distribution yet — log a mood on the Home tab to wake this up.</div>'}
+                    </div>`).join('') || '<div style="font-size:13px; color:var(--theme-text-muted);">No distribution yet - log a mood on the Home tab to wake this up.</div>'}
                   </div>
 
                   <p style="font-size:13px; color:var(--theme-text-muted); font-style:italic; margin:8px 0 0;">${insightByFamily[dominant]}${breathNote}</p>
@@ -2054,10 +2055,10 @@
                   return `
                 <div class="dash-card">
                   <div class="dash-card-title">Your Week by Rhythm</div>
-                  <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">Where your energy tends to live across a day, drawn from your check-in timestamps${hasTime ? '' : ' — new check-ins will log their time automatically.'}.</p>
+                  <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">Where your energy tends to live across a day, drawn from your check-in timestamps${hasTime ? '' : ' - new check-ins will log their time automatically.'}.</p>
                   <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px;">
                     ${cells.map(c => { const w = Math.max(12, Math.round((c.n / maxN) * 100)); const bg = c.e == null ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, rgba(244,162,97,' + (0.16 + w / 260) + '), rgba(167,139,250,' + (0.12 + w / 280) + '))'; return `<div style="border-radius:var(--radius-md); padding:10px 6px; text-align:center; background:${bg}; border:1px solid rgba(255,255,255,0.08);">
-                      <div style="font-size:15px; font-weight:800; color:${c.e == null ? 'var(--theme-text-muted)' : '#ffffff'};">${c.e == null ? '—' : c.e}</div>
+                      <div style="font-size:15px; font-weight:800; color:${c.e == null ? 'var(--theme-text-muted)' : '#ffffff'};">${c.e == null ? '-' : c.e}</div>
                       <div style="font-size:9px; color:var(--theme-text-muted); font-weight:600; margin-top:2px;">${c.label}${c.n ? ' · ' + c.n : ''}</div>
                     </div>`; }).join('')}
                   </div>
@@ -2094,6 +2095,7 @@
                 </div>`;
                 })()}
             </div>
+            </div>
           `;
 
           setTimeout(() => { if (typeof initInsightsTab === 'function') initInsightsTab(); }, 60);
@@ -2119,7 +2121,7 @@
               <h2 style="margin:0; font-size:17px; font-weight:800; letter-spacing:0.06em; color:#ffffff;">Soundscape Studio &amp; Ambient Flow</h2>
               <span style="font-size:11px; color:var(--theme-text-muted); font-weight:600; letter-spacing:0.04em;">YOUR AUDIO CENTER</span>
             </div>
-            <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.55;">One place for your daily reset soundtrack — layer ambient worlds, run a guided session, or drift with the healing frequencies below.</p>
+            <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.55;">One place for your daily reset soundtrack - layer ambient worlds, run a guided session, or drift with the healing frequencies below.</p>
 
             <div class="dash-grid-equal">
               <!-- LEFT COLUMN: SOUNDSCAPE STUDIO -->
@@ -2129,7 +2131,7 @@
                   <span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399;">INCLUDED FREE</span>
                 </div>
                 <div style="margin-bottom:12px; padding:10px 12px; border-radius:var(--radius-sm); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.4); font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
-                  The core soundscape studio is included free — the breath ring and 8 ambient worlds are yours any time. Peakora+ adds the guided reading sessions, body scans, healing frequencies, and the full expanded library when you are ready.
+                  The soundscape studio and its 6 ambient worlds are included free, any time. Peakora+ adds the guided reading sessions, body scans, healing frequencies, and the full expanded library when you are ready.
                 </div>
 
                 <!-- AUDIO WAVE VISUALIZER (live, follows the sound actually playing) -->
@@ -2158,17 +2160,17 @@
                   <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;" onchange="switchSoundscapeTrack(this.value)">
                     ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
                   </select>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin:8px 0 0;">Choosing a track starts it right away — the transport buttons above handle the rest.</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin:8px 0 0;">Choosing a track starts it right away - the transport buttons above handle the rest.</p>
                 </div>
               </div>
 
               <!-- RIGHT COLUMN: AMBIENT & ANALYTICS -->
               <div>
-                <!-- AMBIENT SOUNDSCAPES (mix and layer them — tap a card to start or stop it) -->
+                <!-- AMBIENT SOUNDSCAPES (mix and layer them - tap a card to start or stop it) -->
                 <div class="dash-card" style="margin-bottom:16px;">
                   <div class="dash-card-title" style="display:flex; justify-content:space-between; align-items:center;">
                     AMBIENT SOUNDSCAPES
-                    ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
+                    <span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399;">INCLUDED FREE</span>
                   </div>
                   <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a card to start or stop that layer, then blend volumes to taste.</p>
                   <div class="ambient-list">
@@ -2209,12 +2211,12 @@
                     <div class="dash-card-title" style="margin:0;">Guided Sessions</div>
                     ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
                   </div>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.5;">Three ways to reset with sound — each one a complete little journey, not just a track.</p>
+                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.5;">Three ways to reset with sound - each one a complete little journey, not just a track.</p>
 
                   <!-- THE QUIET LIBRARY -->
                   <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
                     <div style="font-size:14px; font-weight:800; color:#ffffff; margin-bottom:2px;">The Quiet Library</div>
-                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">SHORT GUIDED READINGS — 3 TO 10 MINUTES</div>
+                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">SHORT GUIDED READINGS - 3 TO 10 MINUTES</div>
                     <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Soothing narrated resets for bedtime, wind-downs, and morning grounding. A growing shelf of sleep stories, evening unwinds, and gentle starts.</p>
                     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
                       <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Sleep story: The Harbor Lights</span>
@@ -2227,7 +2229,7 @@
                   <!-- GUIDED AUDIO SESSIONS -->
                   <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
                     <div style="font-size:14px; font-weight:800; color:#ffffff; margin-bottom:2px;">Guided Audio Sessions</div>
-                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">BODY SCANS & BREATH JOURNEYS — 5, 10, 15 MIN</div>
+                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">BODY SCANS & BREATH JOURNEYS - 5, 10, 15 MIN</div>
                     <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Step-by-step relaxation you can follow with eyes closed: tense-and-release body scans, gentle breath journeys, and a power-nap reset.</p>
                     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
                       <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">5-min body scan</span>
@@ -2321,7 +2323,7 @@
                 </div>
                 <button class="btn secondary" style="font-size:13px; padding:4px 10px;" onclick="archiveCurrentPlan()">+ Save This Week</button>
               </div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">${isPlus ? "Weeks you've saved live here — revisit one any time:" : "With Peakora+ you can save finished weeks and bring them back whenever life calls for them."}</p>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:10px;">${isPlus ? "Weeks you've saved live here - revisit one any time:" : "With Peakora+ you can save finished weeks and bring them back whenever life calls for them."}</p>
           `;
 
           if (!isPlus) {
@@ -2334,7 +2336,7 @@
           } else if (!pastPlans || pastPlans.length === 0) {
             html += `
               <div style="background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.15); border-radius:var(--radius-md); padding:16px; text-align:center;">
-                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">Nothing saved yet — and that's fine.</p>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 4px;">Nothing saved yet - and that's fine.</p>
                 <p style="font-size:13px; color:var(--theme-text-muted); opacity:0.8; margin:0;">When a week ends, tap <strong>"Save This Week"</strong> and it will wait for you here.</p>
               </div>
             `;
@@ -2342,7 +2344,7 @@
             html += `
               <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
                 <select id="past-plans-select" class="input" style="font-size:12px; font-weight:600; text-align:left;">
-                  ${pastPlans.map((p, i) => `<option value="${i}">${p.title} (${p.date}) — Goal: ${p.goal}</option>`).join('')}
+                  ${pastPlans.map((p, i) => `<option value="${i}">${p.title} (${p.date}) - Goal: ${p.goal}</option>`).join('')}
                 </select>
                 <button class="btn secondary" style="width:100%; font-size:12px; font-weight:600;" onclick="viewPastPlanFromDropdown()">View Plan Details</button>
               </div>
@@ -2359,7 +2361,7 @@
               badgeColor: "#c084fc",
               title: "Flip Your Subconscious Switch",
               tagline: "Delete Limiting Beliefs & Force Your Frequency to Shift",
-              desc: "An audio-first program built around guided sessions that target the quiet stories running under your habits. If you love the breathing and mood work here, this is the same idea pushed deeper — you listen, and your inner script slowly rewrites itself.",
+              desc: "An audio-first program built around guided sessions that target the quiet stories running under your habits. If you love the breathing and mood work here, this is the same idea pushed deeper - you listen, and your inner script slowly rewrites itself.",
               points: ["Audio sessions you can fold into your evening reset", "Targets the beliefs behind self-sabotage loops", "Pairs naturally with your 7-day plan rhythm"],
               cta: "See how it works",
               url: "https://www.digistore24.com/redir/574669/peakoranetworka0d8/",
@@ -2370,8 +2372,8 @@
               badgeColor: "#facc15",
               title: "The 7-Minute Wealth Frequency",
               tagline: "Activate Your Subconscious Theta Wave for Rapid Abundance",
-              desc: "Seven minutes a day with headphones — a theta-based audio track designed to quiet mental noise and prime your mind for noticing opportunity. You already trust sound to calm your nervous system; this applies the same ritual to your money mindset.",
-              points: ["Only 7 minutes — easy to stack after your check-in", "Theta-wave entrainment, the same band behind deep calm", "Backed by a full money-back guarantee"],
+              desc: "Seven minutes a day with headphones - a theta-based audio track designed to quiet mental noise and prime your mind for noticing opportunity. You already trust sound to calm your nervous system; this applies the same ritual to your money mindset.",
+              points: ["Only 7 minutes - easy to stack after your check-in", "Theta-wave entrainment, the same band behind deep calm", "Backed by a full money-back guarantee"],
               cta: "Listen to the frequency",
               url: "https://thebillionairebrainwave.com/DSvsl/#aff=peakoranetworka0d8",
               img: "src/assets/images/pick_wealth_frequency.jpg"
@@ -2435,16 +2437,16 @@
             ["Unlimited 7-Day Plan Resets", "start a fresh week whenever life calls for it"]
           ];
           const plusFeatures = [
-            ["Adaptive Week", "miss a day and your plan quietly waits — no broken streaks, no guilt"],
-            ["Dynamic Themes & Color Spaces", "Sunrise, Twilight, Sage, Amethyst, Solar, Sunset, Ocean — your mood, your palette"],
+            ["Adaptive Week", "miss a day and your plan quietly waits - no broken streaks, no guilt"],
+            ["Dynamic Themes & Color Spaces", "Sunrise, Twilight, Sage, Amethyst, Solar, Sunset, Ocean - your mood, your palette"],
             ["Mood-Reactive Auto Themes", "the whole room quietly shifts color with how you feel"],
             ["Past Plan History & Archiving", "save weeks you loved and re-activate them anytime"],
-            ["Organic Soundscape Synthesizer", "binaural tones, ambient loops, and layered calm — offline ready"]
+            ["Organic Soundscape Synthesizer", "binaural tones, ambient loops, and layered calm - offline ready"]
           ];
           const li = (f, color) => `
             <div style="display:flex; gap:10px; align-items:flex-start;">
               <span style="flex-shrink:0; width:20px; height:20px; border-radius:50%; background:${color}22; border:1px solid ${color}55; color:${color}; font-size:13px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; margin-top:1px;">&#10003;</span>
-              <div style="font-size:12px; color:var(--theme-text-main); line-height:1.5;"><strong>${f[0]}</strong> <span style="color:var(--theme-text-muted);">— ${f[1]}</span></div>
+              <div style="font-size:12px; color:var(--theme-text-main); line-height:1.5;"><strong>${f[0]}</strong> <span style="color:var(--theme-text-muted);">- ${f[1]}</span></div>
             </div>`;
 
           html += `
@@ -2467,7 +2469,7 @@
                 </div>
                 <div style="display:flex; align-items:baseline; gap:6px; margin:8px 0 12px;">
                   <span style="font-size:30px; font-weight:800; color:var(--theme-heading, #ffffff);">$0</span>
-                  <span style="font-size:12px; color:var(--theme-text-muted);">forever — no card, no catch</span>
+                  <span style="font-size:12px; color:var(--theme-text-muted);">forever - no card, no catch</span>
                 </div>
                 <p style="font-size:12.5px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.6;">
                   The essentials that keep you steady: a real plan, honest check-ins, and tools that meet you where you are.
@@ -2496,21 +2498,21 @@
                 </div>
                 <div style="font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                   <span class="sub-status-indicator" style="font-size:13px; font-weight:800; padding:4px 11px; border-radius:999px; display:inline-flex; align-items:center; gap:5px; ${isPlus ? 'background:rgba(244,162,97,0.2); color:var(--theme-accent); border:1px solid rgba(244,162,97,0.45);' : 'background:rgba(245,158,11,0.14); color:#f59e0b; border:1px solid rgba(245,158,11,0.35);'}">
-                    <span style="font-size:7px;">&#9679;</span> ${isPlus ? 'Active — thank you for being here' : 'Status: ' + peakoraSubStatus}
+                    <span style="font-size:7px;">&#9679;</span> ${isPlus ? 'Active - thank you for being here' : 'Status: ' + peakoraSubStatus}
                   </span>
                   ${isDevMode() ? `<button type="button" class="btn ghost" style="font-size:9px; padding:3px 7px; border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius-sm); cursor:pointer; opacity:0.6;" onclick="toggleMockSubscriptionStatus()" title="Preview the other membership state">
                     Preview ${isPlus ? 'free' : 'plus'}
                   </button>` : ''}
                 </div>
                 <p style="font-size:12.5px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.6;">
-                  ${isPlus ? 'Everything below is already yours. Themes, soundscapes, saved weeks — all of it, unlocked.' : 'For the days you want the lights warmer and the sound deeper. Everything in Core, plus the quiet luxuries.'}
+                  ${isPlus ? 'Everything below is already yours. Themes, soundscapes, saved weeks - all of it, unlocked.' : 'For the days you want the lights warmer and the sound deeper. Everything in Core, plus the quiet luxuries.'}
                 </p>
                 <div style="display:flex; flex-direction:column; gap:11px; margin-bottom:20px;">
                   ${plusFeatures.map(f => li(f, '#f4a261')).join('')}
                 </div>
                 <div style="margin-top:auto;">
                   <button class="btn primary" style="width:100%; font-size:13px; font-weight:800; padding:13px; box-shadow:0 8px 22px var(--theme-accent-glow);" onclick="openPlanSelectionModal()">
-                    ${isPlus ? 'Manage Membership & Billing' : 'Go Peakora+ — $9.99/mo'}
+                    ${isPlus ? 'Manage Membership & Billing' : 'Go Peakora+ - $9.99/mo'}
                   </button>
                   <div style="margin-top:10px; display:flex; justify-content:center; gap:14px; font-size:13px; color:var(--theme-text-muted); flex-wrap:wrap;">
                     <span>7-day money-back guarantee</span>
@@ -2525,7 +2527,7 @@
 
             <div class="dash-card" style="margin-top:20px; text-align:center; padding:20px 24px;">
               <p style="margin:0; font-size:12.5px; color:var(--theme-text-muted); line-height:1.7; font-style:italic;">
-                "Whether you stay on Core forever or move to Plus tomorrow — this space is yours either way."
+                "Whether you stay on Core forever or move to Plus tomorrow - this space is yours either way."
               </p>
             </div>
 
@@ -2576,7 +2578,7 @@
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
               <h1 class="dash-welcome-h1">Settings & Little Comforts</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Make this space yours — colors, reminders, and everything in between.</p>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Make this space yours - colors, reminders, and everything in between.</p>
             </div>
 
             <div class="dash-grid-2">
@@ -2609,7 +2611,7 @@
               <!-- SETTINGS CARD 2: NOTIFICATIONS -->
               <div class="dash-card">
                 <div class="dash-card-title">Notifications & Gentle Reminders</div>
-                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Soft prompts, only when you want them — everything stays on your device.</p>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">Soft prompts, only when you want them - everything stays on your device.</p>
                 <div style="display:flex; flex-direction:column; gap:14px;">
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                     <div>
@@ -2635,7 +2637,7 @@
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
                     <div>
                       <div style="font-size:12px; font-weight:700; color:#ffffff;">Push Nudges on This Device</div>
-                      <div style="font-size:13px; color:var(--theme-text-muted);">Real notifications even when the app is closed — works best once installed</div>
+                      <div style="font-size:13px; color:var(--theme-text-muted);">Real notifications even when the app is closed - works best once installed</div>
                     </div>
                     ${switchBtn(localStorage.getItem("peakora_push_enabled") === "true", "togglePushNotifications()")}
                   </div>
@@ -2657,7 +2659,7 @@
               <div class="dash-card" id="install-assistant-card">
                 <div class="dash-card-title" style="margin-bottom:6px;">Install Peakora Assistant</div>
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">
-                  Keep Peakora one tap away — add it to your phone's home screen or your desktop for fast access and a full-screen, app-like feel.
+                  Keep Peakora one tap away - add it to your phone's home screen or your desktop for fast access and a full-screen, app-like feel.
                 </p>
                 <button class="btn primary" style="padding:8px 16px; font-size:12px; font-weight:700;" onclick="openInstallModal()">
                   Install App & Setup Guide
@@ -2668,17 +2670,17 @@
               <div class="dash-card">
                 <div class="dash-card-title" style="margin-bottom:6px;">Your Data, Your Rules</div>
                 <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">
-                  Everything Peakora remembers lives only in this browser. Take it with you, reshape it, or wipe it clean — your call, always.
+                  Everything Peakora remembers lives only in this browser. Take it with you, reshape it, or wipe it clean - your call, always.
                 </p>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                   <button class="btn secondary" style="text-align:left; justify-content:flex-start; font-size:12px; padding:10px 14px; border-radius:var(--radius-sm);" onclick="exportMyData()">
-                    <strong>Download My Data</strong>&nbsp;— every check-in, plan, and preference as JSON
+                    <strong>Download My Data</strong>&nbsp;- every check-in, plan, and preference as JSON
                   </button>
                   <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(255,255,255,0.08); padding:10px 14px; border-radius:var(--radius-sm); color:#ffffff;" onclick="restartOnboarding()">
-                    <strong>Restart Onboarding</strong>&nbsp;— reshape your 7-day plan (membership & moods stay)
+                    <strong>Restart Onboarding</strong>&nbsp;- reshape your 7-day plan (membership & moods stay)
                   </button>
                   <button class="btn ghost" style="text-align:left; justify-content:flex-start; font-size:12px; border:1px solid rgba(251,113,133,0.25); padding:10px 14px; border-radius:var(--radius-sm); color:#fb7185;" onclick="clearAllDataAndReset()">
-                    <strong>Erase Everything</strong>&nbsp;— full reset, nothing kept on this device
+                    <strong>Erase Everything</strong>&nbsp;- full reset, nothing kept on this device
                   </button>
                 </div>
               </div>
@@ -2689,12 +2691,12 @@
               <div style="position:absolute; top:-70px; right:-70px; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow), transparent 70%); pointer-events:none;"></div>
               <div class="dash-card-title" style="text-align:center;">Tell Us How Peakora Feels</div>
               <p style="font-size:12px; color:var(--theme-text-muted); margin:0 auto 16px; max-width:480px; line-height:1.6; text-align:center;">
-                A sentence is plenty. What helped, what annoyed you, what's missing — it goes straight to the small team building this, and we actually read every one.
+                A sentence is plenty. What helped, what annoyed you, what's missing - it goes straight to the small team building this, and we actually read every one.
               </p>
               <div style="max-width:560px; margin:0 auto; background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:var(--radius-md); padding:14px;">
                 <textarea id="peakora-feedback-input" rows="3" class="input" style="width:100%; font-size:13px; line-height:1.6; resize:vertical; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-md); padding:12px 14px;" placeholder="The thing I wish Peakora did is..."></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; flex-wrap:wrap;">
-                  <span style="font-size:13px; color:var(--theme-text-muted);">Anonymous unless you're signed in — never shared, never sold.</span>
+                  <span style="font-size:13px; color:var(--theme-text-muted);">Anonymous unless you're signed in - never shared, never sold.</span>
                   <button class="btn primary" style="font-size:12px; font-weight:800; padding:10px 22px; border-radius:999px; box-shadow:0 6px 18px var(--theme-accent-glow);" onclick="sendFeedback()">Send it over</button>
                 </div>
               </div>
@@ -2739,7 +2741,7 @@
     function selectMoodTag(val) {
       const el = document.getElementById("daily-checkin-input");
       if (el) {
-        el.value = val + (el.value ? " — " + el.value : "");
+        el.value = val + (el.value ? " - " + el.value : "");
       }
     }
 
@@ -2835,7 +2837,7 @@
         const nudged = localStorage.getItem("peakora_plus_nudge_shown") === "true";
         if (checkinCount >= 3 && !nudged) {
           localStorage.setItem("peakora_plus_nudge_shown", "true");
-          const nudgeMsg = "Quiet Start proven: 3 resets in. The full library, guided sessions, healing frequencies wait behind Peakora+. No rush, no nagging — it is here when you want it.";
+          const nudgeMsg = "Quiet Start proven: 3 resets in. The full library, guided sessions, healing frequencies wait behind Peakora+. No rush, no nagging - it is here when you want it.";
           if (typeof showToastNotification === "function") showToastNotification(nudgeMsg);
         }
       }
@@ -2999,7 +3001,7 @@
       renderStep();
     }
 
-    /* DODO PAYMENTS — SERVER-SIDE CHECKOUT (attribution-safe) */
+    /* DODO PAYMENTS - SERVER-SIDE CHECKOUT (attribution-safe) */
     // Checkout goes through the Worker's /dodo/create-checkout so the affiliate
     // referral code is carried into the Dodo checkout metadata and echoed back
     // in the webhook for correct commission attribution.
@@ -3018,7 +3020,7 @@
           <div style="text-align:center;">
             <h3 style="margin:0 0 6px; font-size:18px; color:var(--theme-heading, #ffffff);">Peakora+ Checkout</h3>
             <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 18px;">
-              ${plan === 'yearly' ? 'Annual plan — $95.88/yr (save 20%)' : 'Monthly plan — $9.99/mo'}
+              ${plan === 'yearly' ? 'Annual plan - $95.88/yr (save 20%)' : 'Monthly plan - $9.99/mo'}
             </p>
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:var(--radius-md); padding:14px; margin-bottom:16px;">
               <label style="display:block; font-size:13px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
@@ -3055,11 +3057,11 @@
           <div style="text-align:center;">
             <h3 style="margin:0 0 6px; font-size:18px; color:var(--theme-heading, #ffffff);">Quiet Start Mini Pack</h3>
             <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.55;">
-              One-time $4.99. Five premium soundscapes that stay yours forever — thunderstorm, studio room, deep fireplace, mountain brook, soft synth. No subscription. No streaks. Just a small first step.
+              One-time $4.99. Five premium soundscapes that stay yours forever - thunderstorm, studio room, deep fireplace, mountain brook, soft synth. No subscription. No streaks. Just a small first step.
 
             </p>
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:var(--radius-md); padding:12px; margin-bottom:12px; font-size:12px; color:var(--theme-text-muted); line-height:1.5;">
-              Why it exists: we found the people who take one small paid step, however tiny, are the ones who actually get traction. This is yours to keep either way — it is not a trial.
+              Why it exists: we found the people who take one small paid step, however tiny, are the ones who actually get traction. This is yours to keep either way - it is not a trial.
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--theme-card-border); border-radius:var(--radius-md); padding:14px; margin-bottom:16px;">
               <label style="display:block; font-size:13px; color:var(--theme-text-muted); margin-bottom:6px; font-weight:600;">EMAIL (for your receipt)</label>
@@ -3249,7 +3251,7 @@
       localStorage.setItem(key, next ? "true" : "false");
       if (key === "peakora_notif_daily") scheduleDailyReminder();
       if (typeof showToastNotification === 'function') {
-        showToastNotification(next ? "Preference on — noted" : "Preference off — quiet it is");
+        showToastNotification(next ? "Preference on - noted" : "Preference off - quiet it is");
       }
       renderStep();
     };
@@ -3264,7 +3266,7 @@
       renderStep();
     };
 
-    /* DAILY REMINDER — in-app gentle prompt at the chosen time while the app is open */
+    /* DAILY REMINDER - in-app gentle prompt at the chosen time while the app is open */
     function parseReminderTime(str) {
       const m = /^(\d{2}):(\d{2})\s(AM|PM)$/.exec(str || "08:00 AM");
       if (!m) return { h: 8, min: 0 };
@@ -3286,14 +3288,14 @@
         if (localStorage.getItem("peakora_notif_last_shown") !== today) {
           localStorage.setItem("peakora_notif_last_shown", today);
           if (typeof showToastNotification === 'function') {
-            showToastNotification("Gentle reminder — a 10-second mood check-in keeps your streak alive");
+            showToastNotification("Gentle reminder - a 10-second mood check-in keeps your streak alive");
           }
         }
         scheduleDailyReminder();
       }, next - now);
     }
 
-    /* WEEKLY DIGEST — a tiny summary toast when a fresh week of data exists */
+    /* WEEKLY DIGEST - a tiny summary toast when a fresh week of data exists */
     function maybeShowWeeklyDigest() {
       if (localStorage.getItem("peakora_notif_weekly") !== "true") return;
       const last = parseInt(localStorage.getItem("peakora_digest_last") || "0", 10);
@@ -3312,7 +3314,7 @@
       }, 4000);
     }
 
-    /* WEB PUSH — real notifications on installed devices, even when closed */
+    /* WEB PUSH - real notifications on installed devices, even when closed */
     function urlBase64ToUint8Array(base64String) {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
       const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -3338,7 +3340,7 @@
           }
         } catch (e) {}
         localStorage.setItem("peakora_push_enabled", "false");
-        if (typeof showToastNotification === 'function') showToastNotification("Push nudges off — the app stays quiet until you return");
+        if (typeof showToastNotification === 'function') showToastNotification("Push nudges off - the app stays quiet until you return");
         renderStep();
         return;
       }
@@ -3349,7 +3351,7 @@
       }
       const perm = await Notification.requestPermission();
       if (perm !== 'granted') {
-        if (typeof showToastNotification === 'function') showToastNotification("Notifications were not allowed — you can enable them in browser settings");
+        if (typeof showToastNotification === 'function') showToastNotification("Notifications were not allowed - you can enable them in browser settings");
         return;
       }
       try {
@@ -3368,7 +3370,7 @@
         });
         localStorage.setItem("peakora_push_enabled", "true");
         if (window.PeakoraTracker) PeakoraTracker.track("push_enabled", {});
-        if (typeof showToastNotification === 'function') showToastNotification("Gentle nudges on — one a day at most, never noise");
+        if (typeof showToastNotification === 'function') showToastNotification("Gentle nudges on - one a day at most, never noise");
         renderStep();
       } catch (e) {
         console.warn("Push subscribe failed:", e);
@@ -3376,12 +3378,12 @@
       }
     };
 
-    /* IN-APP FEEDBACK — goes straight to the Peakora team inbox */
+    /* IN-APP FEEDBACK - goes straight to the Peakora team inbox */
     window.sendFeedback = function() {
       const el = document.getElementById("peakora-feedback-input");
       const msg = (el && el.value.trim()) || "";
       if (!msg) {
-        if (typeof showToastNotification === 'function') showToastNotification("Write a line or two first — even one word helps");
+        if (typeof showToastNotification === 'function') showToastNotification("Write a line or two first - even one word helps");
         return;
       }
       fetch("https://peakora-api.peakora.workers.dev/feedback", {
@@ -3395,10 +3397,10 @@
       }).catch(() => {});
       if (window.PeakoraTracker) PeakoraTracker.track("feedback_sent", {});
       if (el) el.value = "";
-      if (typeof showToastNotification === 'function') showToastNotification("Thank you — your words just landed with the team");
+      if (typeof showToastNotification === 'function') showToastNotification("Thank you - your words just landed with the team");
     };
 
-    /* BREATHING CHIME — honors the Soundscape & Chime Alerts preference */
+    /* BREATHING CHIME - honors the Soundscape & Chime Alerts preference */
     let breathChimeCtx = null;
     function playBreathChime(phaseIdx) {
       if (localStorage.getItem("peakora_notif_sound") === "false") return;
@@ -3452,7 +3454,7 @@
       URL.revokeObjectURL(a.href);
       if (window.PeakoraTracker) PeakoraTracker.track("data_exported", {});
       if (typeof showToastNotification === 'function') {
-        showToastNotification("Your data is downloading — everything we keep, in one file");
+        showToastNotification("Your data is downloading - everything we keep, in one file");
       }
     };
 
@@ -3635,24 +3637,24 @@
 
     /* SOUNDSCAPE SYNTHESIZER, WAVE VISUALIZER, AMBIENT MIXER & BREATH RING */
     const SOUNDSCAPE_TRACKS = [
-      { key: 'om', name: 'OM Chant Drone — temple resonance (136Hz)' },
-      { key: 'bowl', name: 'Tibetan Singing Bowl — soft ringing waves' },
-      { key: 'ocean', name: 'Ocean Shoreline Surf — rolling pink noise' },
-      { key: 'rain', name: 'Forest Rainfall — gentle droplets & chimes' },
-      { key: 'wind', name: 'Valley Wind — slow airy sweeps' },
-      { key: 'fire', name: 'Fireplace Crackle — warm evening hearth' },
-      { key: 'night', name: 'Night Crickets — summer evening chorus' },
-      { key: 'binaural', name: 'Binaural Theta (6Hz) — deep focus drift' }
+      { key: 'om', name: 'OM Chant Drone - temple resonance (136Hz)' },
+      { key: 'bowl', name: 'Tibetan Singing Bowl - soft ringing waves' },
+      { key: 'ocean', name: 'Ocean Shoreline Surf - rolling pink noise' },
+      { key: 'rain', name: 'Forest Rainfall - gentle droplets & chimes' },
+      { key: 'wind', name: 'Valley Wind - slow airy sweeps' },
+      { key: 'fire', name: 'Fireplace Crackle - warm evening hearth' },
+      { key: 'night', name: 'Night Crickets - summer evening chorus' },
+      { key: 'binaural', name: 'Binaural Theta (6Hz) - deep focus drift' }
     ];
 
     // Quiet Start Mini Pack (one-time tripwire): 5 premium soundscapes
-    // that stay live forever for the buyer — a real, won't-expire taste of Plus.
+    // that stay live forever for the buyer - a real, won't-expire taste of Plus.
     const QUIET_START_TRACKS = [
-      { key: 'qs-storm', name: 'Quiet Start: Thunderstorm Distance — rolling low rumble' },
-      { key: 'qs-studio', name: 'Quiet Start: Analog Studio Room — faint airy warmth' },
-      { key: 'qs-fire', name: 'Quiet Start: Deep Fireplace Heartbeat — warm slow crackle' },
-      { key: 'qs-stream', name: 'Quiet Start: Mountain Brook — clear ribbon of water' },
-      { key: 'qs-synth', name: 'Quiet Start: Soft Synth Pad — slow amber drift' }
+      { key: 'qs-storm', name: 'Quiet Start: Thunderstorm Distance - rolling low rumble' },
+      { key: 'qs-studio', name: 'Quiet Start: Analog Studio Room - faint airy warmth' },
+      { key: 'qs-fire', name: 'Quiet Start: Deep Fireplace Heartbeat - warm slow crackle' },
+      { key: 'qs-stream', name: 'Quiet Start: Mountain Brook - clear ribbon of water' },
+      { key: 'qs-synth', name: 'Quiet Start: Soft Synth Pad - slow amber drift' }
     ];
     if (hasTripwire()) {
       // Prepending keeps them at the top of the library without forcing anything else off.
@@ -3660,7 +3662,7 @@
       QUIET_START_TRACKS.slice().reverse().forEach(t => SOUNDSCAPE_TRACKS.unshift(t));
     }
     const SOUNDSCAPE_NAME = {};
-    SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' — ')[0]; });
+    SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' - ')[0]; });
 
     let audioCtx = null;
     let activeSoundNodes = [];
@@ -3690,7 +3692,7 @@
       closeGuidedSessionOverlay();
     }
 
-    /* PREMIUM GUIDED SESSIONS — a staged audio journey built on the
+    /* PREMIUM GUIDED SESSIONS - a staged audio journey built on the
        existing synth engine. The Quiet Library + Guided Audio Sessions use a
        gentle ambient bed tacked with a soft on-screen narration card (no TTS
        bundle; the voice text is music-synced pacing, honest and calming).
@@ -3710,9 +3712,9 @@
         return;
       }
       const mapKind = {
-        freq: { track: 'binaural', label: 'Healing Frequency Studio', copy: 'Deep focus drift — Theta 6Hz binaural, layered in. Listen 5-10 min in headphones.' },
-        quiet: { track: 'rain', label: 'The Quiet Library — The Harbor Lights', copy: 'Close your eyes. Rain fall on an old boardwalk, lanterns low. Breathe in the salt air — one slow count..., two, three. The harbor has you. Rest here a while.' },
-        guide: { track: 'bowl', label: 'Guided Audio Session — 5-min Body Scan', copy: 'Settle in. A singing bowl rings once. Feel the crown of your head, then the jaw, the shoulders — softening with every note. Let the bowl carry you down, slowly, part by part.' }
+        freq: { track: 'binaural', label: 'Healing Frequency Studio', copy: 'Deep focus drift - Theta 6Hz binaural, layered in. Listen 5-10 min in headphones.' },
+        quiet: { track: 'rain', label: 'The Quiet Library - The Harbor Lights', copy: 'Close your eyes. Rain fall on an old boardwalk, lanterns low. Breathe in the salt air - one slow count..., two, three. The harbor has you. Rest here a while.' },
+        guide: { track: 'bowl', label: 'Guided Audio Session - 5-min Body Scan', copy: 'Settle in. A singing bowl rings once. Feel the crown of your head, then the jaw, the shoulders - softening with every note. Let the bowl carry you down, slowly, part by part.' }
       };
       const chosen = mapKind[kind] || mapKind.freq;
       stopAmbientAudio();
@@ -3979,7 +3981,7 @@
           push(noise, filter, crackleGain);
         }
         else if (type === 'night') {
-          // Distant crickets — very soft, felt more than heard
+          // Distant crickets - very soft, felt more than heard
           const cricketFreqs = [3800, 4150];
           cricketFreqs.forEach((f, i) => {
             const osc = audioCtx.createOscillator();
@@ -4131,7 +4133,7 @@
           const mm = String(Math.floor(secs / 60)).padStart(2, '0');
           const ss = String(secs % 60).padStart(2, '0');
           nameEl.textContent = SOUNDSCAPE_NAME[currentlyPlayingTrack] || currentlyPlayingTrack;
-          timeEl.textContent = 'Playing for ' + mm + ':' + ss + ' — lovely, keep it going';
+          timeEl.textContent = 'Playing for ' + mm + ':' + ss + ' - lovely, keep it going';
           if (playBtn) playBtn.textContent = '⏸';
         } else {
           nameEl.textContent = 'Nothing playing yet';
@@ -4169,7 +4171,7 @@
       playAmbientAudio(next.key);
     };
 
-    /* AMBIENT MIXER — layerable soundscapes with real volume sliders */
+    /* AMBIENT MIXER - layerable soundscapes with real volume sliders */
     let ambientCtx = null;
     let ambientMaster = null;
     const ambientLayers = {};
@@ -4305,7 +4307,7 @@
         ambientLayers[key] = { playing: true, nodes };
         if (window.PeakoraTracker) PeakoraTracker.track("ambient_layer_started", { layer: key });
         if (typeof showToastNotification === 'function') {
-          showToastNotification(key.toUpperCase() + ' layer is now playing — blend away');
+          showToastNotification(key.toUpperCase() + ' layer is now playing - blend away');
         }
       }
       renderStep();
@@ -4338,7 +4340,7 @@
       }
     }
 
-    /* DASH BREATHING RING — 4-2-6 rhythm, 10 cycles, tap the ring to run it */
+    /* DASH BREATHING RING - 4-2-6 rhythm, 10 cycles, tap the ring to run it */
     const DASH_BREATH_PHASES = [
       { name: 'INHALE', dur: 4, scale: 1.22 },
       { name: 'HOLD', dur: 2, scale: 1.22 },
@@ -4370,7 +4372,7 @@
 
       if (dashBreath.done) {
         stateEl.textContent = 'COMPLETE';
-        timeEl.textContent = 'All 10 cycles done — nicely done';
+        timeEl.textContent = 'All 10 cycles done - nicely done';
         if (totalEl) totalEl.textContent = fmtTime(dashBreath.total) + ' / ' + fmtTime(dashBreath.total);
         return;
       }
@@ -4442,7 +4444,7 @@
                 dashBreath.elapsed = dashBreath.total;
                 if (window.PeakoraTracker) PeakoraTracker.track("breath_session_completed", {});
                 if (typeof showToastNotification === 'function') {
-                  showToastNotification('Ten full cycles — that was beautiful. Notice how your shoulders feel.');
+                  showToastNotification('Ten full cycles - that was beautiful. Notice how your shoulders feel.');
                 }
               }
               dashBreath.phaseLeft = DASH_BREATH_PHASES[dashBreath.phaseIdx].dur;
@@ -4507,7 +4509,7 @@
       window._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2600);
     };
 
-    /* START A BRAND NEW PLAN — archive the old week, then fresh onboarding */
+    /* START A BRAND NEW PLAN - archive the old week, then fresh onboarding */
     window.startNewPlan = function() {
       if (state.plan && isPeakoraPlusActive()) {
         const list = getPastPlans();
@@ -4523,7 +4525,7 @@
       clearState();
       saveState();
       if (typeof showToastNotification === 'function') {
-        showToastNotification(isPeakoraPlusActive() ? 'Your old week is safely saved. Let us build the next one, together.' : 'Fresh start — let us shape your next 7 days.');
+        showToastNotification(isPeakoraPlusActive() ? 'Your old week is safely saved. Let us build the next one, together.' : 'Fresh start - let us shape your next 7 days.');
       }
       goToStepKey('welcome');
     };
@@ -4717,7 +4719,7 @@
       }
 
       if (typeof showToastNotification === 'function') {
-        showToastNotification('Noted — ' + moodName + ' today. Thanks for being honest.');
+        showToastNotification('Noted - ' + moodName + ' today. Thanks for being honest.');
       }
 
       if (typeof renderStep === 'function') {
@@ -4738,9 +4740,9 @@
           ? (planDay.focus || 'Your daily gentle step')
           : 'Your daily gentle step';
 
-        const displayTitle = String(title).replace(/^Day\s*\d+\s*[—–-]\s*/i, '');
+        const displayTitle = String(title).replace(/^Day\s*\d+\s*[-–-]\s*/i, '');
         popover.innerHTML = `
-          <div class="popover-title">DAY ${dayNum} — ${displayTitle}</div>
+          <div class="popover-title">DAY ${dayNum} - ${displayTitle}</div>
           <div class="popover-text">${focusText}</div>
           <div class="popover-hint">Full detail is waiting in the Plans tab</div>
         `;
@@ -4810,7 +4812,7 @@
       }
 
       // Seed today's mood from the day's plan/theme so your Mood Pattern
-      // always has real data — even before your first check-in, or when you
+      // always has real data - even before your first check-in, or when you
       // only changed a theme. It never overwrites an honest user check-in..
       seedMoodFromContext();
 
@@ -4826,13 +4828,13 @@
 
       // Onboarding shows ONLY on first visit (no state at all).
       // On any refresh with existing state (completed OR mid-onboarding),
-      // go straight to the dashboard — never force onboarding on refresh.
+      // go straight to the dashboard - never force onboarding on refresh.
       if (!hasState) {
         goToStepKey("welcome");
         return;
       }
 
-      // User has state — go to home dashboard, regardless of completion.
+      // User has state - go to home dashboard, regardless of completion.
       goToStepKey("home");
     });
   </script>
@@ -4860,11 +4862,11 @@
         <p style="font-size:12px; color:var(--theme-text-muted); margin:0;">Select your personal color space for your daily reset:</p>
       </div>
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sunrise'); closeThemeModal();"><strong>Sunrise</strong> — Warm Terracotta & Honey Reset</button>
-        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('twilight'); closeThemeModal();"><strong>Twilight</strong> — Soft Lavender & Dusk</button>
-        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sage'); closeThemeModal();"><strong>Sage</strong> — Gentle Bamboo & Mint</button>
-        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('ocean'); closeThemeModal();"><strong>Ocean</strong> — Serene Sky & Wave Blue</button>
-        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sunset'); closeThemeModal();"><strong>Sunset</strong> — Soft Rose & Coral</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sunrise'); closeThemeModal();"><strong>Sunrise</strong> - Warm Terracotta & Honey Reset</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('twilight'); closeThemeModal();"><strong>Twilight</strong> - Soft Lavender & Dusk</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sage'); closeThemeModal();"><strong>Sage</strong> - Gentle Bamboo & Mint</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('ocean'); closeThemeModal();"><strong>Ocean</strong> - Serene Sky & Wave Blue</button>
+        <button class="btn secondary" style="justify-content:flex-start; font-size:13px; text-align:left;" onclick="applyTheme('sunset'); closeThemeModal();"><strong>Sunset</strong> - Soft Rose & Coral</button>
       </div>
       <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
         <button class="btn ghost" style="font-size:12px; color:var(--accent-violet, #a78bfa);" onclick="toggleAutoTheme(); closeThemeModal();">Toggle Auto Mood-Reactive Theme</button>
@@ -4933,7 +4935,7 @@
           <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 10px;">Complete visual customizability, 7-day plan history archive, synthesized soundscapes, & adaptive planning.</p>
           <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">
             <li>✔ <strong>Everything in Free Plan</strong></li>
-            <li>✔ <strong>Adaptive Week</strong> (your plan waits when life happens — no guilt)</li>
+            <li>✔ <strong>Adaptive Week</strong> (your plan waits when life happens - no guilt)</li>
             <li>✔ <strong>Dynamic Themes & Color Spaces</strong> (7 mood palettes)</li>
             <li>✔ <strong>Mood-Reactive Auto Themes</strong> (the app re-themes with how you feel)</li>
             <li>✔ <strong>Past Plan History & Archiving</strong> (browse & re-activate past weeks)</li>
