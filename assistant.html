@@ -947,6 +947,7 @@
 
     /* COMPLETE RENDER STEP FUNCTION */
     function renderStep() {
+      seedMotion();
       setProgress();
       fadeIn();
 
@@ -4864,7 +4865,9 @@ window.launchLibrary = function(kind) {
     window.switchDashTab = function(tabName) {
       window.currentDashTab = tabName;
       toggleDashDrawer(false);
-      if (typeof renderStep === "function") {
+      if (typeof goToStepKey === "function") {
+        goToStepKey("home");
+      } else if (typeof renderStep === "function") {
         renderStep();
       }
     };
@@ -5037,7 +5040,7 @@ window.launchLibrary = function(kind) {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=18").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=19").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

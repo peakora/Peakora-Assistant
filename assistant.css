@@ -2319,3 +2319,27 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   min-height:  44px;
   font-size:  16px;
 }
+/* P2 MOTION SYSTEM - entrance stagger, play pulse, soft ambient glow */
+@keyframes pkRise {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.pk-entrance {
+  opacity: 0;
+  animation: pkRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pkPulseSoft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244,162,97,0.25); }
+  50% { box-shadow: 0 0 0 8px rgba(244,162,97,0); }
+}
+.pk-pulse {
+  animation: pkPulseSoft 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pk-entrance {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .pk-pulse { animation: none !important; }
+}
+
