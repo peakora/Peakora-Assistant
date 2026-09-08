@@ -1179,6 +1179,17 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
 
               <!-- MAIN CONTENT AREA -->
               <div class="dash-content">
+        <div class="soundscape-top-bar">
+          <div class="soundscape-brand">
+            <div class="soundscape-brand-icon"></div>
+            <span>${getBrandName()}</span>
+          </div>
+          <div style="display:flex; gap:16px; align-items:center;">
+            <span id="ss-battery">Battery: --</span>
+            <span id="ss-clock">--:--</span>
+            <span id="ss-net">Online</span>
+          </div>
+        </div>
         `;
 
         // TAB 1: HOME
@@ -1499,11 +1510,12 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
         // TAB 2a: INSIGHTS (MOOD PATTERN + MOOD BALANCE)
         if (activeTab === "insights") {
           html += `
-            <!-- INSIGHTS HERO: YOUR MOOD PATTERN + MOOD BALANCE (moved here from Home) -->
-            <div class="dash-card" style="margin-bottom:24px; padding:4px 24px 18px;">
-              <div class="dash-card-title" style="letter-spacing:0.08em; margin-bottom:14px; padding-top:14px;">Your Insights</div>
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <h1 class="dash-welcome-h1">Insights</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Your mood pattern, energy balance,and the quiet signals your week is sending you - all in one place.</p>
             </div>
 
+            <!-- INSIGHTS HERO: YOUR MOOD PATTERN + MOOD BALANCE (moved here from Home) -->
             <div class="dash-grid-equal" style="margin-bottom:24px;">
             <!-- MOOD PATTERN RIVER CARD (moved to Insights per user request) -->
             <div class="dash-card">
@@ -1850,24 +1862,12 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
         // TAB 2b: SOUNDSCAPE STUDIO (the app's audio home)
         if (activeTab === "soundscapes") {
           html += `
-            <div class="soundscape-top-bar">
-              <div class="soundscape-brand">
-                <div class="soundscape-brand-icon"></div>
-                <span>${getBrandName()}</span>
-              </div>
-              <div style="display:flex; gap:16px; align-items:center;">
-                <span id="ss-battery">Battery: --</span>
-                <span id="ss-clock">--:--</span>
-                <span id="ss-net">Online</span>
-              </div>
-            </div>
-
             <!-- SOUNDSCAPE STUDIO & AMBIENT FLOW SECTION (the app's audio home) -->
             <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:28px 0 6px;">
               <h2 style="margin:0; font-size:17px; font-weight:800; letter-spacing:0.06em; color:#ffffff;">Soundscape Studio &amp; Ambient Flow</h2>
               <span style="font-size:11px; color:var(--theme-text-muted); font-weight:600; letter-spacing:0.04em;">YOUR AUDIO CENTER</span>
             </div>
-            <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.55;">One place for your daily reset soundtrack - layer ambient worlds, run a guided session, or drift with the healing frequencies below.</p>
+            <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.55;">One place for your daily reset soundtrack - layer ambient worlds, or drift with the healing frequencies below.</p>
 
             <div class="dash-grid-equal">
               <!-- LEFT COLUMN: SOUNDSCAPE STUDIO -->
@@ -1960,54 +1960,6 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                   </div>
                 </div>
 
-                <!-- PREMIUM SESSIONS: QUIET LIBRARY + GUIDED AUDIO SESSIONS + HEALING FREQUENCY STUDIO -->
-                <div class="dash-card" style="margin-bottom:16px; padding:18px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <div class="dash-card-title" style="margin:0;">Guided Sessions</div>
-                    ${!isPlus ? '<span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff;">PEAKORA+</span>' : ''}
-                  </div>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 14px; line-height:1.5;">Three ways to reset with sound - each one a complete little journey, not just a track.</p>
-
-                  <!-- THE QUIET LIBRARY -->
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
-                    <div style="font-size:14px; font-weight:800; color:#ffffff; margin-bottom:2px;">The Quiet Library</div>
-                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">SHORT GUIDED READINGS - 3 TO 10 MINUTES</div>
-                    <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Soothing narrated resets for bedtime, wind-downs, and morning grounding. A growing shelf of sleep stories, evening unwinds, and gentle starts.</p>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('st1')">Sleep story: The Harbor Lights</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('st2')">Wind-down: The Day Is Done</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('st3')">Morning grounding: First Light</button>
-                    </div>
-                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="launchLibrary('st1')">${isPlus ? 'Start a sleep story' : 'Unlock with Peakora+'}</button>
-                  </div>
-
-                  <!-- GUIDED AUDIO SESSIONS -->
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:14px; margin-bottom:12px;">
-                    <div style="font-size:14px; font-weight:800; color:#ffffff; margin-bottom:2px;">Guided Audio Sessions</div>
-                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">BODY SCANS & BREATH JOURNEYS - 5, 10, 15 MIN</div>
-                    <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Step-by-step relaxation you can follow with eyes closed: tense-and-release body scans, gentle breath journeys, and a power-nap reset.</p>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('b13')">5-min body scan</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('m17')">10-min breath journey</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('m18')">15-min nap reset</button>
-                    </div>
-                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="launchLibrary('b13')">${isPlus ? 'Start a body scan' : 'Unlock with Peakora+'}</button>
-                  </div>
-
-                  <!-- HEALING FREQUENCY STUDIO -->
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:14px;">
-                    <div style="font-size:14px; font-weight:800; color:#ffffff; margin-bottom:2px;">Healing Frequency Studio</div>
-                    <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">LAYERED BINAURAL & AMBIENT PRESETS</div>
-                    <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Pick a state, get a preset: sleep, focus, calm, energy. Binaural tones underpinned by the ambient world, tune the blend as you go.</p>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f13')">Sleep: Theta 6Hz + night crickets</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f14')">Focus: Alpha 10Hz + soft rain</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f15')">Energy: Beta 16Hz + OM chant</button>
-                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f16')">Calm: Delta 2Hz + fireplace</button>
-                    </div>
-                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="launchLibrary('f14')">${isPlus ? 'Start a frequency preset' : 'Unlock with Peakora+'}</button>
-                  </div>
-                </div>
 
                 <!-- DEEP MOOD & ENERGY ANALYTICS CARD (built from your real check-ins) -->
               </div>
@@ -2523,6 +2475,7 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
         html += `
       `;
         container.innerHTML = html;
+        if (typeof initAppTopBar === "function") initAppTopBar();
         renderMoodBubbles();
         if (typeof updateReflectionsBadge === "function") updateReflectionsBadge();
         return;
@@ -4419,7 +4372,7 @@ window.launchLibrary = function(kind) {
     };
 
     /* INSIGHTS TAB LIVE STATUS BAR + WAVE/BREATH UI BOOT */
-    window.initInsightsTab = function() {
+    window.initAppTopBar = function() {
       const clockEl = document.getElementById('ss-clock');
       const netEl = document.getElementById('ss-net');
       const batteryEl = document.getElementById('ss-battery');
@@ -4447,6 +4400,10 @@ window.launchLibrary = function(kind) {
       } else {
         if (batteryEl) batteryEl.style.display = 'none';
       }
+    };
+
+    window.initInsightsTab = function() {
+      initAppTopBar();
 
       startWaveLoop();
       syncDashBreathUI();
@@ -4870,7 +4827,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=37").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=38").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
