@@ -2149,6 +2149,15 @@
                 </div>
 
                 <!-- SOUNDSCAPE LIBRARY -->
+
+                <div style="margin:10px 0 2px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                  <span style="font-size:11px; color:var(--theme-text-muted); margin-right:2px;">SESSION</span>
+                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="0" onclick="setSessionDuration(this.dataset.m)">Endless</button>
+                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="5" onclick="setSessionDuration(this.dataset.m)">5</button>
+                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="10" onclick="setSessionDuration(this.dataset.m)">10</button>
+                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="20" onclick="setSessionDuration(this.dataset.m)">20</button>
+                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="40" onclick="setSessionDuration(this.dataset.m)">40</button>
+                </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:12px;">
                   <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Soundscape Library</div>
                   ${hasTripwire() ? '<div style="margin-bottom:8px; padding:6px 10px; border-radius:var(--radius-sm); background:rgba(244,162,97,0.06); border:1px dashed rgba(244,162,97,0.4); font-size:12px; color:var(--theme-text-muted);">Quiet Start pack: your 5 premium soundscapes are at the top of the list, live forever.</div>' : ''}
@@ -3706,11 +3715,57 @@
     SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' - ')[0]; });
 
     let audioCtx = null;
+        masterGain.isMaster = true
     let activeSoundNodes = [];
     let currentlyPlayingTrack = null;
     let trackStartedAt = null;
+    let sessionDurMins = null;
+    let sessionEndTimer = null;
 
-    function stopAmbientAudio() {
+    function setSessionDuration(mins) {
+      sessionDurMins = mins ? Number(mins) : null;
+      try { localStorage.setItem("peakora_session_dur", String(mins || "")); } catch (e) {}
+      if (currentlyPlayingTrack) scheduleSessionEnd();
+    }
+
+    function clearSessionEnd() {
+      if (sessionEndTimer) {
+        clearTimeout(sessionEndTimer);
+        sessionEndTimer = null;
+      }
+    }
+
+    function scheduleSessionEnd() {
+      clearSessionEnd();
+      if (!sessionDurMins) return;
+      const ms = sessionDurMins * 60 * 1000;
+      sessionEndTimer = setTimeout(() => {
+        const label = SOUNDSCAPE_NAME[currentlyPlayingTrack] || "this session";
+        if (typeof showToastNotification === "function") showToastNotification("Session complete - " + sessionDurMins + " min " + label + " reset done");
+        stopAmbientAudio();
+      }, ms);
+    }
+
+function stopAmbientAudio() {
+      if (window._fadeStopPending) return;
+      clearSessionEnd();
+      const master = audioCtx && activeSoundNodes.find(n => n.isMaster);
+      if (audioCtx && master) {
+        window._fadeStopPending = true;
+        try {
+          master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), audioCtx.currentTime);
+          master.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+        } catch (e) {}
+        setTimeout(() => {
+          window._fadeStopPending = false;
+          hardStopAudio();
+        }, 700);
+        return;
+      }
+      hardStopAudio();
+    }
+
+    function hardStopAudio() {
       if (activeSoundNodes && activeSoundNodes.length) {
         activeSoundNodes.forEach(node => {
           try {
@@ -3724,6 +3779,7 @@
         try { audioCtx.close(); } catch (e) {}
         audioCtx = null;
       }
+        masterGain.isMaster = true
       if (currentlyPlayingTrack && window.PeakoraTracker) {
         window.PeakoraTracker.track("soundscape_stopped", { track: currentlyPlayingTrack });
       }
@@ -3951,6 +4007,7 @@ window.launchLibrary = function(kind) {
         audioCtx = new AudioContext();
 
         const masterGain = audioCtx.createGain();
+        masterGain.isMaster = true
         masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
         masterGain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 1.6);
 
@@ -4177,6 +4234,7 @@ window.launchLibrary = function(kind) {
 
         currentlyPlayingTrack = type;
         trackStartedAt = Date.now();
+        scheduleSessionEnd();
         renderStepAudioState();
       } catch (e) {
         console.error("Audio error:", e);
@@ -4454,6 +4512,11 @@ window.launchLibrary = function(kind) {
     };
 
     function renderStepAudioState() {
+      if (sessionDurMins === null) {
+        let saved = null;
+        try { saved = localStorage.getItem("peakora_session_dur"); } catch (e) {}
+        if (saved) sessionDurMins = Number(saved) || null;
+      }
       const statusEl = document.getElementById("audio-playing-status");
 
       if (statusEl) {
