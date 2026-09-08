@@ -948,10 +948,11 @@
     /* COMPLETE RENDER STEP FUNCTION */
     function renderStep() {
       seedMotion();
+if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf("home"); saveState(); }
       setProgress();
       fadeIn();
 
-      const key = steps[state.stepIndex] || "welcome";
+      const key = steps[state.stepIndex] || "home";
 
       // Outer wrapper adaptiveness for dashboard vs onboarding step
       const outerCard = document.querySelector(".assistant-card");
@@ -5146,10 +5147,8 @@ window.appendInsightPlusCards = function() {
       // Onboarding shows ONLY on first visit (no state at all).
       // On any refresh with existing state (completed OR mid-onboarding),
       // go straight to the dashboard - never force onboarding on refresh.
-      if (!hasState) {
-        goToStepKey("welcome");
-        return;
-      }
+      goToStepKey("home");
+      return;
 
       // User has state - go to home dashboard, regardless of completion.
       goToStepKey("home");
