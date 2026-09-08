@@ -2343,3 +2343,9 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .pk-pulse { animation: none !important; }
 }
 
+
+.plus-locked { position:relative; overflow:hidden; }
+.plus-lock { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:rgba(12,10,21,0.82); backdrop-filter:blur(6px); border-radius:20px; z-index:5; cursor:pointer; text-align:center; padding:20px; }
+.plus-lock-btn { font-size:13px; font-weight:800; letter-spacing:0.06em; color:#fff; background:var(--theme-primary-grad, linear-gradient(135deg; #e07a5f; #f4a261)); padding:10px 16px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,0.45); }
+.plus-lock-sub { font-size:11px; color:var(--theme-text-muted); }
+

@@ -4708,7 +4708,90 @@ window.launchLibrary = function(kind) {
 
       // Paint the Mood Pattern river for the Insights hero (Home no longer owns it)
       if (typeof renderMoodBubbles === 'function') renderMoodBubbles();
+      gateAdvancedInsightCards();
+      appendInsightPlusCards();
     };
+
+window.gateAdvancedInsightCards = function() {
+  const plus = (typeof isPeakoraPlusActive === 'function') && isPeakoraPlusActive();
+  const targets = ['Deep Mood & Energy Analytics', 'Your Week by Rhythm'];
+  document.querySelectorAll('.dash-card').forEach(card => {
+    const t = card.querySelector('.dash-card-title');
+    if (!t || !targets.includes(t.textContent.trim())) return;
+    if (plus) return;
+    card.classList.add('plus-locked');
+    const lock = document.createElement('div');
+    lock.className = 'plus-lock';
+    lock.innerHTML = '<div class="plus-lock-btn">Unlock with Peakora+</div><div class="plus-lock-sub">Part of the Peakora+ reset suite</div>';
+    lock.addEventListener('click', function() { if (typeof openTripwireModal === 'function') openTripwireModal(); });
+    card.appendChild(lock);
+  });
+};
+
+window.appendInsightPlusCards = function() {
+  const plus = (typeof isPeakoraPlusActive === 'function') && isPeakoraPlusActive();
+  const real = (typeof getCheckins === 'function') ? getCheckins() : [];
+  const week = (typeof getLast7CheckinsOrPlaceholder === 'function') ? getLast7CheckinsOrPlaceholder() : [];
+  const energyScore = { heavy: 22, anxious: 45, neutral:  55, hopeful:  74, energized:  92 };
+  const scoreOf = c => {
+    const f = (typeof getMoodFamily === 'function') ? getMoodFamily(c.feeling) : 'neutral';
+    return energyScore[f] != null ? energyScore[f] : 50;
+  };
+  const mid = Math.floor(week.length / 2);
+  const early = week.slice(0, mid);
+  const late = week.slice(mid);
+  const avg = arr => arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
+  const earlyE = avg(early.map(scoreOf));
+  const lateE = avg(late.map(scoreOf));
+  const arcDelta = lateE - earlyE;
+  const arcDir = arcDelta >= 5 ? 'rising' : arcDelta <= -5 ? 'dipping' : 'steady';
+  let recover = 0, heavyHits =  0;
+  for (let i =  0; i < week.length - 1; i++) {
+    const f = (typeof getMoodFamily === 'function') ? getMoodFamily(week[i].feeling) : 'neutral';
+    if (f === 'heavy' || f === 'anxious') {
+      heavyHits++;
+      const nf = (typeof getMoodFamily === 'function') ? getMoodFamily(week[i + 1].feeling) : 'neutral';
+      if (nf === 'hopeful' || nf === 'energized' || nf === 'neutral') recover++;
+    }
+  }
+  const recoveryPct = heavyHits ? Math.round((recover / heavyHits) * 100) : null;
+  const wrap = document.createElement('div');
+  wrap.className = 'dash-grid-equal';
+  wrap.id = 'insights-plus-row';
+  wrap.style.cssText = 'margin-top:24px;';
+  const mkCard = (title, bodyHtml, teaser) => {
+    const card = document.createElement('div');
+    card.className = 'dash-card';
+    card.innerHTML = '<div class="dash-card-title">' + title + '</div>' + (plus ? bodyHtml : '<div class="plus-lock-teaser" style="font-size:13px; color:var(--theme-text-muted); line-height:1.6;">' + teaser + '</div>');
+    if (!plus) {
+      card.classList.add('plus-locked');
+      const lock = document.createElement('div');
+      lock.className = 'plus-lock';
+      lock.innerHTML = '<div class="plus-lock-btn">Unlock with Peakora+</div><div class="plus-lock-sub">Deep insight, part of the Plus reset suite</div>';
+      lock.addEventListener('click', function() { if (typeof openTripwireModal === 'function') openTripwireModal(); });
+      card.appendChild(lock);
+    }
+    return card;
+  };
+  const arcBody = '<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">' +
+    '<span style="font-size:26px; font-weight:800; color:var(--theme-accent);">' + (earlyE >= 0 ? earlyE : '--') + '</span>' +
+    '<svg width="44" height="22" viewBox="0 0 44 22" fill="none" stroke="#f4a261" stroke-width="2"><path d="M2 18 Q12 14 20 10 T42 4"/></svg>' +
+    '<span style="font-size:26px; font-weight:800; color:var(--theme-accent);">' + (lateE >= 0 ? lateE : '--') + '</span></div>' +
+    '<p style="font-size:12px; color:var(--theme-text-muted); margin:0; line-height:1.6;">First half of your week averaged ' + (earlyE >= 0 ? earlyE : '--') + ', second half ' + (lateE >= 0 ? lateE : '--') + ' - ' + arcDir + '. How the arc of your energy bends over the seven days.</p>';
+  const arcTeaser = 'See how the arc of your energy bends across the week - early days versus late days, and whether your week is rising, holding, or letting go.';
+  const recBody = '<div style="font-size:26px; font-weight:800; color:' + (recoveryPct != null ? (recoveryPct >= 50 ? '#34d399' : '#fb7185') : '#a0aec0') + ';">' + (recoveryPct != null ? recoveryPct + '%' : '--') + '</div>' +
+    '<p style="font-size:12px; color:var(--theme-text-muted); margin:8px 0 0; line-height:1.6;">Of your heavier check-ins, this many were followed by a lighter or steadier day within the week - your bounce-back signal.</p>';
+  const recTeaser = 'Your bounce-back signal: after the heavy days, how often did something lighter follow? A quiet, encouraging number about your own resilience.';
+  wrap.appendChild(mkCard('Energy Arc', arcBody, arcTeaser));
+  wrap.appendChild(mkCard('Recovery Signal', recBody, recTeaser));
+  const anchor = Array.from(document.querySelectorAll('.dash-card')).find(card => {
+    const t = card.querySelector('.dash-card-title');
+    return t && t.textContent.trim() === 'What Works For You';
+  });
+  if (anchor && anchor.parentNode) {
+    anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
+  }
+};
 
     /* TOAST NOTIFICATIONS */
     window.showToastNotification = function(message) {
