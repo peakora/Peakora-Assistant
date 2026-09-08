@@ -1971,11 +1971,11 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                     <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">SHORT GUIDED READINGS - 3 TO 10 MINUTES</div>
                     <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Soothing narrated resets for bedtime, wind-downs, and morning grounding. A growing shelf of sleep stories, evening unwinds, and gentle starts.</p>
                     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Sleep story: The Harbor Lights</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Wind-down: The Day Is Done</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Morning grounding: First Light</span>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('st1')">Sleep story: The Harbor Lights</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('st2')">Wind-down: The Day Is Done</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('st3')">Morning grounding: First Light</button>
                     </div>
-                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="peakoraGuided('quiet')">${isPlus ? 'Start a quiet reading' : 'Unlock with Peakora+'}</button>
+                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="launchLibrary('st1')">${isPlus ? 'Start a sleep story' : 'Unlock with Peakora+'}</button>
                   </div>
 
                   <!-- GUIDED AUDIO SESSIONS -->
@@ -1984,11 +1984,11 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                     <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">BODY SCANS & BREATH JOURNEYS - 5, 10, 15 MIN</div>
                     <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Step-by-step relaxation you can follow with eyes closed: tense-and-release body scans, gentle breath journeys, and a power-nap reset.</p>
                     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">5-min body scan</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">10-min breath journey</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">15-min nap reset</span>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('b13')">5-min body scan</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('m17')">10-min breath journey</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('m18')">15-min nap reset</button>
                     </div>
-                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="peakoraGuided('guide')">${isPlus ? 'Start a body scan' : 'Unlock with Peakora+'}</button>
+                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="launchLibrary('b13')">${isPlus ? 'Start a body scan' : 'Unlock with Peakora+'}</button>
                   </div>
 
                   <!-- HEALING FREQUENCY STUDIO -->
@@ -1997,12 +1997,12 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                     <div style="font-size:11px; color:var(--theme-accent); font-weight:700; letter-spacing:0.06em; margin-bottom:6px;">LAYERED BINAURAL & AMBIENT PRESETS</div>
                     <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 10px; line-height:1.5;">Pick a state, get a preset: sleep, focus, calm, energy. Binaural tones underpinned by the ambient world, tune the blend as you go.</p>
                     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Sleep: Theta 6Hz + night crickets</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Focus: Alpha 10Hz + soft rain</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Energy: Beta 16Hz + OM chant</span>
-                      <span style="font-size:11px; padding:4px 10px; border-radius:999px; background:rgba(244,162,97,0.1); border:1px solid rgba(244,162,97,0.3); color:var(--theme-accent);">Calm: Delta 2Hz + fireplace</span>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f13')">Sleep: Theta 6Hz + night crickets</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f14')">Focus: Alpha 10Hz + soft rain</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f15')">Energy: Beta 16Hz + OM chant</button>
+                      <button class="btn ghost" style="font-size:11px; padding:4px 10px; margin:0; cursor:pointer;" onclick="launchLibrary('f16')">Calm: Delta 2Hz + fireplace</button>
                     </div>
-                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="peakoraGuided('freq')">${isPlus ? 'Start frequency preset' : 'Unlock with Peakora+'}</button>
+                    <button class="btn primary" style="font-size:13px; font-weight:800; padding:8px 14px;" onclick="launchLibrary('f14')">${isPlus ? 'Start a frequency preset' : 'Unlock with Peakora+'}</button>
                   </div>
                 </div>
 
@@ -2171,7 +2171,7 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
               <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">This week's hand-picked Peakora sessions - a singing-bowl dawn, a moonlit harbor, an anchor sit, a sleep wind-down, a focus frequency,and a permission-slip reading, all under 10 minutes. Start one in seconds.</p>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap:10px; margin-bottom:22px;">
-              ${['s9','s11','m1','b5','f4','r2'].map(k => { const d = LIBRARY_SESSIONS[k]; const short = d.label.split(' - ')[1] || d.label; return `
+              ${['s9','s11','m1','st2','f14','r16'].map(k => { const d = LIBRARY_SESSIONS[k]; const short = d.label.split(' - ')[1] || d.label; return `
                 <button class="btn ghost" style="padding:12px 12px; font-size:12px; font-weight:700; text-align:left; display:flex; align-items:center; gap:8px; margin:0;" onclick="launchLibrary('${k}')">
                   <span style="color:var(--theme-accent); flex-shrink:0; font-size:14px;">&#9654;</span>
                   <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${short}</span>
@@ -2184,11 +2184,12 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
             <div style="display:grid; gap:16px;">
               ${[
                 { id: 'soundscapes', label: 'Soundscape Library', sub: '12 layered ambient presets, built live from our synth engine', kinds: ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12'] },
-                { id: 'meditations', label: 'Meditations', sub: '16 timed guided sits - breath to focus, 3 to 10 minutes each', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16'] },
-                { id: 'scans', label: 'Body Scans', sub: '12 full-body resets - tension maps to sleep wind-downs', kinds: ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12'] },
-                { id: 'freqs', label: 'Healing Frequencies', sub: '12 binaural theta presets by intention - release, focus, sleep,and more', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12'] },
-                { id: 'reads', label: 'Readings', sub: '15 short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15'] },
-                { id: 'micro', label: 'Micro Practices', sub: '5 one-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5'] }
+                { id: 'meditations', label: 'Meditations', sub: '18 timed guided sits, breath journeys,and a power-nap reset, up to 15 minutes each', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17','m18'] },
+                { id: 'scans', label: 'Body Scans', sub: '13 full-body resets - tension maps, five-minute resets,and sleep wind-downs', kinds: ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13'] },
+                { id: 'freqs', label: 'Healing Frequencies', sub: '12 binaural theta presets by intention plus 4 layered combo presets - theta, alpha, beta, delta over ambient worlds', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16'] },
+                { id: 'stories', label: 'Sleep Stories', sub: '3 slow, unfolding little narratives to drift on - harbor, evening, first light', kinds: ['st1','st2','st3'] },
+                { id: 'reads', label: 'Readings', sub: '18 short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15','r16','r17','r18'] },
+                { id: 'micro', label: 'Micro Practices', sub: '7 one-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] }
               ].map(cat => `
                 <div class="dash-card" style="margin:0;">
                   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px;">
@@ -3586,6 +3587,31 @@ function stopAmbientAudio() {
   r13: { track: 'wind', label: 'Reading - The Good Enough Day', copy: 'A good enough day: you showed up, you tried, you were kind to someone( even if it was only yourself). That is a completed day. The rest is bonus.' },
   r14: { track: 'fire', label: 'Reading - Half the Task', copy: 'When a task feels enormous, do half. Half is more than unstarted. Half is momentum. Half done today is further than perfect tomorrow.' },
   r15: { track: 'rain', label: 'Reading - The Longer Breath', copy: 'When the room is loud, lengthen only the exhale. In for four, out for eight. You cannot think clearly while breathing slowly. Choose slow first, thinking second.' },
+  r16: { track: 'rain', label: 'Reading - Permission to Begin', copy: 'You do not need a special day to start. Today is ordinary, and that is exactly why it counts. One small step, badly if needed, and the beginning quietly becomes the rest.' },
+  r17: { track: 'fire', label: 'Reading - The Unhurried Yes', copy: 'The days that feel slow are often the ones doing the deepest work. You do not have to be impressive to be on purpose. Stay, breathe, tend to one thing gently, and let the rest wait.' },
+  r18: { track: 'night', label: 'Reading - The Soft Landing', copy: 'You have been going for hours. Here is where you land: shoulders down, tongue soft, hands open. Nothing else is due tonight. The room is quiet, and so are you.' },
+
+  // SLEEP STORIES (slow, unfolding little narratives to drift on)
+  st1: { track: 'night', label: 'Sleep Story - The Harbor Lights (8 min', copy: 'Close your eyes. A small harbor under a low moon, lanterns strung along the pier. Rain is falling out past the breakwater, but here the air is still.', steps: ['Rain falls out past the breakwater, soft as salt. You are walking the old pier slowly, lanterns ticking warm.', 'At the end of the pier, a bench. You sit. The water nods against the pilings, unhurried as a held breath.', 'A bell rings once, somewhere up the hill behind the town. The harbor holds you exact as it holds the anchored boats;you rock, gently, at rest.', 'The lanterns dim one by one. You are warm, weighted, home. Let each exhale lower you one soft degree toward sleep.' ] },
+  st2: { track: 'om', label: 'Sleep Story - The Day Is Done (7 min', copy: 'The day is done, and the house is settling. Warm light in one window, a chair that knows your shape. Rest is not earned;it is evening.', steps: ['The kettle clicks off. Outside, harmless evening sounds: a gate, a far train, wind in the eaves.', 'You are not behind. Nothing is waiting. The evening asks only one thing of you: slow down enough to feel it.', 'Your breath steadies by itself, like a clock learning to rest. Let your jaw soften, your hands uncurl.', 'The light lowers. You lower with it, one floor at a time, until nothing is left but the quiet hum of being done.' ] },
+  st3: { track: 'bowl', label: 'Sleep Story - First Light (6 min', copy: 'Before the world wakes, something soft begins. A single bowl rings far off, morning gathering itself quietly.', steps: ['Gray light finds the window. You are still, patient as the dawn, which takes its time and asks nothing of you.', 'A bird answers the bowl. Another, then a chorus, all unhurried. You listen the way you would breathe: easily.', 'Morning is not a demand. It is an invitation. Stay in the gray light one more minute, soft and unowned.', 'The light warms to amber. You carry this quiet with you: the first minute of the day, already yours.' ] },
+
+  // BODY SCANS (extended)
+  b13: { track: 'bowl', label: 'Body Scan - Five-Minute Reset (5 min', copy: 'A short full-body reset for between things. Settle where you are;no mat needed. Bell once.', steps: ['Crown of the head, soft. Jaw, unclenched. Shoulders, dropping one inch. Breath in, soften.', 'Arms, hands, fingertips: heavy, warm, done. Let them hang or rest, whichever asks less.', 'Belly, chest, back, riding the breath. Nothing to fix;only to notice.', 'Feet on the floor, grounded as roots. One slow exhale, longer than the last, and you are reset.' ] },
+
+  // MEDITATIONS (breath journeys and power rest)
+  m17: { track: 'rain', label: 'Meditation - Ten-Minute Breath Journey (10 min', copy: 'A slow, structured breath journey for when your head will not quiet. Rain keeps the world soft while you breathe.', steps: ['In for four, out for six. Ten rounds, no rush. Let the rain be your metronome;it is never in a hurry.', 'In for four, hold for two, out for six. The holding is where the noise thins. Soft jaw, soft hands.', 'In for four, out for eight. The long exhale is the release valve. Each one carries one unfinished thought out with it.', 'In for four, hold for two, out for eight. Slower now. You are not doing this well or badly;you are doing it, which is enough.', 'Breath finds its own pace, gentler than before. Sit in that for one full minute, rain still falling, mind still clear.' ] },
+  m18: { track: 'om', label: 'Meditation - Power Nap Reset (15 min', copy: 'A short power-nap reset for the afternoon dip. Low drone under you, eyes heavy,in no real need to sleep.', steps: ['Eyes closed. The drone steadies below you like a held floor. Breath in four, out six, three rounds.', 'Let your body go heavy, one part at a time: feet, legs, hips, hands. You are not falling asleep;you are letting go of holding.', 'Thoughts drift through like clouds. You watch them, no boarding. The drone holds you, steady and low.', 'Ten minutes in, you are deeply rested. Roll your shoulders, blink slow. Rise when the drone feels behind you, not ahead of you.' ] },
+
+  // HEALING FREQUENCY COMBO PRESETS (binaural beat layered over an ambient world)
+  f13: { track: 'binaural', beatHz: 6, world: 'night', label: 'Frequency - Sleep Combo: Theta + Night (10 min', copy: 'Theta 6Hz over night crickets, headphones on. A slow descent ten minutes before bed;dim lights, breath long.', steps: ['Settle in, earphones on. Theta hum under summer crickets. Breath in four, out six, three rounds.', 'Let the crickets do the listening. You are not trying to sleep yet;you are letting the day down, one rung at a time.', 'Deeper now. Theta holds you below thinking. Breath out longer each round, heavier each time.', 'Stay until the hum feels like part of the room. Then lift the headphones off slow, rested ahead of the night.' ] },
+  f14: { track: 'binaural', beatHz: 10, world: 'rain', label: 'Frequency - Focus Combo: Alpha + Rain (10 min', copy: 'Alpha 10Hz under soft rain for deep work. Put the task in front of you, start the drift, sink in.', steps: ['Earphones on, rain low. Alpha hum steadies attention into one clean channel. Breath normal;the task first.', 'Start the work: one clear next action, not the whole mountain. The rain keeps the room soft while you go.', 'When attention skips,come home to the hum, nothing else. The alpha anchor is the desk lamp of the mind.', 'Stay until the task has its own momentum, then lift off slow, keeping one clean thread to follow.' ] },
+  f15: { track: 'binaural', beatHz: 16, world: 'om', label: 'Frequency - Energy Combo: Beta + OM Chant (8 min', copy: 'Beta 16Hz over a temple drone for the afternoon slump. Breathe brighter with it;alert, soft, unhurried.', steps: ['Earphones on. Beta hum rides the drone like light on water. Sit tall, eyes open soft.', 'Move gently:roll your shoulders, stretch your neck, let the hum set the pace. Energy rises from motion, not force.', 'Turn toward one small task and move in it. The beta anchor brightens the path ahead of you.', 'Five minutes in, ease the hum out and carry the alertness into the room. One slow drink of water, then go.' ] },
+  f16: { track: 'binaural', beatHz: 2, world: 'fire', label: 'Frequency - Calm Combo: Delta + Fireplace (10 min', copy: 'Delta 2Hz over a slow fireplace for the tight-chest moments. Let the embers breathe for you.', steps: ['Earphones on, fire low. Delta hum steadies your edges. Breath in four, out eight, three rounds.', 'Watch the embers glow and fade, glow and fade. Your exhales match them, longer each time.', 'The delta anchor is a deep, quiet floor. Nothing to solve in here. Let the warmth do the holding.', 'Stay until your shoulders remember their resting place. Then rise slow, warmer, steadier than you came in.' ] },
+
+  // MICRO PRACTICES (more quick resets)
+  p6: { track: 'wind', label: 'Micro - Desk Reboot (2 min', copy: 'For the screen-hunched moment. Roll your shoulders back, drop your jaw, let your hands fall open. One slow minute of unclenching, then one clean next step.' },
+  p7: { track: 'rain', label: 'Micro - Post-Meeting Settle (2 min', copy: 'The meeting is over;the charge in your chest need not linger. Two long exhales, one glass of water, one sentence of what actually matters now. Then onward, lighter.' },
 };
 
 window.launchLibrary = function(kind) {
@@ -3599,14 +3625,16 @@ window.launchLibrary = function(kind) {
     return;
   }
   stopAmbientAudio();
-  if (typeof playAmbientAudio === 'function') playAmbientAudio(chosen.track);
+  if (typeof playAmbientAudio === 'function') playAmbientAudio(chosen.track, { beatHz: chosen.beatHz, world: chosen.world });
   if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
-  openGuidedSessionOverlay(chosen.label, chosen.copy);
-  if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, track: chosen.track });
+  openGuidedSessionOverlay(chosen.label, chosen.copy, { steps: chosen.steps });
+  if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, track: chosen.track, beatHz: chosen.beatHz || null, world: chosen.world || null });
 };
 
-    function openGuidedSessionOverlay(title, copy) {
+    function openGuidedSessionOverlay(title, copy, opts) {
       closeGuidedSessionOverlay();
+      opts = opts || {};
+      const stepsArr = Array.isArray(opts.steps) ? opts.steps.filter(Boolean) : [];
       const veil = document.createElement("div");
       veil.id = "guided-session-overlay";
       veil.style.cssText = "position:fixed; inset:0; background:rgba(8,6,14,0.82); backdrop-filter:blur(12px); z-index:9998; display:flex; align-items:center; justify-content:center; padding:20px;";
@@ -3638,12 +3666,28 @@ window.launchLibrary = function(kind) {
       const progBox = document.createElement("div");
       progBox.id = "session-prog";
       progBox.style.cssText = "font-size:12px; color:var(--theme-text-muted); margin:14px 0 0; letter-spacing:0.06em;";
+      const stageBox = document.createElement("div");
+      stageBox.id = "session-stage";
+      stageBox.style.cssText = "font-size:11px; font-weight:800; letter-spacing:0.08em; color:var(--theme-accent); margin:12px 0 4px; min-height:14px;";
       const minsRaw = (title.match(/(\d+)\s*min/) || [])[1];
       const totalMs = Math.max(1, Math.min(40, Number(minsRaw || 5))) * 60 * 1000;
+      const stepPer = stepsArr.length ? totalMs / stepsArr.length : 0;
       const start = Date.now();
+      if (stepsArr.length) {
+        p.textContent = stepsArr[0];
+        stageBox.textContent = "1 / " + stepsArr.length;
+      }
       window._sessionProgTimer = setInterval(() => {
-        const remain = Math.max(0, totalMs - (Date.now() - start));
+        const elapsed = Date.now() - start;
+        const remain = Math.max(0, totalMs - elapsed);
         const s = Math.ceil(remain / 1000);
+        if (stepsArr.length && stepPer > 0) {
+          const idx = Math.min(stepsArr.length - 1, Math.floor(elapsed / stepPer));
+          if (p.textContent !== stepsArr[idx] && stepsArr[idx]) {
+            p.textContent = stepsArr[idx];
+            stageBox.textContent = (idx + 1) + " / " + stepsArr.length;
+          }
+        }
         progBox.textContent = "Time remaining: " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
         if (remain <= 0) {
           clearInterval(window._sessionProgTimer);
@@ -3653,6 +3697,7 @@ window.launchLibrary = function(kind) {
           setTimeout(closeGuidedSessionOverlay, 1400);
         }
       }, 1000);
+      card.insertBefore(stageBox, progBox);
       card.insertBefore(progBox, stopBtn);
     }
 
@@ -3697,7 +3742,8 @@ window.launchLibrary = function(kind) {
       return buffer;
     }
 
-    function playAmbientAudio(type) {
+    function playAmbientAudio(type, opts) {
+      opts = opts || {};
       if (currentlyPlayingTrack === type) {
         stopAmbientAudio();
         return;
@@ -3917,7 +3963,8 @@ window.launchLibrary = function(kind) {
         }
         else if (type === 'binaural') {
           const baseFreq = 180;
-          [0, 6].forEach((offset, i) => {
+          const beatHz = Number(opts.beatHz) || 6;
+          [0, beatHz].forEach((offset, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
@@ -3937,6 +3984,15 @@ window.launchLibrary = function(kind) {
             }
             osc.start();
           });
+          if (opts.world) {
+            const layerCtx = ensureAmbientCtx();
+            if (layerCtx) {
+              const layerNodes = buildAmbientLayer(layerCtx, opts.world);
+              const layerGain = layerNodes[0];
+              if (layerGain) layerGain.gain.setTargetAtTime(layerGain.gain.value * 0.45, layerCtx.currentTime, 0.4);
+              activeSoundNodes.push(...layerNodes);
+            }
+          }
         }
 
         currentlyPlayingTrack = type;
@@ -4807,7 +4863,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=29").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=30").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
