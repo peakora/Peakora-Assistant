@@ -1764,6 +1764,79 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                   <p style="font-size:12px; color:var(--theme-text-muted); font-style:italic; margin:12px 0 0; line-height:1.5;">${read}</p>
                 </div>`;
                 })()}
+                ${(() => {
+                  const evs = (typeof PeakoraTracker !== 'undefined' && PeakoraTracker.getEvents) ? PeakoraTracker.getEvents() : [];
+                  const nowTs = Date.now();
+                  const weekMs = 7 * 24 * 60 * 60 * 1000;
+                  const recent = evs.filter(e => { const ts = new Date(e.timestamp || 0).getTime(); return ts && ts >= nowTs - weekMs && ts <= nowTs; });
+                  const counts = {};
+                  recent.forEach(e => { counts[e.action] = (counts[e.action] || 0) + 1; });
+                  const TOOL_META = {
+                    breath_session_completed: ['Breathing rounds', '#34d399'],
+                    guided_session_started: ['Guided sessions', '#f4a261'],
+                    library_session_started: ['Library sessions', '#a78bfa'],
+                    soundscape_played: ['Soundscapes played', '#6EC8C8'],
+                    ambient_layer_started: ['Ambient layers', '#fb7185']
+                  };
+                  const rows = Object.entries(TOOL_META).map(([key, meta]) => { const n = counts[key] || 0; return { key, label: meta[0], color: meta[1], n }; }).filter(r => r.n > 0).sort((a,b) => b.n - a.n);
+                  const totalActs = rows.reduce((s,r) => s + r.n, 0);
+                  const top = rows[0] || null;
+                  const read = top
+                    ? 'Your most-reached-for reset this week: ' + top.label.toLowerCase() + ' (' + top.n + ' times). Quiet rituals, real signal.'
+                    : 'No reset sessions yet this week - the breathing ring is two quiet minutes away when you are ready.';
+                  return `
+                <div class="dash-card">
+                  <div class="dash-card-title">Your Reset Rhythm</div>
+                  <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">Which reset tools you actually reached for in the last 7 days, drawn from in-app activity.</p>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    ${rows.length ? rows.map(r => `<div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);">
+                      <span style="width:8px; height:8px; border-radius:50%; background:${r.color}; box-shadow:0 0 8px ${r.color}88; flex-shrink:0;"></span>
+                      <span style="flex:1; min-width:0; font-size:13px; font-weight:700; color:#ffffff;">${r.label}</span>
+                      <strong style="font-size:15px; font-weight:800; color:${r.color};">${r.n} times</strong>
+                    </div>`).join('') : '<div style="font-size:13px; color:var(--theme-text-muted);">Nothing yet - and that is fine. Your tools are here when the noise gets loud.</div>'}
+                  </div>
+                  <p style="font-size:12px; color:var(--theme-text-muted); font-style:italic; margin:12px 0 0; line-height:1.5;">${read}</p>
+                </div>`;
+                })()}
+                ${(() => {
+                  const existingFocus = ((localStorage.getItem("peakora_current_focus") || "").trim());
+                  const journal = ((localStorage.getItem("peakora_journal_last") || "").trim());
+                  const reflections = (typeof getReflections === 'function') ? getReflections() : [];
+                  const words = journal ? journal.split(/\s+/).filter(Boolean).length : 0;
+                  const jl = journal.toLowerCase();
+                  let toneColor = '#F5B35C';
+                  let toneLabel = 'Steady & grounded';
+                  if (/calm|relax|breathe|ground|settle|soften|quiet|steady/.test(jl)) { toneColor = '#F5B35C'; toneLabel = 'Steady & grounded'; }
+                  else if (/energ|move|wake|strong|spark|align|clear|ready/.test(jl)) { toneColor = '#6EC8C8'; toneLabel = 'Bright & moving'; }
+                  else if (/focus|clarity|attention|single|hopeful|light|better|grateful|thank/.test(jl)) { toneColor = '#AEE6C5'; toneLabel = 'Hopeful & light'; }
+                  else if (/stress|anxious|wired|overwhelm|tense|heavy|drain|tired|sad/.test(jl)) { toneColor = '#E8A0A0'; toneLabel = 'Low & heavy'; }
+                  const read = existingFocus
+                    ? 'Right now you are tending to: ' + existingFocus + '. Latest journal note: ' + (journal ? toneLabel.toLowerCase() + ', ' + words + ' words' : 'none yet') + '.'
+                    : journal
+                      ? 'Your latest note runs ' + toneLabel.toLowerCase() + ' (' + words + ' words) - set a focus on Home when the noise gets loud.'
+                      : 'Nothing set yet - your focus and journal live on the Home tab, whenever you want them.';
+                  return `
+                <div class="dash-card">
+                  <div class="dash-card-title">Your Focus & Journal Thread</div>
+                  <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px; line-height:1.5;">A quiet mirror of what you last set as your focus and wrote down - nothing tracked beyond your own words.</p>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);">
+                      <span style="font-size:12px; font-weight:800; letter-spacing:0.03em; color:var(--theme-accent); flex-shrink:0;">FOCUS</span>
+                      <span style="flex:1; min-width:0; font-size:13px; color:#ffffff; line-height:1.45;">${existingFocus || 'None yet - set one on Home when the noise gets loud.'}</span
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);">
+                      <span style="font-size:12px; font-weight:800; letter-spacing:0.03em; color:var(--theme-accent); flex-shrink:0;">JOURNAL</span
+                      <span style="flex:1; min-width:0; font-size:13px; color:#ffffff; line-height:1.45;">${journal ? journal : 'No note yet - a sentence or two on Home is enough.'}</span
+                      ${words ? `<span style="font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; color:${toneColor}; background:${toneColor}1A; flex-shrink:0;">${words} words · ${toneLabel}</span>` : ''}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);">
+                      <span style="font-size:12px; font-weight:800; letter-spacing:0.03em; color:var(--theme-accent); flex-shrink:0;">SAVED</span
+                      <span style="flex:1; min-width:0; font-size:13px; color:#ffffff;">${reflections.length ? reflections.length + ' reflection' + (reflections.length > 1 ? 's' : '') + ' saved in your quotes modal' : 'No saved reflections yet'}</span
+                    </div>
+                  </div>
+                  <p style="font-size:12px; color:var(--theme-text-muted); font-style:italic; margin:12px 0 0; line-height:1.5;">${read}</p>
+                </div>`;
+                })()}
             </div>
             </div>
           `;
