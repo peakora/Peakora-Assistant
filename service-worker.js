@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
-const CACHE_VERSION = "2026-09-08-v28-two-insights-cards";
+const CACHE_VERSION = "2026-09-08-v29-sw-offline-guard";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
@@ -46,11 +46,19 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  const req = event.request;
+  const isSameOrigin = new URL( req.url ).origin === self.location.origin;
+  const isGet = req.method === "GET";
+  const isNavigate = req.mode === "navigate";
+  if ( !isSameOrigin || !isGet || isNavigate ) {
+    event.respondWith( fetch( req ).catch( () => Response.error() ) );
+    return;
+  }
   event.respondWith(
-    fetch(event.request).catch(() =>
-      caches.match(event.request).then(response => {
-        return response || caches.match(OFFLINE_URL);
-      })
+    fetch( req ).catch( () =>
+      caches.match( req ).then( response => {
+        return response || caches.match( OFFLINE_URL );
+      } )
     )
   );
 });

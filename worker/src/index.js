@@ -196,19 +196,27 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:8080',
-  'http://127.0.0.1:8080'
+  'http://127.0.0.1:8080',
+  'http://localhost:8899',
+  'http://127.0.0.1:8899',
+  'http://localhost:5173',
+  'http://localhost:5174'
 ];
 
-function cors(response, request) {
-  const origin = request ? (request.headers.get('Origin') || '') : '';
-  // Affiliate portal + local dev run on the same origins; allow echo for same-site.
-  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  response.headers.set('Access-Control-Allow-Origin', allowOrigin);
-  response.headers.set('Vary', 'Origin');
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, x-admin-token, x-affiliate-token, x-affiliate-email');
-  response.headers.set('Access-Control-Max-Age', '86400');
-  return response;
+function cors( response , request ) {
+  const origin = request ? ( request.headers.get( 'Origin' ) || '' ) : '';
+  // Allow any localhost port for local dev; echo it back.
+  const isLocalDev = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test( origin );
+  const allowOrigin = ALLOWED_ORIGINS.includes( origin ) || isLocalDev ? origin : ALLOWED_ORIGINS[0];
+  response.headers.set( 'Access-Control-Allow-Origin', allowOrigin );
+  response.headers.set( 'Vary', 'Origin' );
+  response.headers.set( 'Access-Control-Allow-Methods', 'GET, POST, OPTIONS' );
+  response.headers.set( 'Access-Control-Allow-Headers', 'Content-Type, x-admin-token, x-affiliate-token, x-affiliate-email' );
+  response.headers.set( 'Access-Control-Max-Age', '86400' );
+  if ( request && request.credentials === 'include' ) {
+    response.headers.set( 'Access-Control-Allow-Credentials', 'true' );
+  }
+  return response ;
 }
 
 async function readJson(request) {
@@ -943,3 +951,5 @@ export default {
     }
   }
 };
+
+
