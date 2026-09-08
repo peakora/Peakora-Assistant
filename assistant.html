@@ -1128,7 +1128,7 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <span class="dash-mobile-title">${isPeakoraPlusActive() ? 'PEAKORA +' : 'PEAKORA'}</span>
-                <img src="assets/peakora-logo.png" alt="Peakora" class="dash-mobile-logo" />
+                <img src="assets/hub-logo.png?v=4" alt="Peakora" class="dash-mobile-logo" />
               </div>
               <div class="dash-drawer-overlay" onclick="toggleDashDrawer(false)"></div>
 
@@ -4871,7 +4871,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=33").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=34").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
