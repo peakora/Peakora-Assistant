@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
-const CACHE_VERSION = "2026-09-08-v35-revert-wordmark-static-pages";
+const CACHE_VERSION = "2026-09-08-v36-drop-stale-favicon";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
@@ -14,7 +14,7 @@ const FILES_TO_CACHE = [
   "./manifest.json",
   "./offline.html",
   "./service-worker.js",
-  "./favicon.ico",
+  
   "./assets/peakora-logo.png",
   "./assets/hub-logo.png?v=4",
   "./assets/hub-logo-192.png?v=4",
