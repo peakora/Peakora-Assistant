@@ -22,7 +22,7 @@
 <body>
   <!-- PWA install banner: shows when beforeinstallprompt fires (not yet installed) -->
   <div id="pwa-install-banner" class="pwa-install-banner" style="display:none;">
-    <img src="assets/hub-logo.png" alt="Peakora" class="pwa-install-logo" />
+    <img src="assets/hub-logo.png?v=4" alt="Peakora" class="pwa-install-logo" />
     <div class="pwa-install-text">
       <strong>Install Peakora</strong>
       <span>Add to your home screen for quick access.</span>
@@ -4863,7 +4863,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=30").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=31").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
