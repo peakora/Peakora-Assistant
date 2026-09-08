@@ -3952,9 +3952,33 @@ window.launchLibrary = function(kind) {
       card.appendChild(stopBtn);
       veil.appendChild(card);
       document.body.appendChild(veil);
+
+      const progBox = document.createElement("div");
+      progBox.id = "session-prog";
+      progBox.style.cssText = "font-size:12px; color:var(--theme-text-muted); margin:14px 0 0; letter-spacing:0.06em;";
+      const minsRaw = (title.match(/(\d+)\s*min/) || [])[1];
+      const totalMs = Math.max(1, Math.min(40, Number(minsRaw || 5))) * 60 * 1000;
+      const start = Date.now();
+      window._sessionProgTimer = setInterval(() => {
+        const remain = Math.max(0, totalMs - (Date.now() - start));
+        const s = Math.ceil(remain / 1000);
+        progBox.textContent = "Time remaining: " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+        if (remain <= 0) {
+          clearInterval(window._sessionProgTimer);
+          window._sessionProgTimer = null;
+          progBox.textContent = "Session complete. Fading out now.";
+          stopAmbientAudio();
+          setTimeout(closeGuidedSessionOverlay, 1400);
+        }
+      }, 1000);
+      card.insertBefore(progBox, stopBtn);
     }
 
     function closeGuidedSessionOverlay() {
+      if (window._sessionProgTimer) {
+          clearInterval(window._sessionProgTimer);
+        window._sessionProgTimer = null;
+      }
       const el = document.getElementById("guided-session-overlay");
       if (el) el.remove();
     }
