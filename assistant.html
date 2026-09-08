@@ -43,8 +43,8 @@
         </div>
       </header>
 
-      <div class="assistant-progress">
-        <div class="progress-label">Step 1 of 13</div>
+      <div class="assistant-progress" style="display:none;">
+        <div class="progress-label">Start your reset</div>
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -894,7 +894,6 @@
 
     /* COMPLETE RENDER STEP FUNCTION */
     function renderStep() {
-      seedMotion();
 if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf("home"); saveState(); }
       setProgress();
       fadeIn();
@@ -3320,7 +3319,6 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
     SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' - ')[0]; });
 
     let audioCtx = null;
-        masterGain.isMaster = true
     let activeSoundNodes = [];
     let currentlyPlayingTrack = null;
     let trackStartedAt = null;
@@ -3384,7 +3382,6 @@ function stopAmbientAudio() {
         try { audioCtx.close(); } catch (e) {}
         audioCtx = null;
       }
-        masterGain.isMaster = true
       if (currentlyPlayingTrack && window.PeakoraTracker) {
         window.PeakoraTracker.track("soundscape_stopped", { track: currentlyPlayingTrack });
       }
