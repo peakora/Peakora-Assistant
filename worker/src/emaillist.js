@@ -14,7 +14,7 @@
  *
  * Env:
  *   RESEND_API_KEY   — Resend API key (set via `wrangler secret put RESEND_API_KEY`)
- *   FROM_EMAIL       — sender address (default: hello@peakora.network)
+ *   FROM_EMAIL       . sender address (default: onboarding@resend.dev, no DNS needed)
  *                      IMPORTANT: must be on a verified Resend domain.
  *
  * D1 tables (added to schema.sql):
@@ -25,7 +25,7 @@
  *   runSequenceTick(env)              — advance the drip for due subscribers
  */
 
-const FROM_EMAIL = 'Peakora <hello@peakora.network>';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Peakora <onboarding@resend.dev>';
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 // ── Sequence definition ───────────────────────────────────────────────────
