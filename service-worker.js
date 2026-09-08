@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
-const CACHE_VERSION = "2026-09-08-v32-picks-library-split";
+const CACHE_VERSION = "2026-09-08-v33-picks-images-restored";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
