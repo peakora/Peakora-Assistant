@@ -9,7 +9,7 @@ Peakora in-app audio draws on these open-source/public-domain sources. License t
 
 ## Kenney audio packs (vendored subsets: assets/vendor/kenney/)
 - Creative Commons CC0 1.0 Universal (no attribution required; kept attribution as goodwill).
-- Source packs: https://kenney.nl/assets/rpg-audio, https://kenney.nl/assets/interface-sounds, https://kenney.nl/assets/music-jingles, https://kenney.nl/assets/casino-audio, https://kenney.nl/assets/sci-fi-sounds,
+- Source packs: https://kenney.nl/assets/rpg-audio, https://kenney.nl/assets/interface-sounds, https://kenney.nl/assets/music-jingles, https://kenney.nl/assets/casino-audio, https://kenney.nl/assets/sci-fi-sounds, https://kenney.nl/assets/digital-audio, https://kenney.nl/assets/impact-sounds,
 - Vendored one-shot Foley clips are real recorded layers over the synthesized ambient beds
 - Note: Kenney assets may also be mirrored at gamesounds.xyz / itch.io (kenney-game-assets, same CC0 license).
 
