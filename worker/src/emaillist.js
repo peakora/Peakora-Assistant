@@ -251,8 +251,8 @@ function renderEmailHtml(step, opts) {
           <div style="font-size:12px;color:#a0aec0;margin-top:4px;letter-spacing:0.04em;">Gentle guidance. Real momentum.</div>
         </td></tr>
         <!-- Preheader / step indicator -->
-        <tr><td style="padding:14px 32px 0;text-align:center;">
-          <span style="display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(224,122,95,0.18);color:#f4a261;font-size:11px;font-weight:700;letter-spacing:0.05em;">Peakora note</span>
+        <tr><td style="padding:10px 32px 0;text-align:center;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#a0aec0;text-transform:uppercase;">Peakora</div>
         </td></tr>
         <!-- Subject -->
         <tr><td style="padding:18px 32px 0;">
