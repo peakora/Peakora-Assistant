@@ -2168,7 +2168,10 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                 { id: 'freqs', label: 'Healing Frequencies', sub: '12 binaural theta presets by intention plus 4 layered combo presets - theta, alpha, beta, delta over ambient worlds', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16'] },
                 { id: 'stories', label: 'Sleep Stories', sub: '3 slow, unfolding little narratives to drift on - harbor, evening, first light', kinds: ['st1','st2','st3'] },
                 { id: 'reads', label: 'Readings', sub: '18 short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15','r16','r17','r18'] },
-                { id: 'micro', label: 'Micro Practices', sub: '7 one-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] }
+                { id: 'micro', label: 'Micro Practices', sub: '7 one-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] },
+                { id: 'narrated', label: 'Narrated Sleep Stories', sub: '4 real public-domain LibriVox readings over the ambient bed', kinds: ['ns1','ns2','ns3','ns4'] },
+                { id: 'real', label: 'Real Sound Layers', sub: '3 Kenney CC0 one-shot Foley layers over the synth beds', kinds: ['k1','k2','k3'] },
+                { id: 'tone', label: 'Tone Frequency Sessions', sub: '3 precise WebAudio frequency drones', kinds: ['t1','t2','t3'] }
               ].map(cat => `
                 <div class="dash-card" style="margin:0;">
                   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px;">
@@ -3429,6 +3432,8 @@ function stopAmbientAudio() {
       }
       currentlyPlayingTrack = null;
       trackStartedAt = null;
+      stopNarration();
+      stopOneShotLayer();
       renderStepAudioState();
       closeGuidedSessionOverlay();
     }
@@ -3572,6 +3577,22 @@ function stopAmbientAudio() {
   // MICRO PRACTICES (more quick resets)
   p6: { track: 'wind', label: 'Micro - Desk Reboot (2 min', copy: 'For the screen-hunched moment. Roll your shoulders back, drop your jaw, let your hands fall open. One slow minute of unclenching, then one clean next step.' },
   p7: { track: 'rain', label: 'Micro - Post-Meeting Settle (2 min', copy: 'The meeting is over;the charge in your chest need not linger. Two long exhales, one glass of water, one sentence of what actually matters now. Then onward, lighter.' },
+
+  // NARRATED SLEEP STORIES (real public-domain LibriVox readings over the ambient bed)
+  ns1: { track: 'night', narration: 'assets/vendor/librivox/fox_grapes.mp3', label: 'Narrated Story - The Fox and the Grapes (6 min', copy: 'A real public-domain reading, over the evening crickets. Let the old story slow your thoughts down one sentence at a time.', steps: ['Settle in, crickets low. The reader begins. You do not need to follow the plot - only the cadence of a human voice at a human pace.', 'When attention wanders, come home to the voice, not the story. Let it be lullaby rather than lecture.', 'The story ends when it ends. Let the evening hold you there a minute longer, still as the night outside.' ] },
+  ns2: { track: 'bowl', narration: 'assets/vendor/librivox/peacock_crane.mp3', label: 'Narrated Story - The Peacock and the Crane (6 min', copy: 'A calm fable read over a low singing bowl. Old words, warm voice, nothing to perform.', steps: ['Bowl rings once. The reader takes their time, and so can you. Breath in four, out six.', 'Let the words wash over you. You are not studying them;you are resting on them.', 'When the voice stops, stay in the quiet one breath longer. That stillness is yours now.' ] },
+  ns3: { track: 'ocean', narration: 'assets/vendor/librivox/lion_mouse.mp3', label: 'Narrated Story - The Lion and the Mouse (8 min', copy: 'A slow fable beside the tide. The sea keeps rhythm while the old kindness story unfolds.', steps: ['Ocean low, voice warm. Let each sentence arrive like a wave and leave like a retreat.', 'Rest on the cadence. You are not following a moral;you are following a voice at rest.', 'The last word lands soft. Stay in the surf a minute more, then let the tide carry you down.' ] },
+  ns4: { track: 'rain', narration: 'assets/vendor/librivox/crow_pitcher.mp3', label: 'Narrated Story - The Crow and the Pitcher (7 min', copy: 'An old fable under soft rain. Quiet, patient, gently told - sink into the sound of being read to.', steps: ['Rain patters, voice starts low. Let your jaw drop, your hands open, your breath lengthen.', 'Each sentence is a small wave. Ride them without steering. The rain does the teaching.', 'Close with one long exhale. The room is softer than when you arrived,and so are you.' ] },
+
+  // REAL SOUND LAYERS (Kenney CC0 one-shot Foley over the synth beds)
+  k1: { track: 'fire', oneShots: ['rpg/cloth1.ogg', 'rpg/bookFlip1.ogg'], oneShotEvery: 11000, label: 'Real Sound - Hearth Pages (10 min', copy: 'The fireplace plus the sound of pages turning - the quiet of a room where someone is reading beside you. Real recorded Foley over the warm fire bed.', steps: ['Fire low. Every so often, a page turns. You are not reading;you are sharing air with someone who is.', 'Let the crackle and the cloth-and-paper sounds pace your breathing - slow, regular, unhurried.', 'Ten minutes in,the room feels lived-in. Rest in that kind of quiet.' ] },
+  k2: { track: 'night', oneShots: ['rpg/bookClose.ogg', 'rpg/metalLatch.ogg', 'rpg/handleCoins.ogg'], oneShotEvery: 13000, label: 'Real Sound - Old House Nights (12 min', copy: 'A creaking old house after lights-out: door latches, soft coins, small wooden things settling. Real recorded Foley over the night bed.', steps: ['Night bed low. A latch, a coin, a close door - each one a tiny confirmation that the world is held and quiet.', 'You are the house settling. Each sound lowers you one soft degree towards sleep.', 'Twelve minutes in, nothing is left to fix. The house rests,and so do you.' ] },
+  k3: { track: 'rain', oneShots: ['ui/bong_001.ogg', 'ui/glass_003.ogg'], oneShotEvery: 9000, label: 'Real Sound - Rain Chapel Bells (9 min', copy: 'A small bell and a faint glass chime through steady rain - real recorded rings over the soft storm. A chapel quiet for the middle of the night.', steps: ['Rain steady. A bell. A breath. The rings come rarely,and each one asks nothing of you.', 'Let the rain be the silence and the bells be the punctuation. Nothing more is required.', 'Nine minutes in, ring out the day. Soft shoulders, soft mind, done.' ] },
+
+  // TONE FREQUENCY SESSIONS (precise WebAudio frequency engine)(
+  t1: { track: 'binaural', tone: 'Tone Calm Drone', toneHz: 136.1, toneType: 'sine', label: 'Tone - Calm Drone (15 min', copy: 'A precise, stable tone from the precise WebAudio frequency engine - deeper and steadier than the synths. Headphones recommended.', steps: ['Tone engine warms up. A pure, stable 136Hz tone holds you like a floor. Breath in four, out six.', 'The tone does not vary because it does not need to. Let your thoughts be the only weather, passing over.', 'Fifteen minutes in, ease out slow. The steadiness you practiced stays with you.' ] },
+  t2: { track: 'binaural', tone: 'Tone Focus Theta', toneHz: 87, toneType: 'sine', label: 'Tone - Focus Theta (15 min', copy: 'A precise 87Hz drone from the precise WebAudio frequency engine - the lower, steadier cousin of the theta combos. Deep work, headphones on.', steps: ['Steady tone, steady breath. The lower pitch pulls your attention down into one clean channel.', 'Let the hum be the floor beneath the work. You do not chase it;it holds you.', 'Close with one long exhale, then carry the focus into the next small task.' ] },
+  t3: { track: 'binaural', tone: 'Tone Evening Lower', toneHz: 68.05, toneType: 'sine', label: 'Tone - Evening Lower (20 min', copy: 'A very low 68Hz tone from the precise WebAudio frequency engine, for late-night settling. Slower than thought, deeper than worry.', steps: ['Low tone, low light. Let every exhale be longer than the last until the room matches the hum.', 'The tone is the last sound before sleep. You are not doing anything;you are letting the evening lower you.', 'Twenty minutes in, ease yourself up slow - or simply stay and let the night have you.' ] },
 };
 
 window.launchLibrary = function(kind) {
@@ -3587,9 +3608,111 @@ window.launchLibrary = function(kind) {
   stopAmbientAudio();
   if (typeof playAmbientAudio === 'function') playAmbientAudio(chosen.track, { beatHz: chosen.beatHz, world: chosen.world });
   if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
-  openGuidedSessionOverlay(chosen.label, chosen.copy, { steps: chosen.steps });
-  if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, track: chosen.track, beatHz: chosen.beatHz || null, world: chosen.world || null });
+  if (chosen.narration) {
+    playNarration(chosen.narration);
+  }
+  if (Array.isArray(chosen.oneShots) && chosen.oneShots.length) {
+    startOneShotLayer(chosen.oneShots, chosen.oneShotEvery);
+  }
+  if (chosen.tone) {
+    playToneSession(chosen.tone, chosen.toneHz, chosen.toneType);
+  }
+  openGuidedSessionOverlay(chosen.label, chosen.copy, { steps: chosen.steps, narration: chosen.narration, tone: chosen.tone });
+  if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, track: chosen.track, beatHz: chosen.beatHz || null, world: chosen.world || null, narration: chosen.narration || null, oneShots: chosen.oneShots ? chosen.oneShots.length : null, tone: chosen.tone || null });
 };
+
+    /* REAL-AUDIO VENDOR PLAYBACK (Kenney CC0 one-shots, LibriVox PD narrations, precise WebAudio frequency engine) */
+    let narrationAudio = null;
+    let oneShotTimer = null;
+
+    function playNarration(url) {
+      stopNarration();
+      const a = new Audio(url);
+      a.loop = false;
+      a.volume =0.55;
+      a.play().catch(() => {});
+    }
+
+    function stopNarration() {
+      if (narrationAudio) {
+        try { narrationAudio.pause(); } catch (e) {}
+        narrationAudio = null;
+      }
+    }
+
+    function startOneShotLayer(shots, everyMs) {
+      stopOneShotLayer();
+      const urls = shots.map(s => "assets/vendor/kenney/" + s);
+      let idx =0;
+      const fire = () => {
+        if (!urls.length) return;
+        const a = new Audio(urls[idx % urls.length]);
+        a.volume =0.14;
+        a.play().catch(() => {});
+        idx++;
+      };
+      fire();
+      oneShotTimer = setInterval(fire, (everyMs || 9000));
+    }
+
+    function stopOneShotLayer() {
+      if (oneShotTimer) {
+        clearInterval(oneShotTimer);
+        oneShotTimer = null;
+      }
+    }
+
+    let toneLoaded = false;
+    let toneGainNode = null;
+
+    function ensureToneLoaded(cb) {
+      if (toneLoaded) { cb && cb(); return }
+      const s = document.createElement("script");
+      s.src = "assets/vendor/tone/tone.js";
+      s.onload = () => {
+        toneLoaded = true;
+        cb && cb();
+      };
+      document.head.appendChild(s);
+    }
+
+    function playToneSession(toneName, hz, type) {
+      try {
+        ensureToneLoaded(() => {
+          if (typeof window.Tone === "undefined" || !window.Tone) return;
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const ctx = new AudioContext();
+          if (ctx.state === "suspended") ctx.resume();
+          const now = ctx.currentTime;
+          const master = ctx.createGain();
+          master.gain.setValueAtTime(0.0001, now);
+          master.gain.exponentialRampToValueAtTime(0.45, now + 1.5);
+          master.connect(ctx.destination);
+          const osc = ctx.createOscillator();
+          osc.type = type || "sine";
+          osc.frequency.setValueAtTime(hz || 136.1, now);
+          const g = ctx.createGain();
+          g.gain.value =0.4;
+          const lfo = ctx.createOscillator();
+          lfo.frequency.value =0.05 + (hz ? hz / 4000 : 0.04);
+          const lg = ctx.createGain();
+          lg.gain.value =0.12;
+          lfo.connect(lg);
+          lg.connect(g.gain);
+          lfo.start(now);
+          osc.connect(g);
+          g.connect(master);
+          osc.start(now);
+          toneGainNode = master;
+          if (window.PeakoraTracker) PeakoraTracker.track("tone_session_started", { session: toneName, hz, type });
+        });
+      } catch (e) {
+        console.error("Tone error:", e);
+      }
+    }
+
+    
 
     function openGuidedSessionOverlay(title, copy, opts) {
       closeGuidedSessionOverlay();
@@ -4827,7 +4950,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=38").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=39").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
