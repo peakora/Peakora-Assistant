@@ -2154,44 +2154,65 @@
 
         // LIBRARY TAB: THE PEAKORA+ SESSION LIBRARY (standalone - no picks mixed in)
         if (activeTab === "libraries" || activeTab === "library") {
-          html += `
-<div class="dash-welcome" style="margin:24px 0 16px; padding-top:22px; border-top:1px solid var(--theme-card-border);">
-              <h1 class="dash-welcome-h1">Library</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Everything in Peakora+ in one place - soundscapes, meditations, body scans, healing frequencies,and readings. Each one is a small, real practice you can start in seconds.</p>
-            </div>
-            <div style="display:grid; gap:16px;">
-              ${[
-                { id: 'meditations', label: 'Meditations', sub: '18 timed guided sits, breath journeys,and a power-nap reset, up to 15 minutes each', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17','m18'] },
-                { id: 'scans', label: 'Body Scans', sub: '13 full-body resets - tension maps, five-minute resets,and sleep wind-downs', kinds: ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13'] },
-                { id: 'freqs', label: 'Healing Frequencies', sub: '12 binaural theta presets by intention plus 4 layered combo presets - theta, alpha, beta, delta over ambient worlds', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16'] },
-                { id: 'stories', label: 'Sleep Stories', sub: '3 slow, unfolding little narratives to drift on - harbor, evening, first light', kinds: ['st1','st2','st3'] },
-                { id: 'reads', label: 'Readings', sub: '18 short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15','r16','r17','r18'] },
-                { id: 'micro', label: 'Micro Practices', sub: '7 one-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] },
-                { id: 'narrated', label: 'Narrated Sleep Stories', sub: '14 real public-domain LibriVox readings over the ambient bed', kinds: ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns8','ns9','ns10','ns11','ns12','ns13','ns14'] },
-                { id: 'real', label: 'Real Sound Layers', sub: '6 Kenney CC0 one-shot Foley layers over the synth beds', kinds: ['k1','k2','k3','k4','k5','k6'] },
-                { id: 'tone', label: 'Tone Frequency Sessions', sub: '6 precise WebAudio frequency drones', kinds: ['t1','t2','t3','t4','t5','t6'] }
-              ].map(cat => `
-                <div class="dash-card" style="margin:0;">
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px;">
-                    <div>
-                      <div class="dash-card-title">${cat.label}</div>
-                      <div style="font-size:12px; color:var(--theme-text-muted);">${cat.sub}<span style="opacity:0.65;"> - ${cat.kinds.length} sessions</span></div>
+          const libAccents = [
+            { id: 'meditations', accent: '#f4a261' },
+            { id: 'scans', accent: '#34d399' },
+            { id: 'freqs', accent: '#c084fc' },
+            { id: 'stories', accent: '#818cf8' },
+            { id: 'reads', accent: '#facc15' },
+            { id: 'micro', accent: '#fb7185' },
+            { id: 'narrated', accent: '#38bdf8' },
+            { id: 'real', accent: '#4ade80' },
+            { id: 'tone', accent: '#a78bfa' }
+          ];
+          const libCats = [
+            { id: 'meditations', label: 'Meditations', glyph: '&#10047;', sub: 'Timed guided sits, breath journeys,and a power-nap reset', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17','m18'] },
+            { id: 'scans', label: 'Body Scans', glyph: '&#10047;', sub: 'Full-body resets - tension maps, five-minute nomads,and sleep wind-downs', kinds: ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13'] },
+            { id: 'freqs', label: 'Healing Frequencies', glyph: '&#9835;', sub: 'Binaural presets by intention plus layered combos - theta, alpha, beta, delta', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16'] },
+            { id: 'stories', label: 'Sleep Stories', glyph: '&#9789;', sub: 'Slow, unfolding little narratives to drift on', kinds: ['st1','st2','st3'] },
+            { id: 'reads', label: 'Readings', glyph: '&#9997;', sub: 'Short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15','r16','r17','r18'] },
+            { id: 'micro', label: 'Micro Practices', glyph: '&#10052;', sub: 'One-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] },
+            { id: 'narrated', label: 'Narrated Sleep Stories', glyph: '&#127902;', sub: 'Real public-domain LibriVox readings over the ambient bed', kinds: ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns8','ns9','ns10','ns11','ns12','ns13','ns14'] },
+            { id: 'real', label: 'Real Sound Layers', glyph: '&#10047;', sub: 'Kenney CC0 one-shot Foley layers over the synth beds', kinds: ['k1','k2','k3','k4','k5','k6'] },
+            { id: 'tone', label: 'Tone Frequency Sessions', glyph: '&#9835;', sub: 'Precise WebAudio frequency drones', kinds: ['t1','t2','t3','t4','t5','t6'] }
+          ].map(cat => {
+            const accent = (libAccents.find(a => a.id === cat.id) || {}).accent || 'var(--theme-accent)';
+            return `
+                <div class="dash-card lib-cat-card" style="margin:0; overflow:hidden;">
+                  <div style="height:3px; background:linear-gradient(90deg, ${accent}88, ${accent}33, transparent);"></div>
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:flex-start; gap:12px; min-width:0;">
+                      <span style="flex-shrink:0; width:38px; height:38px; border-radius:12px; background:${accent}1a; border:1px solid ${accent}44; color:${accent}; display:inline-flex; align-items:center; justify-content:center; font-size:17px; margin-top:1px;">${cat.glyph}</span>
+                      <div style="min-width:0;">
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                          <div class="dash-card-title" style="margin:0;">${cat.label}</div>
+                          <span style="font-size:10px; font-weight:800; letter-spacing:0.08em; padding:3px 9px; border-radius:999px; background:${accent}1a; color:${accent}; border:1px solid ${accent}44; white-space:nowrap;">${cat.kinds.length} SESSIONS</span>
+                        </div>
+                        <div style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">${cat.sub}</div>
+                      </div>
                     </div>
                     <span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff; white-space:nowrap; flex-shrink:0; margin-top:2px;">PEAKORA+</span>
                   </div>
-                  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,170px),1fr)); gap:8px;;">
-                    ${cat.kinds.map(k => { const def = LIBRARY_SESSIONS[k]; const short = def.label.split(' - ')[1] || def.label; return `
-                      <button class="btn ghost" class="lib-launch" style="padding:9px 10px; font-size:12px; font-weight:700; text-align:left; display:flex; align-items:center; gap:8px; min-width:0; overflow:hidden;" onclick="launchLibrary('${k}')">
-                        <span class="lib-play" style="color:var(--theme-accent); flex-shrink:0; font-size:14px; transition:transform 0.25s ease;">&#9654;</span>
-                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${short}</span>
-                      </button>`; }).join('')}
+                  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,168px),1fr)); gap:8px;">
+                    ${cat.kinds.map(k => { const def = LIBRARY_SESSIONS[k]; if (!def) return ''; const short = (def.label.split(' - ')[1] || def.label).replace(/( \d+ min| \d+min).*?$/i, ''); return `
+                      <button class="lib-launch" style="padding:9px 10px; font-size:12px; font-weight:700; text-align:left; display:flex; align-items:center; gap:8px; min-width:0; overflow:hidden; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:var(--theme-text-main); cursor:pointer;">
+                        <span class="lib-play" style="color:${accent}; flex-shrink:0; font-size:13px; transition:transform 0.25s ease;">&#9654;</span>
+                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${short}</span
+                      </button>`; }).filter(Boolean).join('')}
                   </div>
-                </div>`).join('')}
-            </div>
+                </div>`;
+          }).join('')
+          html += `
+<div class="dash-welcome" style="margin:24px 0 16px; padding-top:22px; border-top:1px solid var(--theme-card-border);">
+                <h1 class="dash-welcome-h1">Library</h1>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Everything in Peakora+ in one place - soundscapes, meditations, body scans, healing frequencies,and readings. Each one is a small, real practice you can start in seconds.</p>
+              </div>
+              <div style="display:grid; gap:16px;">
+                ${libCats}
+              </div>
 
                       `;
         }
-
         // TAB 6: MEMBERSHIP (FREE CORE + PEAKORA+ PLANS)
         if (activeTab === "experience") {
           const peakoraSubStatus = localStorage.getItem("peakora_subscription_status") || (isPlus ? "Active" : "Trial");
@@ -4999,7 +5020,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=48").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=49").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
