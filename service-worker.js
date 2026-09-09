@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Peakora. All rights reserved. Licensed under the MIT License; see NOTICE and LICENSE.
-const CACHE_VERSION = "2026-09-09-v39-real-audio-libraries";
+const CACHE_VERSION = "2026-09-09-v40-library-expansion";
 const CACHE_NAME = `peakora-cache-${CACHE_VERSION}`;
 
 const OFFLINE_URL = "./offline.html";
