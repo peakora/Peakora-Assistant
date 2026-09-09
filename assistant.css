@@ -37,6 +37,71 @@ body {
   transition: background 0.35s ease, color 0.35s ease;
 }
 
+
+/* ---------------------------------------------------
+   MOTION SYSTEM (entrances, hover lift, ambient pulse)
+--------------------------------------------------- */
+
+@keyframes dashFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: dashFadeIn 0.4s ease both;
+}
+
+.dash-card {
+  animation: dashFadeIn 0.45s ease both;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dash-card:hover {
+  border-color: var(--theme-card-border);
+  box-shadow:  0 16px 36px rgba(0,  0,  0, 0.55), 0  0 40px var(--theme-card-glow-hover);
+}
+
+.dash-card:nth-child(2) { animation-delay: 0.05s; }
+.dash-card:nth-child(3) { animation-delay: 0.10s; }
+.dash-card:nth-child(4) { animation-delay: 0.15s; }
+.dash-card:nth-child(5) { animation-delay: 0.20s; }
+.dash-card:nth-child(6) { animation-delay: 0.25s; }
+
+.dash-nav-btn {
+  transition: all 0.25s ease;
+}
+
+.dash-nav-btn:hover {
+  transform: translateX(3px);
+}
+
+.lib-launch {
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.lib-launch:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.06);
+}
+
+.lib-launch:hover .lib-play {
+  transform: translateX(2px);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .dash-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .dash-card:hover,
+  .dash-nav-btn:hover {
+    transform: none !important;
+  }
+}
+
 .assistant-shell {
   min-height: 100vh;
   display: flex;
@@ -1117,6 +1182,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 }
 
 .dash-card:hover {
+  transform: translateY(-4px);
   border-color: var(--theme-card-border);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 40px var(--theme-card-glow-hover);
 }

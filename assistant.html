@@ -2176,14 +2176,14 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
                   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px;">
                     <div>
                       <div class="dash-card-title">${cat.label}</div>
-                      <div style="font-size:12px; color:var(--theme-text-muted);">${cat.sub}</div>
+                      <div style="font-size:12px; color:var(--theme-text-muted);">${cat.sub}<span style="opacity:0.65;"> - ${cat.kinds.length} sessions</span></div>
                     </div>
                     <span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff; white-space:nowrap; flex-shrink:0; margin-top:2px;">PEAKORA+</span>
                   </div>
-                  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px;">
+                  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,170px),1fr)); gap:8px;;">
                     ${cat.kinds.map(k => { const def = LIBRARY_SESSIONS[k]; const short = def.label.split(' - ')[1] || def.label; return `
-                      <button class="btn ghost" style="padding:9px 10px; font-size:12px; font-weight:700; text-align:left; display:flex; align-items:center; gap:8px; min-width:0; overflow:hidden;" onclick="launchLibrary('${k}')">
-                        <span style="color:var(--theme-accent); flex-shrink:0; font-size:14px;">&#9654;</span>
+                      <button class="btn ghost" class="lib-launch" style="padding:9px 10px; font-size:12px; font-weight:700; text-align:left; display:flex; align-items:center; gap:8px; min-width:0; overflow:hidden;" onclick="launchLibrary('${k}')">
+                        <span class="lib-play" style="color:var(--theme-accent); flex-shrink:0; font-size:14px; transition:transform 0.25s ease;">&#9654;</span>
                         <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${short}</span>
                       </button>`; }).join('')}
                   </div>
@@ -4997,7 +4997,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=43").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=44").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
