@@ -25,7 +25,6 @@
  *   runSequenceTick(env)              — advance the drip for due subscribers
  */
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'Peakora <onboarding@resend.dev>';
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 // ── Sequence definition ───────────────────────────────────────────────────
@@ -310,7 +309,7 @@ async function sendViaResend(env, { to, subject, html, text }) {
     return { ok: false, status: 0, error: 'RESEND_API_KEY not set' };
   }
   const payload = {
-    from: FROM_EMAIL,
+    from: (env.FROM_EMAIL || 'Peakora <onboarding@resend.dev>'),
     to: [to],
     subject,
     html,
