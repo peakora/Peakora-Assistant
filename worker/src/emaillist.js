@@ -246,6 +246,7 @@ function renderEmailHtml(step, opts) {
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#151122;border:1px solid rgba(255,255,255,0.08);border-radius:24px;box-shadow:0 28px 70px rgba(0,0,0,0.9);overflow:hidden;">
         <!-- Brand header -->
         <tr><td style="padding:28px 32px 0;text-align:center;">
+          <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF.gif" alt="Peakora" width="128" style="display:inline-block;width:128px;max-width:70%;height:auto;border-radius:16px;margin-bottom:12px;">
           <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:0.08em;color:#ffffff;">PEAKORA</div>
           <div style="font-size:12px;color:#a0aec0;margin-top:4px;letter-spacing:0.04em;">Gentle guidance. Real momentum.</div>
         </td></tr>
