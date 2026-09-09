@@ -102,7 +102,7 @@ body {
   }
 }
 
-.assistant-shell {
+.assistant-s {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -903,7 +903,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 --------------------------------------------------- */
 
 /* DASHBOARD MODE ADAPTIVE LAYOUT OVERRIDES */
-.assistant-shell.is-dashboard-mode {
+.assistant-s.is-dashboard-mode {
   padding: 24px 16px;
   align-items: flex-start;
   width: 100%;
@@ -1851,7 +1851,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 }
 
 @media (max-width: 900px) {
-  .assistant-shell.is-dashboard-mode {
+  .assistant-s.is-dashboard-mode {
     padding: 8px 4px;
   }
   .dash-container {
@@ -2020,7 +2020,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 }
 
 @media (max-width: 600px) {
-  .assistant-shell.is-dashboard-mode {
+  .assistant-s.is-dashboard-mode {
     padding: 6px;
   }
   .dash-content {
@@ -2063,7 +2063,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 
 /* RESPONSIVE PADDING FOR ONBOARDING CARDS */
 @media (max-width: 480px) {
-  .assistant-shell:not(.is-dashboard-mode) {
+  .assistant-s:not(.is-dashboard-mode) {
     padding: 20px 14px;
   }
   .assistant-card:not(.is-dashboard-mode) {
@@ -2282,7 +2282,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .dash-welcome-h1 { font-size: 19px; }
 
   /* The centered onboarding card already shrinks at 480px; tighten further. */
-  .assistant-shell:not(.is-dashboard-mode) { padding: 12px 10px; }
+  .assistant-s:not(.is-dashboard-mode) { padding: 12px 10px; }
   .assistant-card:not(.is-dashboard-mode) { padding: 20px 16px; border-radius: var(--radius-md); }
 
   /* Modals: reduce padding so the card fits a short viewport without scroll. */
@@ -2319,7 +2319,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .step h1 { font-size: 19px; }
   .step h2 { font-size: 16px; }
   .step p  { font-size: 13px; }
-  .assistant-shell:not(.is-dashboard-mode) { padding: 8px 8px; }
+  .assistant-s:not(.is-dashboard-mode) { padding: 8px 8px; }
   .assistant-card:not(.is-dashboard-mode) { padding: 18px 14px; }
   .dash-welcome-h1 { font-size: 17px; }
 }
@@ -2415,3 +2415,133 @@ body[data-theme="sunset"], [data-theme="sunset"] {
 .plus-lock-btn { font-size:13px; font-weight:800; letter-spacing:0.06em; color:#fff; background:var(--theme-primary-grad, linear-gradient(135deg; #e07a5f; #f4a261)); padding:10px 16px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,0.45); }
 .plus-lock-sub { font-size:11px; color:var(--theme-text-muted); }
 
+
+/* =====================================================
+   PER-SECTION HERO MOTION UPGRADE (v49-added, pure CSS)
+   - drifts, draws, particles, shimmer, glow pulses
+   ===================================================== */
+/* 1 Home: drifting glow orb behind the inhale breathing ring */
+.pk-drift-orb {
+  position: absolute;
+  top: 50%;
+  left:  50%;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244,162,97,0.16) 0%, rgba(167,139,250,0.10) 45%, transparent 70%);
+  filter: blur(10px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: pkOrbDrift 9s ease-in-out infinite;
+}
+@keyframes pkOrbDrift {
+  0%,100% { transform: translate(-50%, -52%) rotate(0deg); opacity: 0.7; }
+  50% { transform: translate(-48%, -46%) rotate(8deg); opacity: 1; }
+}
+.inhale-compact-card { z-index: 1; }
+.inhale-compact-ring,
+.inhale-compact-copy { position: relative; z-index: 2; }
+
+/* 2 Insights: mood river draws itself in */
+.mood-river-svg path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.mood-river-svg path:nth-child(1) { animation: pkRiverFade 1.2s cubic-bezier(0.16,  1,  0.3,  1) 0.15s both; }
+.mood-river-svg path:nth-child(2) { animation: pkRiverDraw 1.6s cubic-bezier(0.16,  1,  0.3,  1) 0.35s both; }
+@keyframes pkRiverDraw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes pkRiverFade {
+  from { opacity: 0; }
+  to   { opacity: 0.9; }
+}
+
+/* 3 Soundscape: floating particles in the wave box */
+.audio-wave-box { position: relative; overflow: hidden; }
+.pk-particle {
+  position: absolute;
+  bottom: -6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244,162,97,0.9), rgba(52,211,153,0.5) 60%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  animation: pkParticleRise 4.5s ease-in infinite;
+}
+.pk-particle.p2 { animation-delay: 1.4s; left: 38%; }
+.pk-particle.p3 { animation-delay: 2.8s; left: 70%; }
+.pk-particle.p1 { left: 18%; animation-duration: 5.2s; }
+@keyframes pkParticleRise {
+  0% { transform: translateY(6px) scale(0.6); opacity: 0; }
+  18% { opacity: 0.85; }
+  100% { transform: translateY(-46px) scale(1.05); opacity: 0; }
+}
+
+/* 4 Plans: gradient header shimmer + week % bar grow-in */
+.plans-header-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.plans-header-shimmer::after {
+  content: ' ';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  transform: skewX(-18deg);
+  animation: pkShimmer 3.2s ease-in-out infinite;
+
+}
+@keyframes pkShimmer {
+  0% { left: -40%; }
+  60%,100% { left: 120%; }
+}
+.week-bar-grow { transform: scaleX(0); transform-origin: left; animation: pkBarGrow 0.9s cubic-bezier(0.16,  1,  0.3,  1) 0.3s both; }
+@keyframes pkBarGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* 5 Libraries / Picks / Insights heroes: floating wellness glyphs */
+.pk-hero-float {
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: var(--theme-accent);
+  background: radial-gradient(circle, var(--theme-card-glow-hover), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: pkGlyphFloat 7s ease-in-out infinite;
+}
+.pk-hero-float.f2 { animation-delay: 1.2s; right: 130px; top: -10px; font-size: 13px; opacity: 0.8; }
+@keyframes pkGlyphFloat {
+  0%,100% { transform: translateY(0) rotate(-4deg); opacity: 0.85; }
+  50% { transform: translateY(-10px) rotate(5deg); opacity: 1; }
+}
+.dash-welcome { position: relative; }
+
+/* 6 Membership spotlight card: ambient glow pulse */
+.pk-glow-card { animation: pkPulseSoft 3.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-drift-orb,
+  .pk-particle,
+  .plans-header-shimmer::after,
+  .week-bar-grow,
+  .pk-hero-float,
+  .pk-glow-card,
+  .mood-river-svg path {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .week-bar-grow { transform: scaleX(1); }
+}

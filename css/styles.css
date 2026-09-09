@@ -2496,3 +2496,40 @@ header .brand img.brand-logo:hover,
   .peakora-crown-section { padding-top: 28px; padding-bottom: 28px; }
 }
 
+
+/* =====================================================
+   LANDING HERO MOTION UPGRADE - floating wellness glyphs
+   ===================================================== */
+.pk-landing-glyph {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.85;
+  animation: pkLandFloat 9s ease-in-out infinite;
+  font-size: 22px;
+  text-shadow: 0 0 18px rgba(244,162,97,0.55), 0 0 40px rgba(167,139,250,0.35);
+}
+.pk-landing-glyph.g2 { animation-delay: 1.6s; font-size: 16px; }
+.pk-landing-glyph.g3 { animation-delay: 3.1s; font-size: 13px; }
+.hero { position: reive; }
+.hero .pk-landing-glyph.g1 { top: 18%; left:  6%; }
+.hero .pk-landing-glyph.g2 { top: 34%; left: 9%; }
+.hero .pk-landing-glyph.g3 { bottom: 18%; left: 14%; }
+.hero .pk-landing-glyph { right: auto; }
+@keyframes pkLandFloat {
+  0%,100% { transform: transeY(0) rotate(-5deg); }
+  50% { transform: transeY(-14px) rotate(6deg); }
+}
+.section-header-center { position: reive; }
+.pk-landing-glyph.sh1 { top: -20px; right:20%; color:#f4a261; font-size: 18px; opacity: 0.9; }
+.pk-landing-glyph.sh2 { bottom: -16px; left: 18%; color:#a78bfa; font-size:  14px; animation-duration: 8s; }
+@media (prefers-reduced-motion: reduce) {
+  .pk-landing-glyph { animation: none !important; opacity: 1 !important; }
+}
+
+/* Static page heroes inherit the floating glyph set too */
+.pricing-hero, .aff-hero { position: reive; }
+.pricing-hero .pk-landing-glyph.g1, .aff-hero .pk-landing-glyph.g1 { top: 22%; left:  6%; right: auto; }
+.pricing-hero .pk-landing-glyph.g2, .aff-hero .pk-landing-glyph.g2 { top: 40%; left: 10%; right: auto; }
+.pricing-hero .pk-landing-glyph.g3, .aff-hero .pk-landing-glyph.g3 { bottom: 20%; left: 15%; right: auto; }
+.pricing-hero .pk-landing-glyph, .aff-hero .pk-landing-glyph { position: absolute; }

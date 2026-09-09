@@ -1472,7 +1472,7 @@
               </div>
 
 <!-- INHALE * EXHALE CARD (screenshot look: centered breathing ring, warm glow, slim card) -->
-            <div class="dash-card inhale-compact-card" style="margin-bottom:24px; position:relative; overflow:hidden;">
+            <div class="dash-card inhale-compact-card" style="margin-bottom:24px; position:relative; overflow:hidden;"><div class="pk-drift-orb"></div>
               <div class="breathing-ring-outer inhale-compact-ring" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer;" title="Tap to start or pause">
                 <div class="breathing-ring-circle" id="dash-breath-circle"></div>
                 <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
@@ -1880,7 +1880,7 @@
                 </div>
 
                 <!-- AUDIO WAVE VISUALIZER (live, follows the sound actually playing) -->
-                <div class="audio-wave-box" style="margin-bottom:12px;">
+                <div class="audio-wave-box" style="margin-bottom:12px;"><i class="pk-particle p1"></i><i class="pk-particle p2"></i><i class="pk-particle p3"></i>
                   <div class="audio-wave-header">Live Audio Wave</div>
                   <canvas id="audio-wave-canvas" class="audio-wave-canvas"></canvas>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
@@ -1984,7 +1984,7 @@
             </div>
 
             <div class="dash-card mb-16" style="overflow:hidden; padding:0;">
-              <div style="background:linear-gradient(135deg, rgba(224,122,95,0.22), rgba(244,162,97,0.10) 45%, rgba(167,139,250,0.16)); padding:20px 22px 18px; border-bottom:1px solid var(--theme-card-border);">
+              <div class="plans-header-shimmer" style="background:linear-gradient(135deg, rgba(224,122,95,0.22), rgba(244,162,97,0.10) 45%, rgba(167,139,250,0.16)); padding:20px 22px 18px; border-bottom:1px solid var(--theme-card-border);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
                   <div style="min-width:0;">
                     <div class="dash-card-title" style="margin:0 0 4px;">This Week's Reset Plan</div>
@@ -1995,7 +1995,7 @@
                     <div style="font-size:26px; font-weight:900; color:var(--theme-accent); line-height:1;">${weekPct}%</div>
                     <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; color:var(--theme-text-muted); margin-top:2px;">WEEK</div>
                     <div style="width:74px; height:5px; border-radius:999px; background:rgba(255,255,255,0.12); margin:6px auto 0; overflow:hidden;">
-                      <div style="width:${weekPct}%; height:100%; border-radius:999px; background:var(--theme-primary-grad);"></div>
+                      <div class="week-bar-grow" style="width:${weekPct}%; height:100%; border-radius:999px; background:var(--theme-primary-grad);"></div>
                     </div>
                   </div>
                 </div>
@@ -2121,6 +2121,7 @@
           ];
           html += `
             <div class="dash-welcome" style="margin-bottom:16px;">
+              <span class="pk-hero-float">&#9733;</span>
               <h1 class="dash-welcome-h1">Picks</h1>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:18px;">
@@ -2203,7 +2204,7 @@
                 </div>`;
           }).join('')
           html += `
-<div class="dash-welcome" style="margin:24px 0 16px; padding-top:22px; border-top:1px solid var(--theme-card-border);">
+<div class="dash-welcome" style="margin:24px 0 16px; padding-top:22px; border-top:1px solid var(--theme-card-border);"><span class="pk-hero-float">&#10048;</span><span class="pk-hero-float f2">&#9789;</span>
                 <h1 class="dash-welcome-h1">Library</h1>
                 <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Everything in Peakora+ in one place - soundscapes, meditations, body scans, healing frequencies,and readings. Each one is a small, real practice you can start in seconds.</p>
               </div>
@@ -2275,7 +2276,7 @@
               </div>
 
               <!-- PEAKORA+ PREMIUM -->
-              <div class="dash-card" id="peakora-plus-card" style="margin:0; position:relative; overflow:hidden; display:flex; flex-direction:column; border:1px solid transparent; background:linear-gradient(var(--theme-card-bg), var(--theme-card-bg)) padding-box, var(--theme-primary-grad) border-box; box-shadow:0 14px 40px rgba(0,0,0,0.5), 0 0 34px var(--theme-card-glow);">
+              <div class="dash-card pk-glow-card" id="peakora-plus-card" style="margin:0; position:relative; overflow:hidden; display:flex; flex-direction:column; border:1px solid transparent; background:linear-gradient(var(--theme-card-bg), var(--theme-card-bg)) padding-box, var(--theme-primary-grad) border-box; box-shadow:0 14px 40px rgba(0,0,0,0.5), 0 0 34px var(--theme-card-glow);">
                 <div style="position:absolute; top:-60px; left:-60px; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle, var(--theme-card-glow-hover), transparent 70%); pointer-events:none;"></div>
                 <div style="position:absolute; top:14px; right:14px; font-size:9px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; padding:5px 11px; border-radius:999px; background:var(--theme-primary-grad); color:#ffffff; box-shadow:0 4px 14px var(--theme-accent-glow);">Most Loved</div>
                 <div style="margin-bottom:4px;">
@@ -5020,7 +5021,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=49").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=50").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
