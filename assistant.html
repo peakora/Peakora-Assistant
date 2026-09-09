@@ -3432,6 +3432,7 @@ function stopAmbientAudio() {
       trackStartedAt = null;
       stopNarration();
       stopOneShotLayer();
+      stopToneSession();
       renderStepAudioState();
       closeGuidedSessionOverlay();
     }
@@ -3607,6 +3608,7 @@ window.launchLibrary = function(kind) {
     return;
   }
   stopAmbientAudio();
+  stopToneSession();
   if (typeof playAmbientAudio === 'function') playAmbientAudio(chosen.track, { beatHz: chosen.beatHz, world: chosen.world });
   if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
   if (chosen.narration) {
@@ -3631,6 +3633,7 @@ window.launchLibrary = function(kind) {
       const a = new Audio(url);
       a.loop = false;
       a.volume =0.55;
+      narrationAudio = a;
       a.play().catch(() => {});
     }
 
@@ -4996,7 +4999,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=45").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=46").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
