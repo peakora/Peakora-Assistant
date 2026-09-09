@@ -2162,7 +2162,6 @@ if (state.stepIndex !== steps.indexOf("home")) { state.stepIndex = steps.indexOf
             </div>
             <div style="display:grid; gap:16px;">
               ${[
-                { id: 'soundscapes', label: 'Soundscape Library', sub: '12 layered ambient presets, built live from our synth engine', kinds: ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12'] },
                 { id: 'meditations', label: 'Meditations', sub: '18 timed guided sits, breath journeys,and a power-nap reset, up to 15 minutes each', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17','m18'] },
                 { id: 'scans', label: 'Body Scans', sub: '13 full-body resets - tension maps, five-minute resets,and sleep wind-downs', kinds: ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13'] },
                 { id: 'freqs', label: 'Healing Frequencies', sub: '12 binaural theta presets by intention plus 4 layered combo presets - theta, alpha, beta, delta over ambient worlds', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16'] },
@@ -3471,19 +3470,6 @@ function stopAmbientAudio() {
     };
 
     const LIBRARY_SESSIONS = {
-  // SOUNDSCAPE LIBRARY (paid presets, layered from the synth engine)
-  s1: { track: 'bowl', label: 'Soundscape - Deep Tide', copy: 'A low singing bowl over a slow ocean swell. Feel every exhale soften into the tide. Rest here five minutes or longer.' },
-  s2: { track: 'rain', label: 'Soundscape - Candlelight Rain', copy: 'Rain against a quiet window, warm and unhurried. Let your shoulders drop as the patter steadies your breath.' },
-  s3: { track: 'fire', label: 'Soundscape - Hearth', copy: 'A slow evening fire, embers breathing low. Each pop is a small permission to let the day go.' },
-  s4: { track: 'om', label: 'Soundscape - Temple Drone', copy: 'A deep harmonium drone, steady as a heartbeat. Rest the mind against it and simply ride.' },
-  s5: { track: 'wind', label: 'Soundscape - Open Valley', copy: 'Wind crossing a wide valley, clean and slow. Let it move through you, no resistance.' },
-  s6: { track: 'binaural', label: 'Soundscape - Deep Focus Theta', copy: 'A 6Hz theta drift for headsets - focus without forcing, calm without fading.' },
-  s7: { track: 'ocean', label: 'Soundscape - Night Shore', copy: 'Soft surf under a dark sky, patience in every wave. Breathe out with the retreating foam.' },
-  s8: { track: 'night', label: 'Soundscape - Summer Meadow', copy: 'Crickets and a warm breeze, the hum of a contented night. Let it hold you while you unwind.' },
-  s9: { track: 'bowl', label: 'Soundscape - Singing Bowl Dawn', copy: 'A single bowl rung slowly, morning quiet around it. Three long notes and a soft bell. Begin.' },
-  s10: { track: 'rain', label: 'Soundscape - Garden Drizzle', copy: 'Fine rain on leaves, a gentle green hush. Let the cool air settle your thoughts one at a time.' },
-  s11: { track: 'ocean', label: 'Soundscape - Moonlight Harbor', copy: 'A wide, dark harbor under a low moon. Slow surf against stone, a distant bell. Let the water hold whatever you could not put down today.' },
-  s12: { track: 'rain', label: 'Soundscape - Storm Shelter', copy: 'Rain in sheets against a warm roof, you safe inside. The storm does its work out there; you do yours in here: breathe, soften, arrive.' },
 
   // MICRO PRACTICES (1-2 minute resets, real, no setup)
   p1: { track: 'bowl', label: 'Micro - 5-4-3-2-1 Reset (2 min', copy: 'One slow breath for each number, descending. Five in, hold, out. Four. Three. Each one strips away one layer of hurry. By one, you are here.' },
@@ -5011,7 +4997,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=41").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=42").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
