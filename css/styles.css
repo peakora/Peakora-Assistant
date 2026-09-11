@@ -421,6 +421,33 @@ header .brand img.brand-logo:hover,
   height: auto;
   display: block;
   object-fit: cover;
+  animation: heroKenBurns 16s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes heroKenBurns {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+/* Slow light-shine sweep across the hero frame (no waves, no breath motion) */
+.hero-img-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 236, 210, 0.14) 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: heroShine 9s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes heroShine {
+  0%, 55% { transform: translateX(-120%); }
+  85%, 100% { transform: translateX(120%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-img-frame img,
+  .hero-img-frame::before,
+  .hero-bg-glow { animation: none !important; }
 }
 
 /* ------------------------------------------------------
