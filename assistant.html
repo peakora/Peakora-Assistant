@@ -1136,7 +1136,7 @@
                   <div class="dash-brand-icon-orb" style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #f4a261, #e76f51); box-shadow:0 0 14px rgba(244,162,97,0.6); flex-shrink:0;"></div>
                   <div>
                     <div class="dash-brand-title">${isPeakoraPlusActive() ? 'PEAKORA <span style="background:var(--theme-primary-grad); -webkit-background-clip:text; background-clip:text; color:transparent;">+</span>' : 'PEAKORA'}</div>
-                    <div class="dash-brand-sub">For A Better You</div>
+                    <div class="dash-brand-sub">For a Better You</div>
                   </div>
                 </div>
                 
@@ -2155,7 +2155,7 @@
                 </div>`;
           }).join('')
           html += `
-<div class="dash-welcome" style="margin:24px 0 16px; padding-top:22px; border-top:1px solid var(--theme-card-border);">
+<div class="dash-welcome" style="margin:24px 0 16px; padding-top:4px;">
                 <h1 class="dash-welcome-h1">Library</h1>
                 <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Everything in Peakora+ in one place - soundscapes, meditations, body scans, healing frequencies,and readings. Each one is a small, real practice you can start in seconds.</p>
                 <div class="pk-lib-stats"><span>${libCats.length} collections</span><span class="pk-lib-dot"></span><span>${libTotalSessions} sessions</span><span class="pk-lib-dot"></span><span>Peakora+</span></div>
@@ -2463,7 +2463,7 @@
             <h2>See you soon!</h2>
             <p class="soft-note">Your reset plan remains saved on your device whenever you need a moment of calm.</p>
             <div class="actions vertical mt-20">
-              <button class="btn primary" onclick="handleBackToHome()">Return to Main Site</button>
+              <button class="btn primary" onclick="window.location.href='index.html'">Return to Main Site</button>
             </div>
           </div>
         `;

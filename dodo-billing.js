@@ -91,9 +91,8 @@ export async function createCheckoutSession({ plan = 'monthly', productId, email
     throw err;
   }
 
-  const returnUrl = cfg.publicUrl
-    ? `${cfg.publicUrl}/thankyou.html?status=success&plan=${encodeURIComponent(plan)}`
-    : '/thankyou.html?status=success&plan=' + encodeURIComponent(plan);
+  const baseUrl = cfg.publicUrl || 'https://peakora-assistant.pages.dev';
+  const returnUrl = `${baseUrl}/thankyou.html?status=success&plan=${encodeURIComponent(plan)}${email ? '&email=' + encodeURIComponent(email) : ''}`;
 
   const body = {
     product_cart: [{ product_id: resolvedProduct, quantity: 1 }],

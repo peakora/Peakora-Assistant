@@ -277,10 +277,8 @@ async function handleDodoCreateCheckout(request, env) {
   const { baseUrl, apiKey } = dodoApiCreds(env);
   if (!apiKey) return json({ success: false, error: 'Dodo Payments not configured' }, 500);
 
-  const publicUrl = (env.APP_PUBLIC_URL || '').replace(/\/+$/, '');
-  const returnUrl = publicUrl
-    ? `${publicUrl}/thankyou.html?status=success&plan=${encodeURIComponent(plan)}`
-    : '/thankyou.html?status=success&plan=' + encodeURIComponent(plan);
+  const publicUrl = (env.APP_PUBLIC_URL || 'https://peakora-assistant.pages.dev').replace(/\/+$/, '');
+  const returnUrl = `${publicUrl}/thankyou.html?status=success&plan=${encodeURIComponent(plan)}${email ? '&email=' + encodeURIComponent(email) : ''}`;
 
   const reqBody = {
     product_cart: [{ product_id: productId, quantity: 1 }],
@@ -349,7 +347,7 @@ async function handleSubscriptionStatus(request, env) {
   if (!email) return json({ success: true, status: 'free', isPlus: false });
 
   // Master account — always full access, bypasses all paywalls
-  const MASTER_EMAIL = 'peakora.life@gmail.com';
+  const MASTER_EMAIL = 'peakora.network@gmail.com';
   if (email === MASTER_EMAIL) {
     return json({ success: true, email, status: 'active', plan: 'master', isPlus: true, isMaster: true });
   }
