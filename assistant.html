@@ -1842,6 +1842,8 @@
             <!-- BREATHING & SOUNDSCAPES : unified hero card (screenshot match) -->
             <div class="dash-card pk-breath-sound-card pk-phase-idle animate-fade-in" id="pk-breath-sound-card">
               <div class="pk-breath-title">BREATHING &amp; SOUNDSCAPES</div>
+              <div class="pk-hero-grid">
+                <div class="pk-hero-left">
               <div class="pk-breath-layout">
                 <div class="pk-side pk-side-left">
                   <button class="pk-arrow" onclick="toggleDashBreathing()" aria-label="Start inhale">&#708;</button>
@@ -1880,92 +1882,37 @@
                 </div>
                 <div class="pk-times"><span id="wave-track-time">01:23</span><span> / 08:45</span></div>
               </div>
+              <div class="pk-session">SESSION&nbsp;&nbsp;<button class="pk-session-btn" data-m="0" onclick="setSessionDuration(this.dataset.m)">Endless</button><button class="pk-session-btn" data-m="5" onclick="setSessionDuration(this.dataset.m)">5</button><button class="pk-session-btn" data-m="10" onclick="setSessionDuration(this.dataset.m)">10</button><button class="pk-session-btn" data-m="20" onclick="setSessionDuration(this.dataset.m)">20</button><button class="pk-session-btn" data-m="40" onclick="setSessionDuration(this.dataset.m)">40</button></div>
               <button class="pk-reset" onclick="resetDashBreathing()">Reset breath session - 4-2-6 rhythm, 10 cycles</button>
-            </div>
-
-            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:28px 0 6px;">
-              <h2 style="margin:0; font-size:17px; font-weight:800; letter-spacing:0.06em; color:#ffffff;">Soundscape Studio &amp; Ambient Flow</h2>
-              <span style="font-size:11px; color:var(--theme-text-muted); font-weight:600; letter-spacing:0.04em;">YOUR AUDIO CENTER</span>
-            </div>
-            <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 16px; line-height:1.55;">One place for your daily reset soundtrack - layer ambient worlds, or drift with the healing frequencies below.</p>
-
-            <div class="dash-grid-equal">
-              <!-- LEFT COLUMN: SOUNDSCAPE STUDIO -->
-              <div class="dash-card">
-                <div class="dash-card-title" style="letter-spacing:0.06em; display:flex; justify-content:space-between; align-items:center;">
-                  SOUNDSCAPE STUDIO
-                  <span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399;">INCLUDED FREE</span>
                 </div>
-                <div style="margin-bottom:12px; padding:10px 12px; border-radius:var(--radius-sm); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.4); font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
-                  The core soundscape studio, the breath ring,and 8 ambient worlds are yours any time. Peakora+ adds the guided reading sessions, body scans, healing frequencies,and the full expanded library when you are ready.
-                </div>
-
-                <!-- SOUNDSCAPE LIBRARY -->
-
-                <div style="margin:10px 0 2px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                  <span style="font-size:11px; color:var(--theme-text-muted); margin-right:2px;">SESSION</span>
-                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="0" onclick="setSessionDuration(this.dataset.m)">Endless</button>
-                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="5" onclick="setSessionDuration(this.dataset.m)">5</button>
-                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="10" onclick="setSessionDuration(this.dataset.m)">10</button>
-                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="20" onclick="setSessionDuration(this.dataset.m)">20</button>
-                  <button class="btn ghost" style="padding:4px 10px; font-size:11px;" data-m="40" onclick="setSessionDuration(this.dataset.m)">40</button>
-                </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:12px;">
-                  <div style="font-size:12px; font-weight:700; color:#ffffff; margin-bottom:6px;">Soundscape Library</div>
-                  ${hasTripwire() ? '<div style="margin-bottom:8px; padding:6px 10px; border-radius:var(--radius-sm); background:rgba(244,162,97,0.06); border:1px dashed rgba(244,162,97,0.4); font-size:12px; color:var(--theme-text-muted);">Quiet Start pack: your 5 premium soundscapes are at the top of the list, live forever.</div>' : ''}
-                  <div id="audio-playing-status" style="font-size:13px; font-weight:600; margin-bottom:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:var(--radius-sm); border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
-                  <select id="audio-track-select" class="input" style="font-size:12px; font-weight:600; text-align:left;" onchange="switchSoundscapeTrack(this.value)">
-                    ${SOUNDSCAPE_TRACKS.map(t => `<option value="${t.key}" ${currentlyPlayingTrack === t.key ? 'selected' : ''}>${t.name}</option>`).join('')}
-                  </select>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin:8px 0 0;">Choosing a track starts it right away - the transport buttons above handle the rest.</p>
-                </div>
-              </div>
-
-              <!-- RIGHT COLUMN: AMBIENT & ANALYTICS -->
-              <div>
-                <!-- AMBIENT SOUNDSCAPES (mix and layer them - tap a card to start or stop it) -->
-                <div class="dash-card" style="margin-bottom:16px;">
-                  <div class="dash-card-title" style="display:flex; justify-content:space-between; align-items:center;">
-                    AMBIENT SOUNDSCAPES
-                    <span style="font-size:9px; font-weight:800; letter-spacing:0.1em; padding:4px 10px; border-radius:999px; background:rgba(52,211,153,0.18); color:#34d399;">INCLUDED FREE</span>
-                  </div>
-                  <p style="font-size:13px; color:var(--theme-text-muted); margin:0 0 8px;">Tap a card to start or stop that layer, then blend volumes to taste.</p>
+                <div class="pk-hero-right">
+                  <div class="pk-ambient-title">AMBIENT SOUNDSCAPES</div>
                   <div class="ambient-list">
-                    ${[
-                      { key: 'rainforest', label: 'RAINFOREST', img: 'src/assets/images/soundscape_rainforest_1785859412795.jpg', desc: 'Warm rain on leaves' },
-                      { key: 'ocean', label: 'SOFT OCEAN', img: 'src/assets/images/soundscape_ocean_1785859428118.jpg', desc: 'Slow shoreline surf' },
-                      { key: 'wind', label: 'WIND', img: 'src/assets/images/soundscape_wind_1785859440905.jpg', desc: 'Open valley breeze' },
-                      { key: 'om', label: 'OM CHANT', img: 'src/assets/images/soundscape_om_chant_1785859453828.jpg', desc: '136Hz temple drone' },
-                      { key: 'fire', label: 'FIREPLACE', img: 'src/assets/images/soundscape_fireplace_1785859465200.jpg', desc: 'Soft crackling hearth' },
-                      { key: 'night', label: 'NIGHT CRICKETS', img: 'src/assets/images/soundscape_night_crickets_1785859476200.jpg', desc: 'Summer evening chorus' }
-                    ].map(a => {
-                      const isOn = !!(ambientLayers[a.key] && ambientLayers[a.key].playing);
-                      const vol = ambientLayerVolumes[a.key] != null ? ambientLayerVolumes[a.key] : 50;
-                      const thumb = a.img
-                        ? `<img src="${a.img}" class="ambient-thumb" alt="${a.label}">`
-                        : `<div class="ambient-thumb" style="background:${a.orb}; box-shadow:0 0 14px rgba(255,255,255,0.12);"></div>`;
+                    ${AMBIENT_ORDER.map(a => {
+                      const isOn = (currentlyPlayingTrack === a.track);
+                      const vol = ambientLayerVolumes[a.ambient] != null ? ambientLayerVolumes[a.ambient] : 50;
                       return `
-                    <div class="ambient-card-item ${isOn ? 'active' : ''}" id="ambient-card-${a.key}">
-                      <div onclick="toggleAmbientLayer('${a.key}')" style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer; min-width:0;">
-                        ${thumb}
+                    <div class="ambient-card-item ${isOn ? 'active' : ''}" id="ambient-card-${a.ambient}">
+                      <div onclick="selectAmbientTrack('${a.ambient}')" style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer; min-width:0;">
+                        <img src="${a.img}" class="ambient-thumb" alt="${a.label}">
                         <div class="ambient-info">
-                          <div class="ambient-title">${a.label} <span style="font-size:9px; font-weight:600; color:${isOn ? '#34d399' : 'var(--theme-text-muted)'}; margin-left:4px;">${isOn ? '● PLAYING' : '○ TAP TO PLAY'}</span></div>
+                          <div class="ambient-title">${a.label} <span data-ambient-state style="font-size:9px; font-weight:600; color:${isOn ? '#34d399' : 'var(--theme-text-muted)'}; margin-left:4px;">${isOn ? '● PLAYING' : '○ TAP TO PLAY'}</span></div>
                           <div style="font-size:13px; color:var(--theme-text-muted);">${a.desc}</div>
                         </div>
                       </div>
                       <div class="ambient-slider-wrap">
-                        <input type="range" class="ambient-slider" min="0" max="100" value="${vol}" oninput="adjustAmbientVol('${a.key}', this.value)">
-                        <span class="ambient-pct" id="pct-${a.key}">${vol}%</span>
+                        <input type="range" class="ambient-slider" min="0" max="100" value="${vol}" oninput="adjustAmbientVol('${a.ambient}', this.value)">
+                        <span class="ambient-pct" id="pct-${a.ambient}">${vol}%</span>
                       </div>
                     </div>`;
                     }).join('')}
                   </div>
+                  <div id="audio-playing-status" style="font-size:13px; font-weight:600; margin-top:8px; padding:6px 10px; background:rgba(244,162,97,0.15); border-radius:var(--radius-sm); border:1px solid rgba(244,162,97,0.35); color:var(--theme-accent, #f4a261); display:none;"></div>
                 </div>
-
-
-                <!-- DEEP MOOD & ENERGY ANALYTICS CARD (built from your real check-ins) -->
               </div>
             </div>
+
+
           `;
 
           setTimeout(() => { if (typeof initInsightsTab === 'function') initInsightsTab(); }, 60);
@@ -3386,6 +3333,34 @@
     const SOUNDSCAPE_NAME = {};
     SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' - ')[0]; });
 
+    /* AMBIENT LIST = THE TRACK PICKER (single card, screenshot layout).
+       Each visible ambient row maps to its single-track player key, so tapping
+       a row or hitting Prev/Next toggles between the same sounds. */
+    const AMBIENT_ORDER = [
+      { ambient: 'rainforest', track: 'rain', label: 'RAINFOREST', img: 'src/assets/images/soundscape_rainforest_1785859412795.jpg', desc: 'Warm rain on leaves' },
+      { ambient: 'ocean', track: 'ocean', label: 'SOFT OCEAN', img: 'src/assets/images/soundscape_ocean_1785859428118.jpg', desc: 'Slow shoreline surf' },
+      { ambient: 'wind', track: 'wind', label: 'WIND', img: 'src/assets/images/soundscape_wind_1785859440905.jpg', desc: 'Open valley breeze' },
+      { ambient: 'om', track: 'om', label: 'OM CHANT', img: 'src/assets/images/soundscape_om_chant_1785859453828.jpg', desc: '136Hz temple drone' },
+      { ambient: 'fire', track: 'fire', label: 'FIREPLACE', img: 'src/assets/images/soundscape_fireplace_1785859465200.jpg', desc: 'Soft crackling hearth' },
+      { ambient: 'night', track: 'night', label: 'NIGHT CRICKETS', img: 'src/assets/images/soundscape_night_crickets_1785859476200.jpg', desc: 'Summer evening chorus' }
+    ];
+
+    function syncAmbientActive() {
+      try {
+        (AMBIENT_ORDER || []).forEach(a => {
+          const card = document.getElementById('ambient-card-' + a.ambient);
+          if (!card) return;
+          const on = (currentlyPlayingTrack === a.track);
+          card.classList.toggle('active', on);
+          const label = card.querySelector('[data-ambient-state]');
+          if (label) {
+            label.textContent = on ? '● PLAYING' : '○ TAP TO PLAY';
+            label.style.color = on ? '#34d399' : 'var(--theme-text-muted)';
+          }
+        });
+      } catch (e) {}
+    }
+
     let audioCtx = null;
     let activeSoundNodes = [];
     let currentlyPlayingTrack = null;
@@ -3459,6 +3434,7 @@ function stopAmbientAudio() {
       stopOneShotLayer();
       stopToneSession();
       renderStepAudioState();
+      if (typeof syncAmbientActive === 'function') syncAmbientActive();
       closeGuidedSessionOverlay();
     }
 
@@ -4156,6 +4132,7 @@ window.launchLibrary = function(kind) {
         trackStartedAt = Date.now();
         scheduleSessionEnd();
         renderStepAudioState();
+        if (typeof syncAmbientActive === 'function') syncAmbientActive();
       } catch (e) {
         console.error("Audio error:", e);
       }
@@ -4270,8 +4247,7 @@ window.launchLibrary = function(kind) {
       if (currentlyPlayingTrack) {
         stopAmbientAudio();
       } else {
-        const select = document.getElementById('audio-track-select');
-        playAmbientAudio(select ? select.value : SOUNDSCAPE_TRACKS[0].key);
+        playAmbientAudio(AMBIENT_ORDER[0].track);
       }
     };
 
@@ -4282,16 +4258,24 @@ window.launchLibrary = function(kind) {
       playAmbientAudio(key);
     };
 
+    window.selectAmbientTrack = function(ambientKey) {
+      const item = AMBIENT_ORDER.find(a => a.ambient === ambientKey);
+      if (!item) return;
+      if (currentlyPlayingTrack === item.track) {
+        stopAmbientAudio();
+      } else {
+        stopAmbientAudio();
+        playAmbientAudio(item.track);
+      }
+    };
+
     window.stepSoundscape = function(direction) {
-      const select = document.getElementById('audio-track-select');
-      const currentKey = currentlyPlayingTrack || (select ? select.value : null);
-      let idx = SOUNDSCAPE_TRACKS.findIndex(t => t.key === currentKey);
+      const keys = AMBIENT_ORDER.map(a => a.track);
+      let idx = keys.indexOf(currentlyPlayingTrack);
       if (idx === -1) idx = direction > 0 ? -1 : 0;
-      const nextIdx = (idx + direction + SOUNDSCAPE_TRACKS.length) % SOUNDSCAPE_TRACKS.length;
-      const next = SOUNDSCAPE_TRACKS[nextIdx];
-      if (select) select.value = next.key;
+      const nextIdx = (idx + direction + keys.length) % keys.length;
       stopAmbientAudio();
-      playAmbientAudio(next.key);
+      playAmbientAudio(keys[nextIdx]);
     };
 
     /* AMBIENT MIXER - layerable soundscapes with real volume sliders */
@@ -4433,6 +4417,14 @@ window.launchLibrary = function(kind) {
       ambientLayerVolumes[key] = parseInt(volPct, 10);
       const pctLabel = document.getElementById('pct-' + key);
       if (pctLabel) pctLabel.textContent = volPct + '%';
+      const map = (typeof AMBIENT_ORDER !== 'undefined') ? AMBIENT_ORDER.find(a => a.ambient === key) : null;
+      const trackKey = map ? map.track : key;
+      if (trackKey && trackKey === currentlyPlayingTrack && typeof audioCtx !== 'undefined' && audioCtx) {
+        const master = (activeSoundNodes || []).find(n => n.isMaster);
+        if (master) {
+          try { master.gain.setTargetAtTime(Math.max(0.01, (volPct / 100) * 0.5), audioCtx.currentTime, 0.1); } catch (e) {}
+        }
+      }
       const layer = ambientLayers[key];
       if (layer && layer.playing && layer.nodes[0] && ambientCtx) {
         try {
@@ -5048,7 +5040,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=53").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=54").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
