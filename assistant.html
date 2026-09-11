@@ -1861,6 +1861,7 @@
                     <div class="breathing-action-label" id="dash-breath-state">READY</div>
                     <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
                     <div class="pk-total" id="dash-breath-total">0:00 / 2:00</div>
+                    <button class="pk-mini-reset" onclick="event.stopPropagation(); resetDashBreathing()">Reset cycles</button>
                   </div>
                 </div>
                 <div class="pk-side pk-side-right">
@@ -3364,6 +3365,7 @@
     let audioCtx = null;
     let activeSoundNodes = [];
     let currentlyPlayingTrack = null;
+    let lastSoundscapeTrack = null;
     let trackStartedAt = null;
     let sessionDurMins = null;
     let sessionEndTimer = null;
@@ -4129,6 +4131,7 @@ window.launchLibrary = function(kind) {
         }
 
         currentlyPlayingTrack = type;
+        lastSoundscapeTrack = type;
         trackStartedAt = Date.now();
         scheduleSessionEnd();
         renderStepAudioState();
@@ -4247,7 +4250,7 @@ window.launchLibrary = function(kind) {
       if (currentlyPlayingTrack) {
         stopAmbientAudio();
       } else {
-        playAmbientAudio(AMBIENT_ORDER[0].track);
+        playAmbientAudio(lastSoundscapeTrack || AMBIENT_ORDER[0].track);
       }
     };
 
@@ -5040,7 +5043,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=54").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=55").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
