@@ -735,6 +735,26 @@
           sound: "harmony"
         }
       };
+      // Continuity from the finished week (everyone, not just Plus): real
+      // check-ins and moods shape the next plan instead of starting blank.
+      // Consumed once - the snapshot clears after it informs a fresh plan.
+      let continuityLine = "";
+      let brightestLine = "";
+      try {
+        const raw = localStorage.getItem("peakora_last_week_insights");
+        if (raw) {
+          const ins = JSON.parse(raw);
+          if (ins && ins.count > 0) {
+            continuityLine = " Last week you checked in " + ins.count + " time" + (ins.count > 1 ? "s" : "") + ", mostly feeling " + ins.dominant + " - this week builds on that instead of starting blank.";
+            if (ins.topPractice) brightestLine = " Your brightest moments paired with " + ins.topPractice + " - keep that close this week.";
+            if (profile === "balance") {
+              if (ins.dominant === "anxious" || ins.dominant === "heavy") profile = "calm";
+              else if (ins.dominant === "energized") profile = "energy";
+            }
+          }
+          localStorage.removeItem("peakora_last_week_insights");
+        }
+      } catch (e) {}
       const P = profiles[profile] || profiles.balance;
 
       const baseForgiveness =
@@ -744,7 +764,7 @@
         {
           title: "Day 1 - Arrive",
           focus: "Start gently, not perfectly.",
-          why: P.whyCalm,
+          why: P.whyCalm + continuityLine,
           action: P.opening + " That’s the whole task - let it be enough.",
           steps: [
             "Find a quiet spot and set a timer for " + timeShort + ".",
@@ -843,7 +863,7 @@
             "Decide exactly when it will happen next week (day + rough time).",
             "If you’d like a fresh week, start a new plan from the Plans tab."
           ],
-          reflection: "Finish the sentence: “This week reminded me that I can…”",
+          reflection: "Finish the sentence: “This week reminded me that I can…”" + brightestLine,
           forgiveness: "If this week felt messy, that’s still a week of paying attention. That matters more than a perfect streak.",
           duration: timeShort,
           sound: P.sound
@@ -1102,6 +1122,7 @@
       // 22. HOME (MASTER DASHBOARD)
       if (key === "home") {
         ensurePlanGenerated();
+        maybeAutoArchiveFinishedPlan();
         const plan = state.plan || [];
         const todayIndex = getTodayPlanIndex();
         const todayAnchor = anchors[Math.floor(Math.random() * anchors.length)];
@@ -1921,6 +1942,7 @@
 
         // TAB 3: PLANS & PAST PLANS HISTORY
         if (activeTab === "plans" || activeTab === "programs") {
+          maybeAutoArchiveFinishedPlan();
           const pastPlans = getPastPlans();
           const goalRaw = (state.answers && state.answers.goal) ? state.answers.goal : 'feeling a little more steady';
           const paceRaw = (state.answers && state.answers.time) ? state.answers.time : '5-10 minutes';
@@ -3197,6 +3219,70 @@
       try { return JSON.parse(raw) || []; } catch { return []; }
     }
 
+    function planWeekFinished() {
+      try {
+        if (!state.plan || !state.planStartDate) return false;
+        if (isPeakoraPlusActive()) {
+          const engaged = new Set(getCheckins().map(c => c.date).filter(d => d >= state.planStartDate));
+          return engaged.size >= 7;
+        }
+        const start = new Date(state.planStartDate); start.setHours(0,0,0,0);
+        const today = new Date(); today.setHours(0,0,0,0);
+        return Math.floor((today - start) / 86400000) >= 7;
+      } catch (e) { return false; }
+    }
+    function collectWeekInsights() {
+      try {
+        const checkins = (typeof getCheckins === 'function') ? getCheckins() : [];
+        const famCount = {};
+        let eSum = 0, eN = 0;
+        checkins.forEach(c => {
+          const fam = (typeof getMoodFamily === 'function') ? getMoodFamily(c.feeling) : 'neutral';
+          famCount[fam] = (famCount[fam] || 0) + 1;
+          const e = (typeof MOOD_ENERGY !== 'undefined' && MOOD_ENERGY[fam] != null) ? MOOD_ENERGY[fam] : 50;
+          eSum += e; eN++;
+        });
+        let dominant = 'steady', best = 0;
+        Object.keys(famCount).forEach(f => { if (famCount[f] > best) { best = famCount[f]; dominant = f; } });
+        const PRACTICE = { anxious: 'slow breathing + a soundscape', heavy: 'gentle movement or a short walk', hopeful: 'a gratitude note', energized: 'journaling + a mid-day reset', neutral: 'rest + a morning breathing round' };
+        const reflections = (typeof getReflections === 'function') ? getReflections() : [];
+        let breathCount = 0;
+        try { breathCount = (window.PeakoraTracker && PeakoraTracker.getSummary().counts.breath_session_completed) || 0; } catch (e) {}
+        return {
+          count: checkins.length, dominant: dominant,
+          avgEnergy: eN ? Math.round(eSum / eN) : null,
+          topPractice: PRACTICE[dominant] || null,
+          reflections: reflections.length, breathSessions: breathCount,
+          goal: (state.answers && state.answers.goal) || null,
+          savedAt: new Date().toISOString().slice(0, 10)
+        };
+      } catch (e) { return null; }
+    }
+    function saveLastWeekInsights() {
+      try {
+        const ins = collectWeekInsights();
+        if (ins && ins.count > 0) localStorage.setItem('peakora_last_week_insights', JSON.stringify(ins));
+      } catch (e) {}
+    }
+    function maybeAutoArchiveFinishedPlan() {
+      try {
+        if (!isPeakoraPlusActive() || !planWeekFinished()) return;
+        const goal = (state.answers && state.answers.goal) || 'Personal Reset';
+        const key = state.planStartDate + '|' + goal;
+        if (localStorage.getItem('peakora_last_autoarchived') === key) return;
+        const list = getPastPlans();
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        if (list.length && list[0].date === dateStr && list[0].goal === goal) {
+          localStorage.setItem('peakora_last_autoarchived', key);
+          return;
+        }
+        list.unshift({ title: '7-Day Reset Plan (' + dateStr + ')', date: dateStr, goal: goal, days: state.plan });
+        localStorage.setItem('peakora_past_plans', JSON.stringify(list));
+        localStorage.setItem('peakora_last_autoarchived', key);
+        saveLastWeekInsights();
+        if (typeof showToastNotification === 'function') showToastNotification('Week complete - saved to your history, and next week will build on it');
+      } catch (e) {}
+    }
     function archiveCurrentPlan() {
       if (!isPeakoraPlusActive()) {
         if (typeof showToastNotification === 'function') {
@@ -4813,6 +4899,7 @@ window.appendInsightPlusCards = function() {
         });
         localStorage.setItem('peakora_past_plans', JSON.stringify(list));
       }
+      saveLastWeekInsights();
       clearState();
       saveState();
       if (typeof showToastNotification === 'function') {
@@ -5117,7 +5204,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=61").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=62").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
@@ -5187,7 +5274,7 @@ window.appendInsightPlusCards = function() {
           <ul style="margin:0; padding-left:18px; font-size:12px; color:var(--theme-text-muted); line-height:1.6;">
             <li>✔ Personalized 7-Day Reset Plan</li>
             <li>✔ Daily Mood Check-In & Energy Tracking</li>
-            <li>✔ Inhale Breathing Ring (4-4-4)</li>
+            <li>✔ Inhale Breathing Ring (4-2-6)</li>
             <li>✔ Micro-Journal & Reflection Space</li>
             <li>✔ Mood & Energy Analytics</li>
             <li>✔ PWA Install & Offline Mode</li>

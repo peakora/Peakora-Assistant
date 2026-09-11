@@ -608,21 +608,7 @@
       <p class="feels-form-thanks" id="feels-thanks" hidden>Thank you, it landed. It will appear below once approved.</p>
     </div>
 
-    <div class="stories-grid" id="feels-wall">
-      <div class="story-card animate-fade-in-up delay-1" id="feels-empty">
-        <div style="width:100%;">
-          <div class="story-quote-mark">“</div>
-          <p class="story-text">
-            Nothing here yet. The first real words on this wall could be yours.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- EDITOR'S NOTE (honesty over polish) -->
-    <p class="stories-editor-note" style="text-align:center; font-size:12px; color:var(--text-muted); margin:18px auto; max-width:640px; line-height:1.6;">
-      Every card above was written by a real user through this exact form. Nothing is invented, nothing is bought. Peakora is a tool, not a replacement for professional care. If things feel too heavy, please reach out to someone you trust.
-    </p>
+    <div class="stories-grid" id="feels-wall" hidden></div>
 
     <!-- HIGH-IMPACT STORIES CTA BANNER -->
     <div class="stories-cta-banner animate-fade-in-up delay-2">
@@ -771,6 +757,7 @@ function loadFeelsWall() {
     .then(function (d) {
       var items = (d && d.items) || [];
       if (!items.length) return;
+      wall.hidden = false;
       wall.innerHTML = '';
       items.forEach(function (it, i) {
         var card = document.createElement('div');
