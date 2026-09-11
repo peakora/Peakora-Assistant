@@ -2570,6 +2570,7 @@
             ["Unlimited 7-Day Plan Resets", "start a fresh week whenever life calls for it"]
           ];
           const plusFeatures = [
+            ["Wellness Coach", "a companion that reads your check-ins, sleep, habits and plan - and answers from that"],
             ["Adaptive Week", "miss a day and your plan quietly waits - no broken streaks, no guilt"],
             ["Dynamic Themes & Color Spaces", "Sunrise, Twilight, Sage, Amethyst, Solar, Sunset, Ocean - your mood, your palette"],
             ["Mood-Reactive Auto Themes", "the whole room quietly shifts color with how you feel"],
@@ -2688,30 +2689,79 @@
         }
 
         // TAB 7: UNIFIED SETTINGS COMPONENT
-        // TAB: COACH (wellness companion grounded in the member's real week:
-        // check-ins, plan day, breath rounds. Rule-based, offline, no backend.)
+        // TAB: COACH (Peakora+ wellness companion grounded in the member's
+        // real week: check-ins, sleep, stress, habits, plan day, breath
+        // rounds. Rule-based, offline, no backend.)
         if (activeTab === "coach") {
-          html += `
-            <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Coach</h1>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">A companion that reads your real week - check-ins, plan progress, breath rounds - and answers from that, not from a script.</p>
-            </div>
-            <div class="dash-card pk-coach-card">
-              <div class="pk-coach-log" id="pk-coach-log" aria-live="polite"></div>
-              <div class="pk-coach-chips">
-                <button class="pk-coach-chip" onclick="coachAsk('How is my week looking?')">How is my week looking?</button>
-                <button class="pk-coach-chip" onclick="coachAsk('Low energy today')">Low energy today</button>
-                <button class="pk-coach-chip" onclick="coachAsk('Calm me down')">Calm me down</button>
-                <button class="pk-coach-chip" onclick="coachAsk('Celebrate with me')">Celebrate with me</button>
+          const coachPlus = isPeakoraPlusActive();
+          if (!coachPlus) {
+            html += `
+              <div class="dash-welcome" style="margin-bottom:16px;">
+                <h1 class="dash-welcome-h1">Coach</h1>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">A companion that reads your real week and answers from that.</p>
               </div>
-              <div class="pk-coach-inputrow">
-                <input id="pk-coach-input" class="input" style="min-height:0; text-align:left;" placeholder="Say anything..." onkeydown="if(event.key==='Enter'){coachSend();}">
-                <button class="btn primary" style="font-size:13px; padding:10px 18px; flex-shrink:0;" onclick="coachSend()">Send</button>
+              <div class="dash-card pk-coach-card pk-coach-locked">
+                <div class="pk-coach-lock-orb"></div>
+                <div style="font-size:15px; font-weight:800; color:#ffffff; margin:10px 0 6px;">Your personal coach lives here</div>
+                <div style="font-size:12px; color:var(--theme-text-muted); line-height:1.6; margin-bottom:12px;">Sleep and stress logging, habit streaks, low-energy day plans, pattern readouts, and early burnout flags - all read from your real data.</div>
+                <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:16px; text-align:left;">
+                  <div style="font-size:12px; color:var(--theme-text-main);">✓ Daily sleep, stress, water and movement log</div>
+                  <div style="font-size:12px; color:var(--theme-text-main);">✓ Streaks, milestones and gentle warnings</div>
+                  <div style="font-size:12px; color:var(--theme-text-main);">✓ Replies shaped by your check-ins and plan</div>
+                </div>
+                <button class="btn primary" style="font-size:13px; padding:11px 22px;" onclick="openPlanSelectionModal()">Unlock Coach with Peakora+</button>
               </div>
-              <div class="pk-coach-safety">I am a supportive guide inside your app, not a medical professional. Nothing you write here leaves this device except anonymous usage pings.</div>
-            </div>
-          `;
-          setTimeout(() => { if (typeof coachBoot === 'function') coachBoot(); }, 60);
+            `;
+          } else {
+            const coachBurn = coachBurnout();
+            const coachStreakN = coachStreak();
+            const coachMetrics = getCoachMetrics();
+            const coachToday = coachMetrics.find(e => e && e.date === todayStr()) || {};
+            const sleepDots = [1,2,3,4,5].map(v => `<button class="pk-coach-dot${(coachToday.sleep || 0) >= v ? ' pk-on' : ''}" data-coach-kind="sleep" data-coach-dot="${v}" onclick="coachLog('sleep', ${v})" aria-label="Sleep ${v} of 5">${v}</button>`).join('');
+            const stressDots = [1,2,3,4,5].map(v => `<button class="pk-coach-dot${(coachToday.stress || 0) >= v ? ' pk-on' : ''}" data-coach-kind="stress" data-coach-dot="${v}" onclick="coachLog('stress', ${v})" aria-label="Stress ${v} of 5">${v}</button>`).join('');
+            html += `
+              <div class="dash-welcome" style="margin-bottom:16px;">
+                <h1 class="dash-welcome-h1">Coach</h1>
+                <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">A companion that reads your real week - check-ins, sleep, habits, plan progress - and answers from that, not from a script.${coachStreakN > 1 ? ` <strong style="color:var(--theme-accent);">${coachStreakN}-day rhythm going.</strong>` : ''}</p>
+              </div>
+              ${coachBurn ? `
+              <div class="dash-card pk-coach-warning">
+                <div style="font-size:13px; font-weight:800; color:#ffffff; margin-bottom:4px;">Three heavy days in a row - I noticed.</div>
+                <div style="font-size:12px; color:var(--theme-text-muted); line-height:1.6;">Your energy is averaging ${coachBurn.avg}/100. Nothing is wrong with you, but this is the moment to go gentle: one walk, one early night, one honest check-in. And if it stays heavy, please talk to someone you trust or a professional.</div>
+              </div>` : ''}
+              <div class="dash-card pk-coach-card">
+                <div class="pk-coach-head">
+                  <div class="pk-coach-orb"></div>
+                  <div>
+                    <div style="font-size:13px; font-weight:800; color:#ffffff;">Coach is reading your week</div>
+                    <div style="font-size:11px; color:var(--theme-text-muted);" id="pk-coach-status">Starting with what you logged...</div>
+                  </div>
+                </div>
+                <div class="pk-coach-daily">
+                  <div class="pk-coach-metric"><span>Sleep</span><div class="pk-coach-dots">${sleepDots}</div></div>
+                  <div class="pk-coach-metric"><span>Stress</span><div class="pk-coach-dots">${stressDots}</div></div>
+                  <div class="pk-coach-metric"><span>Water</span><button class="pk-coach-mini" onclick="coachLog('water')">+ glass (<b id="pk-coach-water-n">${coachToday.water || 0}</b>)</button></div>
+                  <div class="pk-coach-metric"><span>Move</span><button class="pk-coach-mini${coachToday.move ? ' pk-on' : ''}" id="pk-coach-move-btn" onclick="coachLog('move')">${coachToday.move ? 'Moved today ✓' : 'Log movement'}</button></div>
+                </div>
+                <div class="pk-coach-log" id="pk-coach-log" aria-live="polite"></div>
+                <div class="pk-coach-chips">
+                  <button class="pk-coach-chip" onclick="coachAsk('How is my week looking?')">How is my week looking?</button>
+                  <button class="pk-coach-chip" onclick="coachAsk('Low energy today')">Low energy today</button>
+                  <button class="pk-coach-chip" onclick="coachAsk('Calm me down')">Calm me down</button>
+                  <button class="pk-coach-chip" onclick="coachAsk('Celebrate with me')">Celebrate with me</button>
+                </div>
+                <div class="pk-coach-inputrow">
+                  <input id="pk-coach-input" class="input" style="min-height:0; text-align:left;" placeholder="Say anything..." onkeydown="if(event.key==='Enter'){coachSend();}">
+                  <button class="btn primary" style="font-size:13px; padding:10px 18px; flex-shrink:0;" onclick="coachSend()">Send</button>
+                </div>
+                <div class="pk-coach-safety">I am a supportive guide inside your app, not a medical professional. Everything you log stays on this device.</div>
+              </div>
+            `;
+          }
+          setTimeout(() => {
+            if (typeof coachBoot === 'function') coachBoot();
+            checkCoachMilestones(false);
+          }, 60);
         }
 
         if (activeTab === "settings") {
@@ -3761,6 +3811,86 @@
         saveLastWeekInsights();
         if (typeof showToastNotification === 'function') showToastNotification('Week complete - saved to your history, and next week will build on it');
       } catch (e) {}
+    }
+    /* COACH DATA LAYER - sleep, stress, water, movement, streaks, milestones.
+       Stored locally per day; the Coach reads it alongside check-ins. */
+    function getCoachMetrics() {
+      try { return JSON.parse(localStorage.getItem("peakora_coach_metrics_v1") || "[]") || []; }
+      catch (e) { return []; }
+    }
+    function saveCoachMetrics(list) {
+      try { localStorage.setItem("peakora_coach_metrics_v1", JSON.stringify(list)); } catch (e) {}
+    }
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    window.coachLog = function(kind, value) {
+      try {
+        const list = getCoachMetrics();
+        const today = todayStr();
+        let entry = list.find(e => e && e.date === today);
+        if (!entry) { entry = { date: today }; list.push(entry); }
+        if (kind === 'water') entry.water = Math.min(12, (entry.water || 0) + 1);
+        else if (kind === 'move') entry.move = !entry.move;
+        else entry[kind] = value;
+        saveCoachMetrics(list);
+        const chip = document.getElementById('pk-coach-water-n');
+        if (chip && kind === 'water') chip.textContent = entry.water;
+        const mv = document.getElementById('pk-coach-move-btn');
+        if (mv && kind === 'move') {
+          mv.textContent = entry.move ? 'Moved today ✓' : 'Log movement';
+          mv.classList.toggle('pk-on', !!entry.move);
+        }
+        document.querySelectorAll('[data-coach-dot]').forEach(d => {
+          const cur = (entry[d.getAttribute('data-coach-kind')] || 0);
+          d.classList.toggle('pk-on', Number(d.getAttribute('data-coach-dot')) <= cur);
+        });
+        checkCoachMilestones(true);
+      } catch (e) {}
+    };
+    function coachActiveDates() {
+      const days = new Set();
+      try {
+        getCheckins().forEach(c => { if (c && c.date) days.add(c.date); });
+        getCoachMetrics().forEach(e => { if (e && e.date) days.add(e.date); });
+      } catch (e) {}
+      return days;
+    }
+    function coachStreak() {
+      try {
+        const days = coachActiveDates();
+        let n = 0;
+        const d = new Date();
+        if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1);
+        while (days.has(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+        return n;
+      } catch (e) { return 0; }
+    }
+    function checkCoachMilestones(quiet) {
+      try {
+        const n = coachStreak();
+        const hit = JSON.parse(localStorage.getItem("peakora_coach_milestones") || "[]");
+        [3, 7, 14, 30].forEach(m => {
+          if (n >= m && !hit.includes(m)) {
+            hit.push(m);
+            localStorage.setItem("peakora_coach_milestones", JSON.stringify(hit));
+            if (!quiet && typeof showToastNotification === 'function') {
+              showToastNotification(m + "-day rhythm - that consistency is the whole game");
+            }
+            if (window.PeakoraTracker) PeakoraTracker.track("coach_milestone", { days: m });
+          }
+        });
+      } catch (e) {}
+    }
+    function coachBurnout() {
+      try {
+        const list = getCheckins().slice(-3);
+        if (list.length < 3) return null;
+        const fams = list.map(c => { try { return getMoodFamily(c.feeling); } catch (e) { return 'neutral'; } });
+        if (!fams.every(f => f === 'heavy' || f === 'anxious')) return null;
+        let sum = 0;
+        fams.forEach(f => { sum += (typeof MOOD_ENERGY !== 'undefined' && MOOD_ENERGY[f] != null) ? MOOD_ENERGY[f] : 50; });
+        if (sum / 3 >= 45) return null;
+        return { days: 3, avg: Math.round(sum / 3) };
+      } catch (e) { return null; }
     }
     function archiveCurrentPlan() {
       if (!isPeakoraPlusActive()) {
@@ -5509,7 +5639,15 @@ window.appendInsightPlusCards = function() {
         if (state && state.plan) dayTotal = state.plan.length;
         goal = (state && state.answers && state.answers.goal) || null;
       } catch (e) {}
-      return { ins: ins || { count: 0, dominant: 'steady', avgEnergy: null, topPractice: null, breathSessions: 0 }, dayIdx, dayTotal, goal };
+      let sleep = null, stress = null, water = 0, streak = 0;
+      try {
+        const list = (typeof getCoachMetrics === 'function') ? getCoachMetrics() : [];
+        const today = todayStr();
+        const t = list.find(e => e && e.date === today) || {};
+        sleep = t.sleep || null; stress = t.stress || null; water = t.water || 0;
+        streak = (typeof coachStreak === 'function') ? coachStreak() : 0;
+      } catch (e) {}
+      return { ins: ins || { count: 0, dominant: 'steady', avgEnergy: null, topPractice: null, breathSessions: 0 }, dayIdx, dayTotal, goal, sleep, stress, water, streak };
     }
     function coachPush(who, text) {
       const log = document.getElementById('pk-coach-log');
@@ -5532,7 +5670,18 @@ window.appendInsightPlusCards = function() {
         line += " No check-ins yet, so tell me how today feels and we will start there.";
       }
       if (s.goal) line += " Working toward " + s.goal + ".";
-      coachPush('coach', line + " What do you need right now?");
+      if (s.streak > 1) line += " " + s.streak + " days in a row, by the way.";
+      line += " What do you need right now?";
+      coachShowTyping();
+      setTimeout(() => {
+        const t = document.getElementById('pk-coach-typing');
+        if (t) t.remove();
+        coachPush('coach', line);
+      }, 800);
+      const statusEl = document.getElementById('pk-coach-status');
+      if (statusEl) statusEl.textContent = s.ins.count > 0
+        ? ("Week in view: " + s.ins.count + " check-ins, mostly " + s.ins.dominant + ".")
+        : "Fresh week. Log a sleep score above and we begin.";
     };
     window.coachSend = function() {
       const input = document.getElementById('pk-coach-input');
@@ -5541,11 +5690,40 @@ window.appendInsightPlusCards = function() {
       if (input) input.value = "";
       window.coachAsk(text);
     };
+    function coachShowTyping() {
+      const log = document.getElementById('pk-coach-log');
+      if (!log || document.getElementById('pk-coach-typing')) return null;
+      const t = document.createElement('div');
+      t.className = 'pk-coach-msg pk-coach-coach pk-coach-typing';
+      t.id = 'pk-coach-typing';
+      t.innerHTML = '<span></span><span></span><span></span>';
+      log.appendChild(t);
+      log.scrollTop = log.scrollHeight;
+      return t;
+    }
     window.coachAsk = function(text) {
       const msg = String(text || "").trim();
       if (!msg) return;
       coachPush('user', msg);
-      setTimeout(() => coachPush('coach', coachReply(msg)), 450);
+      coachShowTyping();
+      // Human pacing: a beat before answering, longer for longer replies.
+      // Instant answers feel robotic; thinking pauses feel heard.
+      let delay = 900;
+      try {
+        const preview = coachReply(msg);
+        delay = 900 + Math.min(preview.length * 12, 1400);
+        setTimeout(() => {
+          const t = document.getElementById('pk-coach-typing');
+          if (t) t.remove();
+          coachPush('coach', preview);
+        }, delay);
+      } catch (e) {
+        setTimeout(() => {
+          const t = document.getElementById('pk-coach-typing');
+          if (t) t.remove();
+          coachPush('coach', "Say a little more - is it energy, mood, sleep, or the plan itself?");
+        }, 900);
+      }
     };
     function coachReply(rawText) {
       const t = String(rawText || "").toLowerCase();
@@ -5571,6 +5749,19 @@ window.appendInsightPlusCards = function() {
       }
       if (/(breath|anxious|anxiety|calm|stress|panic|overwhelm|worried|nervous)/.test(t)) {
         return "Let's do 4-2-6 right now: in for 4, hold for 2, out for 6. Three rounds, shoulders down. The breathing ring in Soundscapes will pace you visually, same rhythm, about two minutes for the full ten cycles.";
+      }
+      if (/(sleep|insomnia|awake|bed\b|nap|restless night)/.test(t)) {
+        if (s.sleep != null) {
+          return s.sleep <= 2
+            ? "Rough nights show up everywhere the next day, and you logged sleep at " + s.sleep + " of 5. Tonight: screens off 30 minutes earlier, one wind-down sound, no fixing anything. Small lever, big morning."
+            : "Sleep at " + s.sleep + " of 5 is workable. Protect it the same way tonight, same time, same wind-down, and it compounds.";
+        }
+        return "Log tonight's sleep above on the 1 to 5 dots, even roughly. Three nights of data and I start connecting it to your days, that is where my advice gets personal.";
+      }
+      if (/(water|drink|hydrat)/.test(t)) {
+        return s.water > 0
+          ? s.water + " glasses down today. Keep the glass where you can see it and the rest happens by itself."
+          : "No water logged yet today. One glass right now is the whole assignment.";
       }
       if (/(proud|celebrat|win|good news|great|better|happy|grateful)/.test(t)) {
         let out = "Good. Name it out loud, one sentence, so it counts.";
@@ -5793,7 +5984,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=68").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=69").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
