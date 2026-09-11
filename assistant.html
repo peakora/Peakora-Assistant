@@ -1159,7 +1159,7 @@
                   </button>
                   <button class="dash-nav-btn ${activeTab === 'picks' ? 'active' : ''}" onclick="switchDashTab('picks')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    Picks
+                    Peakora Picks
                   </button>
                   <button class="dash-nav-btn ${activeTab === 'libraries' || activeTab === 'library' ? 'active' : ''}" onclick="switchDashTab('libraries')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"></path><path d="M4 10h16M10 4v16"></path></svg>
@@ -2120,10 +2120,11 @@
             }
           ];
           html += `
-            <div class="dash-welcome" style="margin-bottom:16px;">
-              <h1 class="dash-welcome-h1">Picks</h1>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:18px;">
+            <div class="picks-hero-section">
+              <div class="dash-welcome" style="margin-bottom:16px;">
+                <h1 class="dash-welcome-h1">Peakora Picks</h1>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:18px;">
               ${picks.map(p => `
                 <a href="${p.url}" target="_blank" rel="noopener sponsored" style="text-decoration:none; display:block;" onclick="if(window.PeakoraTracker){PeakoraTracker.track('affiliate_pick_clicked',{title:'${p.title.replace(/'/g, "")}'});}">
                   <div class="dash-card" style="height:100%; margin:0; overflow:hidden; padding:0; display:flex; flex-direction:column; transition:transform .25s ease, box-shadow .25s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 18px 44px rgba(0,0,0,0.55),0 0 28px var(--theme-card-glow-hover)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
