@@ -490,8 +490,8 @@
 
       const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto; display:block;" class="mood-river-svg">' +
         defs + guide + axisLabels +
-        '<path d="' + areaD + '" fill="url(#moodRiverArea)"/>' +
-        '<path d="' + pathD + '" fill="none" stroke="url(#moodRiverStroke)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="' + areaD + '" fill="url(#moodRiverArea)" pathLength="1"/>' +
+        '<path d="' + pathD + '" fill="none" stroke="url(#moodRiverStroke)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>' +
         dots + dayLabels + '</svg>';
 
       // Stat chips: dominant mood, average energy, week trend.
@@ -5021,7 +5021,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=50").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=51").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

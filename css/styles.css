@@ -2504,23 +2504,23 @@ header .brand img.brand-logo:hover,
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.85;
-  animation: pkLandFloat 9s ease-in-out infinite;
+  opacity: 0.8;
+  animation: pkLandFloat 4.8s ease-in-out infinite;
   font-size: 22px;
   text-shadow: 0 0 18px rgba(244,162,97,0.55), 0 0 40px rgba(167,139,250,0.35);
 }
 .pk-landing-glyph.g2 { animation-delay: 1.6s; font-size: 16px; }
 .pk-landing-glyph.g3 { animation-delay: 3.1s; font-size: 13px; }
-.hero { position: reive; }
+.hero { position: relative; }
 .hero .pk-landing-glyph.g1 { top: 18%; left:  6%; }
 .hero .pk-landing-glyph.g2 { top: 34%; left: 9%; }
 .hero .pk-landing-glyph.g3 { bottom: 18%; left: 14%; }
 .hero .pk-landing-glyph { right: auto; }
 @keyframes pkLandFloat {
-  0%,100% { transform: transeY(0) rotate(-5deg); }
-  50% { transform: transeY(-14px) rotate(6deg); }
+  0%,100% { transform: translateY(0) scale(1) rotate(-5deg); opacity: 0.8; }
+  50% { transform: translateY(-16px) scale(1.1) rotate(6deg); opacity: 1; }
 }
-.section-header-center { position: reive; }
+.section-header-center { position: relative; }
 .pk-landing-glyph.sh1 { top: -20px; right:20%; color:#f4a261; font-size: 18px; opacity: 0.9; }
 .pk-landing-glyph.sh2 { bottom: -16px; left: 18%; color:#a78bfa; font-size:  14px; animation-duration: 8s; }
 @media (prefers-reduced-motion: reduce) {
