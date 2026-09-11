@@ -2115,7 +2115,9 @@
             { id: 'micro', accent: '#fb7185' },
             { id: 'narrated', accent: '#38bdf8' },
             { id: 'real', accent: '#4ade80' },
-            { id: 'tone', accent: '#a78bfa' }
+            { id: 'tone', accent: '#a78bfa' },
+            { id: 'nature', accent: '#7dd3fc' },
+            { id: 'music', accent: '#f0abfc' }
           ];
           let libTotalSessions = 0;
           const libCats = [
@@ -2125,20 +2127,23 @@
             { id: 'stories', label: 'Sleep Stories', glyph: '&#9789;', sub: 'Slow, unfolding little narratives to drift on', kinds: ['st1','st2','st3'] },
             { id: 'reads', label: 'Readings', glyph: '&#9997;', sub: 'Short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15','r16','r17','r18'] },
             { id: 'micro', label: 'Micro Practices', glyph: '&#10052;', sub: 'One-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] },
-            { id: 'narrated', label: 'Narrated Sleep Stories', glyph: '&#127902;', sub: 'Real public-domain LibriVox readings over the ambient bed', kinds: ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns8','ns9','ns10','ns11','ns12','ns13','ns14'] },
+            { id: 'narrated', label: 'Narrated Sleep Stories', glyph: '&#127902;', sub: 'Real public-domain LibriVox readings over the ambient bed', kinds: ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns8','ns9','ns10','ns11','ns12','ns13','ns14','ns15','ns16','ns17','ns18','ns19','ns20'] },
             { id: 'real', label: 'Real Sound Layers', glyph: '&#10047;', sub: 'Kenney CC0 one-shot Foley layers over the synth beds', kinds: ['k1','k2','k3','k4','k5','k6'] },
-            { id: 'tone', label: 'Tone Frequency Sessions', glyph: '&#9835;', sub: 'Precise WebAudio frequency drones', kinds: ['t1','t2','t3','t4','t5','t6'] }
-          ].map(cat => { libTotalSessions += cat.kinds.length;
+            { id: 'tone', label: 'Tone Frequency Sessions', glyph: '&#9835;', sub: 'Precise WebAudio frequency drones', kinds: ['t1','t2','t3','t4','t5','t6'] },
+            { id: 'nature', label: 'Nature Beds', glyph: '&#9730;', sub: 'Real field recordings - storms, rain and birdsong that loop forever', kinds: ['nb1','nb2','nb3','nb4'] },
+            { id: 'music', label: 'Deep Music', glyph: '&#9834;', sub: 'Slow ambient music loops for meditation and sleep', kinds: ['dm1','dm2'] }
+          ].map((cat, ci) => { libTotalSessions += cat.kinds.length;
             const accent = (libAccents.find(a => a.id === cat.id) || {}).accent || 'var(--theme-accent)';
             return `
-                <div class="dash-card pk-lib-card" style="--pk-lib-accent:${accent};">
-                  <div class="pk-lib-head">
-                    <span class="pk-lib-icon">${cat.glyph}</span>
+                <div class="dash-card pk-lib-card${ci === 0 ? '' : ' pk-collapsed'}" style="--pk-lib-accent:${accent};">
+                  <div class="pk-lib-head" onclick="this.closest('.pk-lib-card').classList.toggle('pk-collapsed')">
+                    <span class="pk-lib-icon">${cat.label.charAt(0)}</span>
                     <div class="pk-lib-titles">
                       <div class="dash-card-title" style="margin:0;">${cat.label}</div>
                       <div class="pk-lib-sub">${cat.sub}</div>
                     </div>
                     <span class="pk-lib-count">${cat.kinds.length}</span>
+                    <span class="pk-lib-chev">&#709;</span>
                   </div>
                   <div class="pk-lib-rows">
                     ${cat.kinds.map((k, si) => { const def = LIBRARY_SESSIONS[k]; if (!def) return ''; const short = (def.label.split(' - ')[1] || def.label).replace(/( \d+ min| \d+min).*?$/i, ''); return `
@@ -3330,6 +3335,12 @@
     }
     const SOUNDSCAPE_NAME = {};
     SOUNDSCAPE_TRACKS.forEach(t => { SOUNDSCAPE_NAME[t.key] = t.name.split(' - ')[0]; });
+    SOUNDSCAPE_NAME['bed-thunderstorm'] = 'Distant Thunderstorm';
+    SOUNDSCAPE_NAME['bed-veranda'] = 'Rain on a Veranda';
+    SOUNDSCAPE_NAME['bed-rainbirds'] = 'Rain, Thunder and Birds';
+    SOUNDSCAPE_NAME['bed-thunderrain'] = 'Thunder and Rain';
+    SOUNDSCAPE_NAME['mus-placid'] = 'Placid Ambient';
+    SOUNDSCAPE_NAME['mus-spiritual'] = 'Spiritual Ambient';
 
     /* AMBIENT LIST = THE TRACK PICKER (single card, screenshot layout).
        Each visible ambient row maps to its single-track player key, so tapping
@@ -3579,6 +3590,18 @@ function stopAmbientAudio() {
   ns12: { track: 'rain', oneShots: ['scifi/computerNoise_000.mp3'], oneShotEvery: 18000, narration: 'assets/vendor/librivox/justso_04_kipling.mp3', label: 'Narrated Story - Just So Stories, Chapter Four (18 min', copy: 'A longer chapter, over the rain. Voice, rhythm, repetition - sleep being built sentence by sentence.', steps: ['Rain sets the pace. The reader settles into full storytelling. Nothing is asked of you.', 'When the mind wanders, wobble back to the voice. The plot does not matter at this hour.', 'Eighteen minutes deep, you may miss the ending. That is the point.' ] },
   ns13: { track: 'night', oneShots: ['ui/click_001.mp3'], oneShotEvery: 16000, narration: 'assets/vendor/librivox/justso_06_kipling.mp3', label: 'Narrated Story - Just So Stories, Chapter Six (12 min', copy: 'Another long old chapter, over the crickets. Strange beasts, slower sentences, a voice that knows how to end a day.', steps: ['Crickets rise, voice settles. The tale spins itself without your help.', 'Let each paragraph be one more layer of the dark. You are not following;you are floating.', 'The chapter closes on its own. Let the night close behind it.' ] },
   ns14: { track: 'bowl', oneShots: ['jingles/jingles_NES02.mp3'], oneShotEvery: 12000, narration: 'assets/vendor/librivox/peter_rabbit_tale.mp3', label: 'Narrated Story - Peter Rabbit ((8 min', copy: 'The first of Potter\'s animal tales, over the singing bowl. Peter squeezes under the gate into Mr. McGregor\'s garden - and learns the hard way.', steps: ['Bowl low, the book opens. The longest, gentlest thing we have is this - let it be the last voice of the day.', 'The lettuce and radishes are perfect till the sparrow warns him. Now the chase is on.', 'He loses his jacketand shoes under the gooseberry net -but gets home,wiser,and slightly ill. Tea,and rest sort the rest.' ] },
+  ns15: { track: 'night', oneShots: ['rpg/bookFlip1.mp3'], oneShotEvery: 12000, narration: 'assets/vendor/librivox/justso_02_camel.mp3', label: 'Narrated Story - How the Camel Got His Hump (9 min', copy: 'Kipling slow and rolling, over the night crickets. The camel gets his hump for idleness - hear it as a lullaby about doing nothing, beautifully.', steps: ['Night low, the reader begins unhurried. Let the rolling words do the breathing for you.', 'The camel says Humph. Let your own shoulders drop every time he does.', 'Nine minutes of story. You may miss the moral. That is allowed.'] },
+  ns16: { track: 'ocean', oneShots: ['rpg/bookOpen.mp3'], oneShotEvery: 13000, narration: 'assets/vendor/librivox/justso_03_rhino.mp3', label: 'Narrated Story - How the Rhinoceros Got His Skin (8 min', copy: 'A short, strange tale over the slow surf. The Parsee, the cake crumbs, the itchy skin - pure rhythm to drift on.', steps: ['Ocean sets the pace. The voice follows the tide, sentence by sentence.', 'Crumbs under the skin, an itch that never leaves. Let the small discomforts be his, not yours.', 'Eight minutes. The surf keeps what the story lets go.'] },
+  ns17: { track: 'rain', oneShots: ['rpg/bookPlace2.mp3'], oneShotEvery: 18000, narration: 'assets/vendor/librivox/justso_05_elephant.mp3', label: "Narrated Story - The Elephant's Child (18 min", copy: 'The longest lullaby we have: insatiable curiosity, a long journey, a trunk pulled into being. Rain keeps time while the tale unwinds.', steps: ['Rain first, then the voice. Settle for the long haul - this one takes its time, and so should you.', 'The Elephant Child asks everything. Let your own questions wait till morning.', 'Eighteen minutes deep, the trunk arrives. You may already be asleep. Perfect.'] },
+  ns18: { track: 'bowl', oneShots: ['rpg/bookPlace3.mp3'], oneShotEvery: 16000, narration: 'assets/vendor/librivox/justso_07_armadillos.mp3', label: 'Narrated Story - The Beginning of the Armadilloes (19 min', copy: 'Stickly-Prickly and Tortoise outwit the jaguar, over the singing bowl. Slow mischief for the end of the day.', steps: ['Bowl hums low. Two slow creatures, one painted jaguar. Nothing hurries here.', 'Tortoise teaches Hedgehog to swim and curl. Let the lesson be rest, not effort.', 'Nineteen minutes of gentle scheming. Drift wherever it takes you.'] },
+  ns19: { track: 'wind', oneShots: ['rpg/bookFlip2.mp3'], oneShotEvery: 12000, narration: 'assets/vendor/librivox/aesop2_21_shepherd.mp3', label: "Narrated Story - The Shepherd's Boy and the Wolf (1 min", copy: 'One minute, one classic: the boy who cried wolf, over valley wind. Short enough for a single slow breath cycle.', steps: ['Wind opens. One minute of story, one minute of stillness after.', 'Nobody believes him in the end. Let the evening believe in rest instead.'] },
+  ns20: { track: 'fire', oneShots: ['rpg/creak1.mp3'], oneShotEvery: 14000, narration: 'assets/vendor/librivox/aesop2_13_slave_lion.mp3', label: 'Narrated Story - The Slave and the Lion (2 min', copy: 'Androcles and the grateful lion, beside the hearth. Two minutes of old kindness, warm as the fire.', steps: ['Fire crackles soft. A thorn, a paw, a remembered kindness.', 'The lion spares him in the arena. Let gratitude be the last thought of the day.'] },
+  nb1: { bed: 'assets/vendor/nature/thunderstorm_17min.mp3', label: 'Nature Bed - Distant Thunderstorm (17 min', copy: 'A real summer storm rolling through the woods - rain, wind, far thunder. Recorded live, public domain. Let it loop while you rest or work.' },
+  nb2: { bed: 'assets/vendor/nature/rain_thunder_birds.mp3', label: 'Nature Bed - Rain, Thunder and Birds (2 min', copy: 'Rain and low thunder with birdsong threading through - a living soundscape that loops cleanly.' },
+  nb3: { bed: 'assets/vendor/nature/veranda_rain.mp3', label: 'Nature Bed - Rain on a Veranda (loop', copy: 'Close rain on a veranda roof with far thunder. Small, intimate, endless.' },
+  nb4: { bed: 'assets/vendor/nature/thunder_rain.mp3', label: 'Nature Bed - Thunder and Rain (loop', copy: 'Low thunder rolling under steady rain. Heavy weather for light sleep.' },
+  dm1: { bed: 'assets/vendor/music/placid_ambient.mp3', label: 'Deep Music - Placid Ambient (loop', copy: 'Piano and synthesizer ambient in a peaceful new-age wash. CC BY 4.0 MusicLFiles - credited in our notices.' },
+  dm2: { bed: 'assets/vendor/music/spiritual_ambient.mp3', label: 'Deep Music - Spiritual Ambient (loop', copy: 'Ambient electronic for meditation and stillness. CC BY 4.0 MusicLFiles - credited in our notices.' },
 
   // REAL SOUND LAYERS (Kenney CC0 one-shot Foley over the synth beds)
   k1: { track: 'fire', oneShots: ['rpg/cloth1.mp3', 'rpg/bookFlip1.mp3'], oneShotEvery: 11000, label: 'Real Sound - Hearth Pages (10 min', copy: 'The fireplace plus the sound of pages turning - the quiet of a room where someone is reading beside you. Real recorded Foley over the warm fire bed.', steps: ['Fire low. Every so often, a page turns. You are not reading;you are sharing air with someone who is.', 'Let the crackle and the cloth-and-paper sounds pace your breathing - slow, regular, unhurried.', 'Ten minutes in,the room feels lived-in. Rest in that kind of quiet.' ] },
@@ -3605,6 +3628,15 @@ window.launchLibrary = function(kind) {
   const chosen = LIBRARY_SESSIONS[kind];
   if (!chosen) {
     if (typeof showToastNotification === 'function') showToastNotification('That session is not available yet');
+    return;
+  }
+  if (chosen.bed) {
+    stopAmbientAudio();
+    stopToneSession();
+    playVendoredTrack(kind, chosen.bed);
+    if (typeof showToastNotification === 'function') showToastNotification(chosen.label);
+    openGuidedSessionOverlay(chosen.label, chosen.copy);
+    if (window.PeakoraTracker) window.PeakoraTracker.track("library_session_started", { kind, bed: chosen.bed });
     return;
   }
   stopAmbientAudio();
@@ -3874,10 +3906,61 @@ window.launchLibrary = function(kind) {
       return buffer;
     }
 
+    /* VENDORED MP3 BEDS (real CC0/PD recordings: nature beds + deep music loops).
+       Looping audio element routed through the WebAudio master chain, so the
+       live wave visualizer follows them exactly like the synth beds. */
+    const VENDORED_TRACKS = {
+      'bed-thunderstorm': 'assets/vendor/nature/thunderstorm_17min.mp3',
+      'bed-veranda': 'assets/vendor/nature/veranda_rain.mp3',
+      'bed-rainbirds': 'assets/vendor/nature/rain_thunder_birds.mp3',
+      'bed-thunderrain': 'assets/vendor/nature/thunder_rain.mp3',
+      'mus-placid': 'assets/vendor/music/placid_ambient.mp3',
+      'mus-spiritual': 'assets/vendor/music/spiritual_ambient.mp3'
+    };
+
+    function playVendoredTrack(key, url) {
+      stopAmbientAudio();
+      if (window.PeakoraTracker) window.PeakoraTracker.track("soundscape_played", { track: key, vendored: true });
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        audioCtx = new AudioContext();
+        const masterGain = audioCtx.createGain();
+        masterGain.isMaster = true;
+        masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+        masterGain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 1.6);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        masterGain.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        registerWaveAnalyser(analyser);
+        const el = new Audio(url);
+        el.loop = true;
+        el.preload = 'auto';
+        const src = audioCtx.createMediaElementSource(el);
+        src.connect(masterGain);
+        activeSoundNodes.push(masterGain);
+        activeSoundNodes.push({ stop: () => { try { el.pause(); } catch (e) {} }, disconnect: () => { try { src.disconnect(); } catch (e) {} } });
+        el.play().catch(() => {});
+        currentlyPlayingTrack = key;
+        lastSoundscapeTrack = key;
+        trackStartedAt = Date.now();
+        scheduleSessionEnd();
+        renderStepAudioState();
+        if (typeof syncAmbientActive === 'function') syncAmbientActive();
+      } catch (e) {
+        console.error("Audio error:", e);
+      }
+    }
+
     function playAmbientAudio(type, opts) {
       opts = opts || {};
       if (currentlyPlayingTrack === type) {
         stopAmbientAudio();
+        return;
+      }
+      if (VENDORED_TRACKS[type]) {
+        playVendoredTrack(type, VENDORED_TRACKS[type]);
         return;
       }
       stopAmbientAudio();
@@ -5040,7 +5123,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=57").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=58").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

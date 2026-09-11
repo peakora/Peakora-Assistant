@@ -2798,7 +2798,18 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.12);
 }
-.pk-lib-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.pk-lib-rows {
+  display: flex; flex-direction: column; gap: 6px; margin-top: 14px;
+  overflow: hidden; max-height: 3000px; opacity: 1;
+  transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin 0.3s ease;
+}
+.pk-lib-card.pk-collapsed .pk-lib-rows { max-height: 0; opacity: 0; margin-top: 0; }
+.pk-lib-head { cursor: pointer; }
+.pk-lib-chev {
+  flex-shrink: 0; font-size: 13px; color: var(--theme-text-muted);
+  transition: transform 0.3s ease;
+}
+.pk-lib-card.pk-collapsed .pk-lib-chev { transform: rotate(-90deg); }
 .pk-lib-row {
   display: flex; align-items: center; gap: 10px; width: 100%;
   padding: 9px 12px; border-radius: 12px; cursor: pointer;
