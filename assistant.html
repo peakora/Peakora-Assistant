@@ -2121,12 +2121,11 @@
           ];
           let libTotalSessions = 0;
           const libCats = [
-            { id: 'meditations', label: 'Meditations', glyph: '&#10047;', sub: 'Timed guided sits, breath journeys,and a power-nap reset', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17','m18'] },
+            { id: 'meditations', label: 'Meditations', glyph: '&#10047;', sub: 'Timed guided sits and breath journeys with layered sound', kinds: ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16'] },
             { id: 'scans', label: 'Body Scans', glyph: '&#10047;', sub: 'Full-body resets - tension maps, five-minute nomads,and sleep wind-downs', kinds: ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13'] },
             { id: 'freqs', label: 'Healing Frequencies', glyph: '&#9835;', sub: 'Binaural presets by intention plus layered combos - theta, alpha, beta, delta', kinds: ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16'] },
-            { id: 'stories', label: 'Sleep Stories', glyph: '&#9789;', sub: 'Slow, unfolding little narratives to drift on', kinds: ['st1','st2','st3'] },
             { id: 'reads', label: 'Readings', glyph: '&#9997;', sub: 'Short guided texts to read back softly over an ambient bed', kinds: ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12','r13','r14','r15','r16','r17','r18'] },
-            { id: 'micro', label: 'Micro Practices', glyph: '&#10052;', sub: 'One-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5','p6','p7'] },
+            { id: 'micro', label: 'Micro Practices', glyph: '&#10052;', sub: 'One-to-two-minute resets for the moments between things', kinds: ['p1','p2','p3','p4','p5'] },
             { id: 'narrated', label: 'Narrated Sleep Stories', glyph: '&#127902;', sub: 'Real public-domain LibriVox readings over the ambient bed', kinds: ['ns1','ns2','ns3','ns4','ns5','ns6','ns7','ns8','ns9','ns10','ns11','ns12','ns13','ns14','ns15','ns16','ns17','ns18','ns19','ns20'] },
             { id: 'real', label: 'Real Sound Layers', glyph: '&#10047;', sub: 'Kenney CC0 one-shot Foley layers over the synth beds', kinds: ['k1','k2','k3','k4','k5','k6'] },
             { id: 'tone', label: 'Tone Frequency Sessions', glyph: '&#9835;', sub: 'Precise WebAudio frequency drones', kinds: ['t1','t2','t3','t4','t5','t6'] },
@@ -3554,16 +3553,11 @@ function stopAmbientAudio() {
   r18: { track: 'night', oneShots: ['rpg/cloth1.mp3'], oneShotEvery: 25000, label: 'Reading - The Soft Landing', copy: 'You have been going for hours. Here is where you land: shoulders down, tongue soft, hands open. Nothing else is due tonight. The room is quiet, and so are you.' },
 
   // SLEEP STORIES (slow, unfolding little narratives to drift on)
-  st1: { track: 'night', label: 'Sleep Story - The Harbor Lights (8 min', copy: 'Close your eyes. A small harbor under a low moon, lanterns strung along the pier. Rain is falling out past the breakwater, but here the air is still.', steps: ['Rain falls out past the breakwater, soft as salt. You are walking the old pier slowly, lanterns ticking warm.', 'At the end of the pier, a bench. You sit. The water nods against the pilings, unhurried as a held breath.', 'A bell rings once, somewhere up the hill behind the town. The harbor holds you exact as it holds the anchored boats;you rock, gently, at rest.', 'The lanterns dim one by one. You are warm, weighted, home. Let each exhale lower you one soft degree toward sleep.' ] },
-  st2: { track: 'om', label: 'Sleep Story - The Day Is Done (7 min', copy: 'The day is done, and the house is settling. Warm light in one window, a chair that knows your shape. Rest is not earned;it is evening.', steps: ['The kettle clicks off. Outside, harmless evening sounds: a gate, a far train, wind in the eaves.', 'You are not behind. Nothing is waiting. The evening asks only one thing of you: slow down enough to feel it.', 'Your breath steadies by itself, like a clock learning to rest. Let your jaw soften, your hands uncurl.', 'The light lowers. You lower with it, one floor at a time, until nothing is left but the quiet hum of being done.' ] },
-  st3: { track: 'bowl', label: 'Sleep Story - First Light (6 min', copy: 'Before the world wakes, something soft begins. A single bowl rings far off, morning gathering itself quietly.', steps: ['Gray light finds the window. You are still, patient as the dawn, which takes its time and asks nothing of you.', 'A bird answers the bowl. Another, then a chorus, all unhurried. You listen the way you would breathe: easily.', 'Morning is not a demand. It is an invitation. Stay in the gray light one more minute, soft and unowned.', 'The light warms to amber. You carry this quiet with you: the first minute of the day, already yours.' ] },
 
   // BODY SCANS (extended)
   b13: { track: 'bowl', oneShots: ['jingles/jingles_HIT00.mp3'], oneShotEvery: 20000, label: 'Body Scan - Five-Minute Reset (5 min', copy: 'A short full-body reset for between things. Settle where you are;no mat needed. Bell once.', steps: ['Crown of the head, soft. Jaw, unclenched. Shoulders, dropping one inch. Breath in, soften.', 'Arms, hands, fingertips: heavy, warm, done. Let them hang or rest, whichever asks less.', 'Belly, chest, back, riding the breath. Nothing to fix;only to notice.', 'Feet on the floor, grounded as roots. One slow exhale, longer than the last, and you are reset.' ] },
 
   // MEDITATIONS (breath journeys and power rest)
-  m17: { track: 'rain', label: 'Meditation - Ten-Minute Breath Journey (10 min', copy: 'A slow, structured breath journey for when your head will not quiet. Rain keeps the world soft while you breathe.', steps: ['In for four, out for six. Ten rounds, no rush. Let the rain be your metronome;it is never in a hurry.', 'In for four, hold for two, out for six. The holding is where the noise thins. Soft jaw, soft hands.', 'In for four, out for eight. The long exhale is the release valve. Each one carries one unfinished thought out with it.', 'In for four, hold for two, out for eight. Slower now. You are not doing this well or badly;you are doing it, which is enough.', 'Breath finds its own pace, gentler than before. Sit in that for one full minute, rain still falling, mind still clear.' ] },
-  m18: { track: 'om', label: 'Meditation - Power Nap Reset (15 min', copy: 'A short power-nap reset for the afternoon dip. Low drone under you, eyes heavy,in no real need to sleep.', steps: ['Eyes closed. The drone steadies below you like a held floor. Breath in four, out six, three rounds.', 'Let your body go heavy, one part at a time: feet, legs, hips, hands. You are not falling asleep;you are letting go of holding.', 'Thoughts drift through like clouds. You watch them, no boarding. The drone holds you, steady and low.', 'Ten minutes in, you are deeply rested. Roll your shoulders, blink slow. Rise when the drone feels behind you, not ahead of you.' ] },
 
   // HEALING FREQUENCY COMBO PRESETS (binaural beat layered over an ambient world)
   f13: { track: 'binaural', beatHz: 6, world: 'night', label: 'Frequency - Sleep Combo: Theta + Night (10 min', copy: 'Theta 6Hz over night crickets, headphones on. A slow descent ten minutes before bed;dim lights, breath long.', steps: ['Settle in, earphones on. Theta hum under summer crickets. Breath in four, out six, three rounds.', 'Let the crickets do the listening. You are not trying to sleep yet;you are letting the day down, one rung at a time.', 'Deeper now. Theta holds you below thinking. Breath out longer each round, heavier each time.', 'Stay until the hum feels like part of the room. Then lift the headphones off slow, rested ahead of the night.' ] },
@@ -3572,8 +3566,6 @@ function stopAmbientAudio() {
   f16: { track: 'binaural', beatHz: 2, world: 'fire', label: 'Frequency - Calm Combo: Delta + Fireplace (10 min', copy: 'Delta 2Hz over a slow fireplace for the tight-chest moments. Let the embers breathe for you.', steps: ['Earphones on, fire low. Delta hum steadies your edges. Breath in four, out eight, three rounds.', 'Watch the embers glow and fade, glow and fade. Your exhales match them, longer each time.', 'The delta anchor is a deep, quiet floor. Nothing to solve in here. Let the warmth do the holding.', 'Stay until your shoulders remember their resting place. Then rise slow, warmer, steadier than you came in.' ] },
 
   // MICRO PRACTICES (more quick resets)
-  p6: { track: 'wind', label: 'Micro - Desk Reboot (2 min', copy: 'For the screen-hunched moment. Roll your shoulders back, drop your jaw, let your hands fall open. One slow minute of unclenching, then one clean next step.' },
-  p7: { track: 'rain', label: 'Micro - Post-Meeting Settle (2 min', copy: 'The meeting is over;the charge in your chest need not linger. Two long exhales, one glass of water, one sentence of what actually matters now. Then onward, lighter.' },
 
   // NARRATED SLEEP STORIES (real public-domain LibriVox readings over the ambient bed)
   ns1: { track: 'night', oneShots: ['rpg/bookFlip2.mp3'], oneShotEvery: 12000, narration: 'assets/vendor/librivox/fox_grapes.mp3', label: 'Narrated Story - The Fox and the Grapes (6 min', copy: 'A real public-domain reading, over the evening crickets. Let the old story slow your thoughts down one sentence at a time.', steps: ['Settle in, crickets low. The reader begins. You do not need to follow the plot - only the cadence of a human voice at a human pace.', 'When attention wanders, come home to the voice, not the story. Let it be lullaby rather than lecture.', 'The story ends when it ends. Let the evening hold you there a minute longer, still as the night outside.' ] },
@@ -3687,7 +3679,9 @@ window.launchLibrary = function(kind) {
         a.play().catch(() => {});
         idx++;
       };
-      fire();
+      // First texture arrives after one full interval, never on top of the
+      // narration/bed start - an instant Foley hit is what made sessions feel
+      // like the sound "changed" half a second in.
       oneShotTimer = setInterval(fire, (everyMs || 9000));
     }
 
@@ -5123,7 +5117,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=58").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=59").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
