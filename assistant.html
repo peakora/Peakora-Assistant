@@ -157,6 +157,40 @@
       "exit"
     ];
 
+    /* PAGE-STYLE ONBOARDING (13 steps). Shown ONLY on explicit entry:
+       fresh arrival from the landing page (?fresh=1, no plan yet), restart,
+       new plan, or full reset. Never on plain boot or refresh with a plan -
+       that was the old empty-card bug. Rendered full-page, never in a modal. */
+    const onboardingSteps = [
+      "welcome",
+      "explanation",
+      "goal",
+      "challenge",
+      "time",
+      "insight",
+      "extended1",
+      "extended2",
+      "email",
+      "processing",
+      "recommendations",
+      "pricing",
+      "done"
+    ];
+    let onboardingSession = false;
+    window.__obIndex = -1;
+    function enterOnboarding() {
+      onboardingSession = true;
+      window.__obIndex = 0;
+      saveState();
+      renderStep();
+      try { window.scrollTo(0, 0); } catch (e) {}
+      if (window.PeakoraTracker) PeakoraTracker.track("onboarding_started", {});
+    }
+    function exitOnboarding() {
+      onboardingSession = false;
+      window.__obIndex = -1;
+    }
+
     const STORAGE_KEY = "peakora_assistant_state_v1";
     const CHECKINS_KEY = "peakora_checkins_v1";
 
@@ -538,6 +572,25 @@
     }
 
     function goToStepKey(key) {
+      const obIdx = onboardingSteps.indexOf(key);
+      if (obIdx >= 0) {
+        // Onboarding keys only resolve inside an explicit onboarding session.
+        // Anything else (stale links, refresh) lands on the dashboard instead
+        // of an empty card - the old bug, fixed at the router.
+        if (!onboardingSession) {
+          if (state.plan) { goToStepKey("home"); return; }
+          onboardingSession = true;
+        }
+        window.__obIndex = obIdx;
+        saveState();
+        renderStep();
+        try { window.scrollTo(0, 0); } catch (e) {}
+        if (window.PeakoraTracker) {
+          PeakoraTracker.track("step_viewed", { step: key });
+        }
+        return;
+      }
+      exitOnboarding();
       const index = steps.indexOf(key);
       if (index >= 0) {
         // Save scroll position when leaving Home, restore it when returning so
@@ -561,6 +614,13 @@
     }
 
     function goToPrevious() {
+      if (onboardingSession && window.__obIndex > 0) {
+        window.__obIndex -= 1;
+        saveState();
+        renderStep();
+        try { window.scrollTo(0, 0); } catch (e) {}
+        return;
+      }
       if (state.stepIndex > 0) {
         state.stepIndex -= 1;
         saveState();
@@ -615,13 +675,26 @@
       }
     }
 
+    function currentRenderKey() {
+      if (onboardingSession && window.__obIndex >= 0 && onboardingSteps[window.__obIndex]) {
+        return onboardingSteps[window.__obIndex];
+      }
+      return steps[state.stepIndex] || "home";
+    }
     function setProgress() {
-      const key = steps[state.stepIndex];
+      const key = currentRenderKey();
       const bar = document.querySelector(".progress-fill");
       const label = document.querySelector(".progress-label");
       const progressContainer = document.querySelector(".assistant-progress");
       if (!bar || !label || !progressContainer) return;
 
+      const obIdx = onboardingSteps.indexOf(key);
+      if (obIdx >= 0) {
+        progressContainer.style.display = "";
+        bar.style.width = (((obIdx + 1) / onboardingSteps.length) * 100) + "%";
+        label.textContent = "Step " + (obIdx + 1) + " of " + onboardingSteps.length;
+        return;
+      }
       if (key === "home" || key === "plan_full" || key === "exit") {
         progressContainer.style.display = "none";
         return;
@@ -917,7 +990,7 @@
       setProgress();
       fadeIn();
 
-      const key = steps[state.stepIndex] || "home";
+      const key = currentRenderKey();
 
       // Outer wrapper adaptiveness for dashboard vs onboarding step
       const outerCard = document.querySelector(".assistant-card");
@@ -934,6 +1007,11 @@
         if (outerHeader) outerHeader.style.display = "";
       }
 
+      // Onboarding page-mode: card chrome drops away, question fills the page.
+      const inOnboarding = onboardingSteps.indexOf(key) >= 0;
+      if (outerCard) outerCard.classList.toggle("is-onboarding-mode", inOnboarding);
+      if (outerShell) outerShell.classList.toggle("onboarding-flow", inOnboarding);
+
       // Dynamic header brand name update based on Peakora+ membership
       const isPlusActive = isPeakoraPlusActive();
 
@@ -944,6 +1022,285 @@
 
       const container = document.getElementById("step-container");
       if (!container) return;
+
+      // PAGE-STYLE ONBOARDING (13 steps, full-page questions, never a modal)
+      if (onboardingSteps.indexOf(key) >= 0) {
+        renderOnboardingStep(key, container);
+        return;
+      }
+
+    /* PAGE-STYLE ONBOARDING RENDER - one full-page question at a time.
+       Answers land in state.answers, which generatePlanFromAnswers turns
+       into the 7-day plan (plus last-week insights woven in). */
+    function renderOnboardingStep(key, container) {
+      // 1. WELCOME
+      if (key === "welcome") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Welcome to Peakora</h2>
+            <p class="soft-note">A gentle corner of your day to breathe, reset, and get back to yourself.</p>
+            <p>In a few short questions, we'll shape a 7-day plan that actually fits your life - no pressure, no perfection.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="goToStepKey('explanation')">Let's begin</button>
+              <button class="btn ghost" onclick="exitOnboarding(); goToStepKey('home')" style="margin-top:10px;">Back to your space</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. EXPLANATION
+      if (key === "explanation") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>How Peakora works</h2>
+            <p class="soft-note">Made to fit into your day, not take it over.</p>
+            <ul class="preview-list">
+              <li><strong>Gentle by design:</strong> No guilt, no pressure - you set the pace.</li>
+              <li><strong>Made for real life:</strong> Your plan flexes with messy days, not against them.</li>
+              <li><strong>Small steps, real change:</strong> Tiny daily wins that quietly add up.</li>
+            </ul>
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="goToStepKey('goal')">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 3. GOAL
+      if (key === "goal") {
+        const currentGoal = state.answers.goal || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What would you like more of right now?</h2>
+            <p class="soft-note">Pick the closest fit, or say it in your own words.</p>
+            <div class="options vertical mb-16">
+              <button class="btn ghost" onclick="selectPresetGoal('Finding more calm & reducing stress')">Finding more calm & reducing stress</button>
+              <button class="btn ghost" onclick="selectPresetGoal('Building consistent, gentle routines')">Building consistent, gentle routines</button>
+              <button class="btn ghost" onclick="selectPresetGoal('Reclaiming focus & mental clarity')">Reclaiming focus & mental clarity</button>
+              <button class="btn ghost" onclick="selectPresetGoal('Feeling more aligned & energized')">Feeling more aligned & energized</button>
+            </div>
+            <textarea id="goal-input" class="input" placeholder="Or type your custom goal here...">${currentGoal}</textarea>
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleGoal()">Next</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 4. CHALLENGE
+      if (key === "challenge") {
+        const currentChallenge = state.answers.challenge || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What's been feeling heavy lately?</h2>
+            <p class="soft-note">Naming it helps your plan be kinder on the hard days.</p>
+            <div class="options vertical mb-16">
+              <button class="btn ghost" onclick="selectPresetChallenge('Overwhelm from busy days')">Overwhelm from busy days</button>
+              <button class="btn ghost" onclick="selectPresetChallenge('Inconsistency and starting over')">Inconsistency & starting over</button>
+              <button class="btn ghost" onclick="selectPresetChallenge('Lack of clear structure')">Lack of clear structure</button>
+              <button class="btn ghost" onclick="selectPresetChallenge('Burnout and physical fatigue')">Burnout and fatigue</button>
+            </div>
+            <textarea id="challenge-input" class="input" placeholder="Or describe what's on your mind...">${currentChallenge}</textarea>
+            <div class="actions mt-16">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleChallenge()">Next</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 5. TIME
+      if (key === "time") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>How much time can you honestly give each day?</h2>
+            <p class="soft-note">Go with what feels realistic - a few honest minutes beats a heroic plan you can't keep.</p>
+            <div class="options vertical mt-16">
+              <button class="btn secondary" onclick="handleTime('5-10 minutes')">5-10 minutes (Gentle & Light)</button>
+              <button class="btn secondary" onclick="handleTime('15-20 minutes')">15-20 minutes (Steady Momentum)</button>
+              <button class="btn secondary" onclick="handleTime('20+ minutes')">20+ minutes (Deep Focus)</button>
+            </div>
+            <div class="actions mt-20">
+              <button class="btn ghost" onclick="goToPrevious()">Back</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 6. INSIGHT
+      if (key === "insight") {
+        const currentInsight = state.answers.insight || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What's one thing you'd love to feel more of?</h2>
+            <p class="soft-note">Peace of mind, morning clarity, feeling present, a little self-kindness...</p>
+            <input type="text" id="insight-input" class="input" style="min-height:44px;" value="${currentInsight}" placeholder="e.g. Peace of mind and morning calm" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleInsight()">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 7. EXTENDED 1
+      if (key === "extended1") {
+        const currentVal = state.answers.extended1 || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>Name one gentle win for this week</h2>
+            <p class="soft-note">Something so small that success is basically guaranteed.</p>
+            <input type="text" id="extended1-input" class="input" style="min-height:44px;" value="${currentVal}" placeholder="e.g. Drinking a glass of water before my morning coffee" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleExtended1()">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 8. EXTENDED 2
+      if (key === "extended2") {
+        const currentVal = state.answers.extended2 || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>What usually gets in the way?</h2>
+            <p class="soft-note">If we know where it snags, we can plan around it together.</p>
+            <input type="text" id="extended2-input" class="input" style="min-height:44px;" value="${currentVal}" placeholder="e.g. Late nights, phone notifications, sudden meetings" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleExtended2()">Continue</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 9. EMAIL
+      if (key === "email") {
+        const currentEmail = state.email || "";
+        container.innerHTML = `
+          <div class="step">
+            <h2>Where should your plan live?</h2>
+            <p class="soft-note">We'll email you a copy and keep one right here on your device too.</p>
+            <input type="email" id="email-input" class="input" style="min-height:44px;" value="${currentEmail}" placeholder="your.email@example.com" />
+            <div class="actions mt-20">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" onclick="handleEmail()">Generate My Plan</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 10. PROCESSING
+      if (key === "processing") {
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Putting your week together...</h2>
+            <p class="soft-note" id="processing-status">Listening to what you told us...</p>
+            <div class="loader"></div>
+          </div>
+        `;
+        setTimeout(() => {
+          const statusEl = document.getElementById("processing-status");
+          if (statusEl) statusEl.textContent = "Weaving in your gentle wins & kind reminders...";
+        }, 1000);
+        setTimeout(() => {
+          ensurePlanGenerated();
+          goToStepKey("recommendations");
+        }, 2200);
+        return;
+      }
+
+      // 11. RECOMMENDATIONS
+      if (key === "recommendations") {
+        ensurePlanGenerated();
+        const plan = state.plan || [];
+        const day1 = plan[0] || { title: "Day 1", focus: "Grounding" };
+        const day4 = plan[3] || { title: "Day 4", focus: "Gentle win" };
+        const day7 = plan[6] || { title: "Day 7", focus: "Integration" };
+        container.innerHTML = `
+          <div class="step">
+            <h2>Here's your week, gently mapped</h2>
+            <p class="soft-note">A quick peek at how your next seven days will feel:</p>
+            <div class="card mb-12" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+              <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day1.title}</h3>
+              <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day1.focus}:</strong> ${day1.action}</p>
+            </div>
+            <div class="card mb-12" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+              <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day4.title}</h3>
+              <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day4.focus}:</strong> ${day4.action}</p>
+            </div>
+            <div class="card mb-16" style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+              <h3 style="margin:0 0 4px; font-size:15px; font-weight:700; color:#ffffff;">${day7.title}</h3>
+              <p style="margin:0; font-size:13px; color:var(--theme-text-muted);"><strong style="color:var(--theme-accent, #f4a261);">${day7.focus}:</strong> ${day7.action}</p>
+            </div>
+            <div class="actions">
+              <button class="btn secondary" onclick="goToStepKey('email')">Back</button>
+              <button class="btn primary" style="flex:1; font-weight:700;" onclick="goToStepKey('pricing')">Continue to Experience</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 12. PRICING
+      if (key === "pricing") {
+        container.innerHTML = `
+          <div class="step">
+            <h2>Pick how deep you want to go</h2>
+            <p class="soft-note">The core stuff - your full 7-day plan and daily toolkit - is free. Always.</p>
+            <div class="card mb-12" style="border:1.5px solid var(--theme-accent, #f4a261); background:rgba(244,162,97,0.08); border-radius:var(--radius-md); padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora Free Plan</h3>
+                <span style="background:var(--theme-primary-grad); color:#fff; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px;">Active</span>
+              </div>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Your 7-day plan, mood check-in, breathing ring, micro-journal, analytics, offline mode & unlimited resets - the essentials, on us.</p>
+            </div>
+            <div class="card mb-16" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="margin:0; font-weight:700; color:#ffffff;">Peakora+ Tier</h3>
+                <span style="font-size:12px; font-weight:700; color:var(--theme-accent, #f4a261);">$9.99/mo</span>
+              </div>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--theme-text-muted); line-height:1.5;">Adaptive Week, dynamic themes & color spaces, mood-reactive auto themes, past plan archiving, and the organic soundscape synthesizer.</p>
+            </div>
+            <div class="actions">
+              <button class="btn secondary" onclick="goToPrevious()">Back</button>
+              <button class="btn primary" style="flex:1; font-weight:700;" onclick="goToStepKey('done')">Start with the Free Plan</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 13. DONE
+      if (key === "done") {
+        state.completed = true;
+        saveState();
+        exitOnboarding();
+        container.innerHTML = `
+          <div class="step step-centered">
+            <h2>Your week is ready</h2>
+            <p class="soft-note">Your 7-day plan is saved right here on your device, and a copy is on its way to your inbox.</p>
+            <p>Welcome to your own quiet corner. Whenever you're ready, step inside.</p>
+            <div class="actions vertical mt-20">
+              <button class="btn primary" onclick="goToStepKey('home')">Take me home</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+    }
 
       // 14. DAILY INTRO
       if (key === "daily_intro") {
@@ -1956,41 +2313,6 @@
               <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Your current 7-day reset lives here, along with any weeks you've saved for later.</p>
             </div>
 
-            <div class="dash-card mb-16" style="padding:20px 22px;">
-              <div class="dash-card-title" style="margin:0 0 4px;">Shape your next 7 days</div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px;">Six honest lines. Your words build the plan - and last week's check-ins shape it further.</p>
-              <div style="display:flex; flex-direction:column; gap:10px;">
-                <div>
-                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What are you reaching for?</div>
-                  <input id="plan-builder-goal" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. calmer evenings" value="${((state.answers && state.answers.goal) || '').replace(/"/g, '&quot;')}">
-                </div>
-                <div>
-                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What has been heavy lately?</div>
-                  <input id="plan-builder-challenge" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. restless mind at night" value="${((state.answers && state.answers.challenge) || '').replace(/"/g, '&quot;')}">
-                </div>
-                <div>
-                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">Minutes a day?</div>
-                  <select id="plan-builder-time" class="input" style="font-size:13px; text-align:left;">
-                    <option value="5-10 minutes" ${((state.answers && state.answers.time) || '').indexOf('5') !== -1 ? 'selected' : ''}>5-10 minutes</option>
-                    <option value="15-20 minutes" ${((state.answers && state.answers.time) || '').indexOf('15') !== -1 ? 'selected' : ''}>15-20 minutes</option>
-                    <option value="20+ minutes" ${((state.answers && state.answers.time) || '').indexOf('20') !== -1 ? 'selected' : ''}>20+ minutes</option>
-                  </select>
-                </div>
-                <div>
-                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">One small thing that feels kind? (your gentle win)</div>
-                  <input id="plan-builder-win" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. tea on the balcony, no phone" value="${((state.answers && state.answers.extended1) || '').replace(/"/g, '&quot;')}">
-                </div>
-                <div>
-                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What usually gets in the way?</div>
-                  <input id="plan-builder-obstacles" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. late-night scrolling" value="${((state.answers && state.answers.extended2) || '').replace(/"/g, '&quot;')}">
-                </div>
-                <div>
-                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">Anything else on your mind? (optional)</div>
-                  <input id="plan-builder-insight" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. I want more quiet mornings" value="${((state.answers && state.answers.insight) || '').replace(/"/g, '&quot;')}">
-                </div>
-                <button class="btn primary" style="font-size:13px; padding:10px 16px;" onclick="savePlanBuilder()">Build my week from this</button>
-              </div>
-            </div>
             <div class="dash-card mb-16" style="overflow:hidden; padding:0;">
               <div class="plans-header-shimmer" style="background:linear-gradient(135deg, rgba(224,122,95,0.22), rgba(244,162,97,0.10) 45%, rgba(167,139,250,0.16)); padding:20px 22px 18px; border-bottom:1px solid var(--theme-card-border);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
@@ -2526,6 +2848,83 @@
         `;
         return;
       }
+    }
+
+    function selectPresetGoal(val) {
+      const el = document.getElementById("goal-input");
+      if (el) el.value = val;
+    }
+    function selectPresetChallenge(val) {
+      const el = document.getElementById("challenge-input");
+      if (el) el.value = val;
+    }
+    function handleGoal() {
+      const el = document.getElementById("goal-input");
+      const value = (el && el.value.trim()) || "Feeling more calm and steady";
+      state.answers = state.answers || {};
+      state.answers.goal = value;
+      saveState();
+      goToStepKey("challenge");
+    }
+    function handleChallenge() {
+      const el = document.getElementById("challenge-input");
+      const value = (el && el.value.trim()) || "Overwhelm from busy routines";
+      state.answers.challenge = value;
+      saveState();
+      goToStepKey("time");
+    }
+    function handleTime(choice) {
+      if (!choice) {
+        alert("Please choose the amount of time that feels doable for you.");
+        return;
+      }
+      state.answers = state.answers || {};
+      state.answers.time = choice;
+      saveState();
+      goToStepKey("insight");
+    }
+    function handleInsight() {
+      const el = document.getElementById("insight-input");
+      const value = (el && el.value.trim()) || "";
+      state.answers = state.answers || {};
+      state.answers.insight = value;
+      saveState();
+      goToStepKey("extended1");
+    }
+    function handleExtended1() {
+      const el = document.getElementById("extended1-input");
+      const value = (el && el.value.trim()) || "";
+      state.answers = state.answers || {};
+      state.answers.extended1 = value;
+      saveState();
+      goToStepKey("extended2");
+    }
+    function handleExtended2() {
+      const el = document.getElementById("extended2-input");
+      const value = (el && el.value.trim()) || "";
+      state.answers = state.answers || {};
+      state.answers.extended2 = value;
+      saveState();
+      goToStepKey("email");
+    }
+    function handleEmail() {
+      const el = document.getElementById("email-input");
+      const value = (el && el.value.trim()) || "";
+      if (!value || value.indexOf("@") === -1) {
+        alert("Please enter a valid email address so we can save your plan.");
+        return;
+      }
+      state.email = value;
+      saveState();
+      try {
+        fetch("https://peakora-api.peakora.workers.dev/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: value, source: "onboarding" }),
+          keepalive: true
+        }).catch(() => {});
+      } catch (e) {}
+      goToStepKey("processing");
     }
 
     /* STEP HANDLER HELPERS */
@@ -3156,12 +3555,13 @@
       if (window.PeakoraTracker) PeakoraTracker.track("onboarding_restarted", {});
       clearState();
       saveState();
-      goToStepKey('home');
+      enterOnboarding();
     };
 
     window.clearAllDataAndReset = function() {
       if (!confirm("Clear ALL Peakora data on this device (plan, moods, settings, membership) and start completely fresh?")) return;
       if (window.PeakoraTracker) PeakoraTracker.track("local_data_cleared", {});
+      try { sessionStorage.setItem("peakora_fresh_start", "1"); } catch (e) {}
       localStorage.clear();
       location.reload();
     };
@@ -4921,43 +5321,6 @@ window.appendInsightPlusCards = function() {
       window._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2600);
     };
 
-    /* PLAN BUILDER - three honest questions shape the next 7 days.
-       Answers feed generatePlanFromAnswers directly, so the plan is built
-       from the person's words instead of fallback defaults. */
-    window.savePlanBuilder = function() {
-      try {
-        const g = ((document.getElementById('plan-builder-goal') || {}).value || '').trim();
-        const c = ((document.getElementById('plan-builder-challenge') || {}).value || '').trim();
-        const t = ((document.getElementById('plan-builder-time') || {}).value || '').trim();
-        const w = ((document.getElementById('plan-builder-win') || {}).value || '').trim();
-        const o = ((document.getElementById('plan-builder-obstacles') || {}).value || '').trim();
-        const n = ((document.getElementById('plan-builder-insight') || {}).value || '').trim();
-        if (state.plan && isPeakoraPlusActive()) {
-          const list = getPastPlans();
-          const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          list.unshift({
-            title: '7-Day Reset Plan (' + dateStr + ')',
-            date: dateStr,
-            goal: (state.answers && state.answers.goal) || 'Personal Reset',
-            days: state.plan
-          });
-          localStorage.setItem('peakora_past_plans', JSON.stringify(list));
-        }
-        saveLastWeekInsights();
-        state.answers = state.answers || {};
-        if (g) state.answers.goal = g;
-        if (c) state.answers.challenge = c;
-        if (t) state.answers.time = t;
-        if (w) state.answers.extended1 = w;
-        if (o) state.answers.extended2 = o;
-        if (n) state.answers.insight = n;
-        state.plan = generatePlanFromAnswers(state.answers);
-        state.planStartDate = new Date().toISOString().slice(0, 10);
-        saveState();
-        if (typeof showToastNotification === 'function') showToastNotification('Your next 7 days are shaped around your words - Day 1 starts today');
-        renderStep();
-      } catch (e) {}
-    };
     /* START A BRAND NEW PLAN - archive the old week, then fresh onboarding */
     window.startNewPlan = function() {
       if (state.plan && isPeakoraPlusActive()) {
@@ -4975,9 +5338,9 @@ window.appendInsightPlusCards = function() {
       clearState();
       saveState();
       if (typeof showToastNotification === 'function') {
-        showToastNotification(isPeakoraPlusActive() ? 'Your old week is safely saved. Let us build the next one, together.' : 'Fresh start - let us shape your next 7 days.');
+        showToastNotification(isPeakoraPlusActive() ? 'Your old week is safely saved. Let us shape the next one, together.' : 'Fresh start - let us shape your next 7 days.');
       }
-      goToStepKey('home');
+      enterOnboarding();
     };
 
     /* LEGAL & DODO MERCHANT COMPLIANCE MODAL HANDLER */
@@ -5263,9 +5626,23 @@ window.appendInsightPlusCards = function() {
       scheduleDailyReminder();
       maybeShowWeeklyDigest();
 
-      // Onboarding shows ONLY on first visit (no state at all).
-      // On any refresh with existing state (completed OR mid-onboarding),
-      // go straight to the dashboard - never force onboarding on refresh.
+      // Onboarding shows ONLY on explicit entry: fresh arrival from the
+      // landing page (?fresh=1 with no plan yet), a full data reset, restart,
+      // or a new plan. Plain boot and every refresh go to the dashboard -
+      // never an empty card.
+      let freshEntry = false;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        freshEntry = params.get('fresh') === '1' && !state.plan;
+        if (!freshEntry && sessionStorage.getItem("peakora_fresh_start") === "1") {
+          freshEntry = !state.plan;
+          sessionStorage.removeItem("peakora_fresh_start");
+        }
+      } catch (e) {}
+      if (freshEntry) {
+        enterOnboarding();
+        return;
+      }
       goToStepKey("home");
       return;
 
@@ -5276,7 +5653,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=65").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=66").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
