@@ -399,6 +399,40 @@ async function handleFeedback(request, env) {
   return json({ success: true });
 }
 
+async function ensureFeedbackApprovedColumn(env) {
+  try {
+    await env.DB.prepare('ALTER TABLE feedback ADD COLUMN approved INTEGER DEFAULT 0').run();
+  } catch (e) {
+    // Column already exists on every call after the first - safe to ignore.
+  }
+}
+
+/* Public wall of approved user words for the landing page. Only approved
+   messages, newest first, no emails - anonymous by design. */
+async function handleFeedbackWall(request, env) {
+  await ensureFeedbackApprovedColumn(env);
+  const rows = await env.DB.prepare(
+    "SELECT message, timestamp FROM feedback WHERE approved = 1 ORDER BY timestamp DESC LIMIT 12"
+  ).all().catch(() => ({ results: [] }));
+  const items = (rows.results || [])
+    .filter(r => r && r.message && String(r.message).trim().length > 0)
+    .map(r => ({ message: String(r.message).slice(0, 280), timestamp: r.timestamp || null }));
+  return json({ success: true, items });
+}
+
+/* Admin moderation for the wall: { id, approved: 0|1 }. */
+async function handleFeedbackApprove(request, env) {
+  let body;
+  try { body = await readJson(request); }
+  catch { return json({ success: false, error: 'Invalid JSON body' }, 400); }
+  const id = String(body.id || '').slice(0, 64);
+  const approved = body.approved ? 1 : 0;
+  if (!id) return json({ success: false, error: 'Feedback id required' }, 400);
+  await ensureFeedbackApprovedColumn(env);
+  await env.DB.prepare('UPDATE feedback SET approved = ? WHERE id = ?').bind(approved, id).run();
+  return json({ success: true, id, approved });
+}
+
 async function handleEvent(request, env) {
   const body = await readJson(request);
   const action = (body.action || '').slice(0, 80);
@@ -833,6 +867,11 @@ export default {
         response = await handleSubscribe(request, env);
       } else if (path === '/feedback' && method === 'POST') {
         response = await handleFeedback(request, env);
+      } else if (path === '/feedback/wall' && method === 'GET') {
+        response = await handleFeedbackWall(request, env);
+      } else if (path === '/admin/feedback/approve' && method === 'POST') {
+        if (!requireAdmin(request, env)) response = json({ success: false, error: 'Admin token required' }, 403);
+        else response = await handleFeedbackApprove(request, env);
       } else if (path === '/event' && method === 'POST') {
         response = await handleEvent(request, env);
       } else if (path === '/stats' && method === 'GET') {
