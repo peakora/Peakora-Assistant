@@ -1958,7 +1958,7 @@
 
             <div class="dash-card mb-16" style="padding:20px 22px;">
               <div class="dash-card-title" style="margin:0 0 4px;">Shape your next 7 days</div>
-              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px;">Three honest lines. Your words build the plan - and last week's check-ins shape it further.</p>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px;">Six honest lines. Your words build the plan - and last week's check-ins shape it further.</p>
               <div style="display:flex; flex-direction:column; gap:10px;">
                 <div>
                   <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What are you reaching for?</div>
@@ -1975,6 +1975,18 @@
                     <option value="15-20 minutes" ${((state.answers && state.answers.time) || '').indexOf('15') !== -1 ? 'selected' : ''}>15-20 minutes</option>
                     <option value="20+ minutes" ${((state.answers && state.answers.time) || '').indexOf('20') !== -1 ? 'selected' : ''}>20+ minutes</option>
                   </select>
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">One small thing that feels kind? (your gentle win)</div>
+                  <input id="plan-builder-win" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. tea on the balcony, no phone" value="${((state.answers && state.answers.extended1) || '').replace(/"/g, '&quot;')}">
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What usually gets in the way?</div>
+                  <input id="plan-builder-obstacles" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. late-night scrolling" value="${((state.answers && state.answers.extended2) || '').replace(/"/g, '&quot;')}">
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">Anything else on your mind? (optional)</div>
+                  <input id="plan-builder-insight" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. I want more quiet mornings" value="${((state.answers && state.answers.insight) || '').replace(/"/g, '&quot;')}">
                 </div>
                 <button class="btn primary" style="font-size:13px; padding:10px 16px;" onclick="savePlanBuilder()">Build my week from this</button>
               </div>
@@ -4917,6 +4929,9 @@ window.appendInsightPlusCards = function() {
         const g = ((document.getElementById('plan-builder-goal') || {}).value || '').trim();
         const c = ((document.getElementById('plan-builder-challenge') || {}).value || '').trim();
         const t = ((document.getElementById('plan-builder-time') || {}).value || '').trim();
+        const w = ((document.getElementById('plan-builder-win') || {}).value || '').trim();
+        const o = ((document.getElementById('plan-builder-obstacles') || {}).value || '').trim();
+        const n = ((document.getElementById('plan-builder-insight') || {}).value || '').trim();
         if (state.plan && isPeakoraPlusActive()) {
           const list = getPastPlans();
           const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -4933,6 +4948,9 @@ window.appendInsightPlusCards = function() {
         if (g) state.answers.goal = g;
         if (c) state.answers.challenge = c;
         if (t) state.answers.time = t;
+        if (w) state.answers.extended1 = w;
+        if (o) state.answers.extended2 = o;
+        if (n) state.answers.insight = n;
         state.plan = generatePlanFromAnswers(state.answers);
         state.planStartDate = new Date().toISOString().slice(0, 10);
         saveState();
@@ -5258,7 +5276,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=64").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=65").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
