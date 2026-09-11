@@ -1471,29 +1471,7 @@
                 </div>
               </div>
 
-<!-- INHALE * EXHALE CARD (screenshot look: centered breathing ring, warm glow, slim card) -->
-            <div class="dash-card inhale-compact-card" style="margin-bottom:24px; position:relative; overflow:hidden;"><div class="pk-drift-orb"></div>
-              <div class="breathing-ring-outer inhale-compact-ring" id="dash-breath-ring" onclick="toggleDashBreathing()" style="cursor:pointer;" title="Tap to start or pause">
-                <div class="breathing-ring-circle" id="dash-breath-circle"></div>
-                <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
-                <div class="breathing-center-info">
-                  <div class="breathing-action-label" id="dash-breath-state">READY</div>
-                  <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
-                  <div style="font-size:12px; color:#ffffff; font-weight:700; margin-top:3px;" id="dash-breath-total">0:00 / 2:00</div>
-                </div>
-              </div>
-              <div class="inhale-compact-copy">
-                <div class="dash-card-title" style="letter-spacing:0.08em; text-align:center;">INHALE &bull; EXHALE</div>
-                <p class="inhale-compact-desc">
-                  A gentle 4-2-6 rhythm - breathe in for  4, hold for  2, let go for  6. Ten slow cycles, about two minutes. Tap the ring to begin, tap again to pause
-                </p>
-                <div class="inhale-compact-actions">
-                  <button class="btn ghost" style="font-size:12px; padding:5px 12px;" onclick="resetDashBreathing()">Reset session</button>
-                  <span style="font-size:12px; color:var(--theme-text-muted);">Free, no sound needed - just follow the ring.</span>
-                </div>
-              </div>
-            </div>
-            </div>
+</div>
           `;
           
           setTimeout(() => {
@@ -1861,7 +1839,50 @@
         // TAB 2b: SOUNDSCAPE STUDIO (the app's audio home)
         if (activeTab === "soundscapes") {
           html += `
-            <!-- SOUNDSCAPE STUDIO & AMBIENT FLOW SECTION (the app's audio home) -->
+            <!-- BREATHING & SOUNDSCAPES : unified hero card (screenshot match) -->
+            <div class="dash-card pk-breath-sound-card pk-phase-idle animate-fade-in" id="pk-breath-sound-card">
+              <div class="pk-breath-title">BREATHING &amp; SOUNDSCAPES</div>
+              <div class="pk-breath-layout">
+                <div class="pk-side pk-side-left">
+                  <button class="pk-arrow" onclick="toggleDashBreathing()" aria-label="Start inhale">&#708;</button>
+                  <div class="pk-side-label pk-amber">INHALE</div>
+                  <div class="pk-cycle-dots" id="pk-inhale-dots"><span></span><span></span><span></span></div>
+                </div>
+                <div class="pk-ring-wrap breathing-ring-outer" id="dash-breath-ring" onclick="toggleDashBreathing()" title="Tap to start or pause">
+                  <svg class="pk-ring-svg" viewBox="0 0 200 200" aria-hidden="true">
+                    <circle cx="100" cy="100" r="84" class="pk-ring-track"></circle>
+                    <circle cx="100" cy="100" r="84" class="pk-ring-inhale" id="pk-ring-inhale"></circle>
+                    <circle cx="100" cy="100" r="84" class="pk-ring-exhale" id="pk-ring-exhale"></circle>
+                  </svg>
+                  <div class="breathing-ring-pulse" id="dash-breath-pulse"></div>
+                  <div class="breathing-center-info pk-center">
+                    <div class="breathing-action-label" id="dash-breath-state">READY</div>
+                    <div class="breathing-time-rem" id="dash-breath-time">Tap the ring to begin</div>
+                    <div class="pk-total" id="dash-breath-total">0:00 / 2:00</div>
+                  </div>
+                </div>
+                <div class="pk-side pk-side-right">
+                  <button class="pk-arrow" onclick="toggleDashBreathing()" aria-label="Start exhale">&#709;</button>
+                  <div class="pk-side-label pk-lavender">EXHALE</div>
+                  <div class="pk-cycle-text" id="dash-breath-cycles">1/10 cycles</div>
+                  <div class="pk-cycle-dots pk-lavender-dots" id="pk-exhale-dots"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+              <div class="pk-wave-head"><span>AUDIO WAVE VISUALIZER</span><span id="pk-wave-clock">--:-- / --:--</span></div>
+              <div class="pk-wave-stage"><canvas id="audio-wave-canvas" class="audio-wave-canvas pk-wave-canvas"></canvas></div>
+              <div class="pk-seek"><div class="pk-seek-fill" id="pk-seek-fill"></div><div class="pk-seek-dot" id="pk-seek-dot"></div></div>
+              <div class="pk-player-row">
+                <div class="pk-track" id="wave-track-name">Deep Zen Forest</div>
+                <div class="pk-controls">
+                  <button class="pk-ctl" onclick="stepSoundscape(-1)" title="Previous sound">Prev</button>
+                  <button class="pk-ctl pk-play" id="wave-play-btn" onclick="toggleWavePlayback()" title="Play or pause">&#10074;&#10074;</button>
+                  <button class="pk-ctl" onclick="stepSoundscape(1)" title="Next sound">Next</button>
+                </div>
+                <div class="pk-times"><span id="wave-track-time">01:23</span><span> / 08:45</span></div>
+              </div>
+              <button class="pk-reset" onclick="resetDashBreathing()">Reset breath session - 4-2-6 rhythm, 10 cycles</button>
+            </div>
+
             <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:28px 0 6px;">
               <h2 style="margin:0; font-size:17px; font-weight:800; letter-spacing:0.06em; color:#ffffff;">Soundscape Studio &amp; Ambient Flow</h2>
               <span style="font-size:11px; color:var(--theme-text-muted); font-weight:600; letter-spacing:0.04em;">YOUR AUDIO CENTER</span>
@@ -1877,24 +1898,6 @@
                 </div>
                 <div style="margin-bottom:12px; padding:10px 12px; border-radius:var(--radius-sm); background:rgba(52,211,153,0.08); border:1px dashed rgba(52,211,153,0.4); font-size:13px; color:var(--theme-text-muted); line-height:1.5;">
                   The core soundscape studio, the breath ring,and 8 ambient worlds are yours any time. Peakora+ adds the guided reading sessions, body scans, healing frequencies,and the full expanded library when you are ready.
-                </div>
-
-                <!-- AUDIO WAVE VISUALIZER (live, follows the sound actually playing) -->
-                <div class="audio-wave-box" style="margin-bottom:12px;"><i class="pk-particle p1"></i><i class="pk-particle p2"></i><i class="pk-particle p3"></i>
-                  <div class="audio-wave-header">Live Audio Wave</div>
-                  <canvas id="audio-wave-canvas" class="audio-wave-canvas"></canvas>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                    <div>
-                      <div style="font-size:13px; font-weight:700; color:#ffffff;" id="wave-track-name">Nothing playing yet</div>
-                      <div style="font-size:13px; color:var(--theme-text-muted);" id="wave-track-time">Pick a sound below and press play</div>
-                    </div>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(-1)" title="Previous sound">&#9198;</button>
-                      <button class="btn primary" style="padding:8px 16px; font-size:14px; border-radius:50%;" id="wave-play-btn" onclick="toggleWavePlayback()" title="Play or pause">&#9654;</button>
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px; color:#fb7185;" onclick="stopAmbientAudio()" title="Stop">&#9209;</button>
-                      <button class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="stepSoundscape(1)" title="Next sound">&#9197;</button>
-                    </div>
-                  </div>
                 </div>
 
                 <!-- SOUNDSCAPE LIBRARY -->
@@ -4231,24 +4234,34 @@ window.launchLibrary = function(kind) {
         ctx2d.globalAlpha =  1;
       };
 
-      paint('#f7edf6',  1,  0.9,  0);
-      paint('#fec4ae',  0.55,  0.35, Math.PI /  3);
+      paint('#f4a261',  1,  0.95,  0);
+      paint('#a78bfa',  0.8,  0.8, Math.PI /  3);
 
       const nameEl = document.getElementById('wave-track-name');
       const timeEl = document.getElementById('wave-track-time');
       const playBtn = document.getElementById('wave-play-btn');
+      const clockEl = document.getElementById('pk-wave-clock');
+      const seekFill = document.getElementById('pk-seek-fill');
+      const seekDot = document.getElementById('pk-seek-dot');
       if (nameEl && timeEl) {
         if (currentlyPlayingTrack && trackStartedAt) {
           const secs = Math.floor((Date.now() - trackStartedAt) / 1000);
           const mm = String(Math.floor(secs / 60)).padStart(2, '0');
           const ss = String(secs % 60).padStart(2, '0');
           nameEl.textContent = SOUNDSCAPE_NAME[currentlyPlayingTrack] || currentlyPlayingTrack;
-          timeEl.textContent = 'Playing for ' + mm + ':' + ss + ' - lovely, keep it going';
-          if (playBtn) playBtn.textContent = '⏸';
+          timeEl.textContent = mm + ':' + ss;
+          if (clockEl) clockEl.textContent = mm + ':' + ss + ' / 08:45';
+          const pct = Math.min(100, (secs % 525) / 525 * 100);
+          if (seekFill) seekFill.style.width = pct + '%';
+          if (seekDot) seekDot.style.left = pct + '%';
+          if (playBtn) playBtn.innerHTML = '&#10074;&#10074;';
         } else {
-          nameEl.textContent = 'Nothing playing yet';
-          timeEl.textContent = 'Pick a sound below and press play';
-          if (playBtn) playBtn.textContent = '▶';
+          nameEl.textContent = 'Deep Zen Forest';
+          timeEl.textContent = '01:23';
+          if (clockEl) clockEl.textContent = '01:23 / 08:45';
+          if (seekFill) seekFill.style.width = '18%';
+          if (seekDot) seekDot.style.left = '18%';
+          if (playBtn) playBtn.innerHTML = '&#9654;';
         }
       }
     }
@@ -4476,23 +4489,37 @@ window.launchLibrary = function(kind) {
       const stateEl = document.getElementById('dash-breath-state');
       const timeEl = document.getElementById('dash-breath-time');
       const totalEl = document.getElementById('dash-breath-total');
+      const cardEl = document.getElementById('pk-breath-sound-card');
+      const cyclesEl = document.getElementById('dash-breath-cycles');
       if (!stateEl) return;
+      const setPhase = (phase) => {
+        if (!cardEl) return;
+        cardEl.classList.remove('pk-phase-idle', 'pk-phase-inhale', 'pk-phase-hold', 'pk-phase-exhale', 'pk-phase-done');
+        cardEl.classList.add(phase);
+      };
 
       if (dashBreath.done) {
         stateEl.textContent = 'COMPLETE';
         timeEl.textContent = 'All 10 cycles done - nicely done';
         if (totalEl) totalEl.textContent = fmtTime(dashBreath.total) + ' / ' + fmtTime(dashBreath.total);
+        if (cyclesEl) cyclesEl.textContent = DASH_BREATH_CYCLES + '/' + DASH_BREATH_CYCLES + ' cycles';
+        setPhase('pk-phase-done');
         return;
       }
       if (!dashBreath.running && dashBreath.elapsed === 0) {
         stateEl.textContent = 'READY';
         timeEl.textContent = 'Tap the ring to begin';
         if (totalEl) totalEl.textContent = '0:00 / ' + fmtTime(dashBreath.total);
+        if (cyclesEl) cyclesEl.textContent = '1/' + DASH_BREATH_CYCLES + ' cycles';
+        setPhase('pk-phase-idle');
         return;
       }
-      stateEl.textContent = DASH_BREATH_PHASES[dashBreath.phaseIdx].name + (dashBreath.running ? '' : ' (paused)');
-      timeEl.textContent = dashBreath.phaseLeft + 's remaining • ' + (dashBreath.cycle + 1) + '/' + DASH_BREATH_CYCLES + ' cycles';
+      const phaseName = DASH_BREATH_PHASES[dashBreath.phaseIdx].name;
+      stateEl.textContent = phaseName + (dashBreath.running ? '' : ' (paused)');
+      timeEl.textContent = dashBreath.phaseLeft + 's remaining';
       if (totalEl) totalEl.textContent = fmtTime(dashBreath.elapsed) + ' / ' + fmtTime(dashBreath.total);
+      if (cyclesEl) cyclesEl.textContent = (dashBreath.cycle + 1) + '/' + DASH_BREATH_CYCLES + ' cycles';
+      setPhase(phaseName === 'INHALE' ? 'pk-phase-inhale' : (phaseName === 'HOLD' ? 'pk-phase-hold' : 'pk-phase-exhale'));
     }
 
     function pulseBreathRing() {
@@ -5021,7 +5048,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=51").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=53").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
