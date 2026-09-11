@@ -1956,6 +1956,29 @@
               <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Your current 7-day reset lives here, along with any weeks you've saved for later.</p>
             </div>
 
+            <div class="dash-card mb-16" style="padding:20px 22px;">
+              <div class="dash-card-title" style="margin:0 0 4px;">Shape your next 7 days</div>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin:0 0 12px;">Three honest lines. Your words build the plan - and last week's check-ins shape it further.</p>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What are you reaching for?</div>
+                  <input id="plan-builder-goal" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. calmer evenings" value="${((state.answers && state.answers.goal) || '').replace(/"/g, '&quot;')}">
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">What has been heavy lately?</div>
+                  <input id="plan-builder-challenge" class="input" style="min-height:0; font-size:13px; text-align:left;" placeholder="e.g. restless mind at night" value="${((state.answers && state.answers.challenge) || '').replace(/"/g, '&quot;')}">
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--theme-text-muted); margin-bottom:4px;">Minutes a day?</div>
+                  <select id="plan-builder-time" class="input" style="font-size:13px; text-align:left;">
+                    <option value="5-10 minutes" ${((state.answers && state.answers.time) || '').indexOf('5') !== -1 ? 'selected' : ''}>5-10 minutes</option>
+                    <option value="15-20 minutes" ${((state.answers && state.answers.time) || '').indexOf('15') !== -1 ? 'selected' : ''}>15-20 minutes</option>
+                    <option value="20+ minutes" ${((state.answers && state.answers.time) || '').indexOf('20') !== -1 ? 'selected' : ''}>20+ minutes</option>
+                  </select>
+                </div>
+                <button class="btn primary" style="font-size:13px; padding:10px 16px;" onclick="savePlanBuilder()">Build my week from this</button>
+              </div>
+            </div>
             <div class="dash-card mb-16" style="overflow:hidden; padding:0;">
               <div class="plans-header-shimmer" style="background:linear-gradient(135deg, rgba(224,122,95,0.22), rgba(244,162,97,0.10) 45%, rgba(167,139,250,0.16)); padding:20px 22px 18px; border-bottom:1px solid var(--theme-card-border);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
@@ -4886,6 +4909,37 @@ window.appendInsightPlusCards = function() {
       window._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2600);
     };
 
+    /* PLAN BUILDER - three honest questions shape the next 7 days.
+       Answers feed generatePlanFromAnswers directly, so the plan is built
+       from the person's words instead of fallback defaults. */
+    window.savePlanBuilder = function() {
+      try {
+        const g = ((document.getElementById('plan-builder-goal') || {}).value || '').trim();
+        const c = ((document.getElementById('plan-builder-challenge') || {}).value || '').trim();
+        const t = ((document.getElementById('plan-builder-time') || {}).value || '').trim();
+        if (state.plan && isPeakoraPlusActive()) {
+          const list = getPastPlans();
+          const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          list.unshift({
+            title: '7-Day Reset Plan (' + dateStr + ')',
+            date: dateStr,
+            goal: (state.answers && state.answers.goal) || 'Personal Reset',
+            days: state.plan
+          });
+          localStorage.setItem('peakora_past_plans', JSON.stringify(list));
+        }
+        saveLastWeekInsights();
+        state.answers = state.answers || {};
+        if (g) state.answers.goal = g;
+        if (c) state.answers.challenge = c;
+        if (t) state.answers.time = t;
+        state.plan = generatePlanFromAnswers(state.answers);
+        state.planStartDate = new Date().toISOString().slice(0, 10);
+        saveState();
+        if (typeof showToastNotification === 'function') showToastNotification('Your next 7 days are shaped around your words - Day 1 starts today');
+        renderStep();
+      } catch (e) {}
+    };
     /* START A BRAND NEW PLAN - archive the old week, then fresh onboarding */
     window.startNewPlan = function() {
       if (state.plan && isPeakoraPlusActive()) {
@@ -5204,7 +5258,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=62").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=63").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
