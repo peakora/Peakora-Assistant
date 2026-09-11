@@ -820,6 +820,7 @@
           if (ins && ins.count > 0) {
             continuityLine = " Last week you checked in " + ins.count + " time" + (ins.count > 1 ? "s" : "") + ", mostly feeling " + ins.dominant + " - this week builds on that instead of starting blank.";
             if (ins.topPractice) brightestLine = " Your brightest moments paired with " + ins.topPractice + " - keep that close this week.";
+            if (ins.reflectionQuote) brightestLine += " Your own words from last week: \"" + ins.reflectionQuote + "\"";
             if (profile === "balance") {
               if (ins.dominant === "anxious" || ins.dominant === "heavy") profile = "calm";
               else if (ins.dominant === "energized") profile = "energy";
@@ -2312,6 +2313,12 @@
               <h1 class="dash-welcome-h1">Your Plans & Past Weeks</h1>
               <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">Your current 7-day reset lives here, along with any weeks you've saved for later.</p>
             </div>
+            ${planWeekFinished() ? `
+            <div class="dash-card" style="margin-bottom:16px; border-color:rgba(52,211,153,0.45); background:linear-gradient(135deg, rgba(52,211,153,0.10), rgba(244,162,97,0.06)); text-align:center; padding:18px;">
+              <div style="font-size:15px; font-weight:800; color:#ffffff; margin-bottom:4px;">That week is complete - nicely done.</div>
+              <div style="font-size:12px; color:var(--theme-text-muted); margin-bottom:12px;">${isPeakoraPlusActive() ? 'It is saved to your history, and what you logged will shape the next one.' : 'Answer a few questions and your check-ins will shape the next one.'}</div>
+              <button class="btn primary" style="font-size:13px; padding:10px 22px;" onclick="startNewPlan()">Shape next week</button>
+            </div>` : ''}
 
             <div class="dash-card mb-16" style="overflow:hidden; padding:0;">
               <div class="plans-header-shimmer" style="background:linear-gradient(135deg, rgba(224,122,95,0.22), rgba(244,162,97,0.10) 45%, rgba(167,139,250,0.16)); padding:20px 22px 18px; border-bottom:1px solid var(--theme-card-border);">
@@ -3681,13 +3688,18 @@
         Object.keys(famCount).forEach(f => { if (famCount[f] > best) { best = famCount[f]; dominant = f; } });
         const PRACTICE = { anxious: 'slow breathing + a soundscape', heavy: 'gentle movement or a short walk', hopeful: 'a gratitude note', energized: 'journaling + a mid-day reset', neutral: 'rest + a morning breathing round' };
         const reflections = (typeof getReflections === 'function') ? getReflections() : [];
+        let quote = null;
+        try {
+          const withText = reflections.filter(r => r && (r.text || r.quote || r.note));
+          if (withText.length) quote = String(withText[withText.length - 1].text || withText[withText.length - 1].quote || withText[withText.length - 1].note).slice(0, 90);
+        } catch (e) {}
         let breathCount = 0;
         try { breathCount = (window.PeakoraTracker && PeakoraTracker.getSummary().counts.breath_session_completed) || 0; } catch (e) {}
         return {
           count: checkins.length, dominant: dominant,
           avgEnergy: eN ? Math.round(eSum / eN) : null,
           topPractice: PRACTICE[dominant] || null,
-          reflections: reflections.length, breathSessions: breathCount,
+          reflections: reflections.length, reflectionQuote: quote, breathSessions: breathCount,
           goal: (state.answers && state.answers.goal) || null,
           savedAt: new Date().toISOString().slice(0, 10)
         };
@@ -3701,7 +3713,9 @@
     }
     function maybeAutoArchiveFinishedPlan() {
       try {
-        if (!isPeakoraPlusActive() || !planWeekFinished()) return;
+        if (!planWeekFinished()) return;
+        saveLastWeekInsights();
+        if (!isPeakoraPlusActive()) return;
         const goal = (state.answers && state.answers.goal) || 'Personal Reset';
         const key = state.planStartDate + '|' + goal;
         if (localStorage.getItem('peakora_last_autoarchived') === key) return;
@@ -5653,7 +5667,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=66").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=67").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
