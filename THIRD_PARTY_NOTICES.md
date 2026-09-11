@@ -32,6 +32,10 @@ Peakora in-app audio draws on these open-source/public-domain sources. License t
 ## MusicLFiles ambient music (vendored: assets/vendor/music/, converted ogg to mp3 for Safari)
 - Creative Commons Attribution 4.0 (credit kept here as required): Placid Ambient (https://commons.wikimedia.org/wiki/File:Placid_Ambient_by_MusicLFiles.ogg) and Spiritual Ambient (https://commons.wikimedia.org/wiki/File:Spiritual_Ambient_by_MusicLFiles.ogg) by MusicLFiles (https://filmmusic.io/artists/musiclfiles). Used for: Deep Music meditation loops.
 
+## openclaw-agents wellness-coach (inspiration only, no vendored text)
+- MIT License, Copyright (c) 2025 OpenClaw Community (https://github.com/BaskaranElilan/openclaw-agents, agents/healthcare/wellness-coach/SOUL.md).
+- Used for: coaching techniques only (data-grounded pattern readouts, habit stacking, motivational-interviewing tone, burnout flags, crisis safety rails). All Peakora Coach copy is original, rewritten for Peakora voice and wired to real member data. License requires keeping this notice, which this row satisfies.
+
 ## Structural benchmarks (NOT copied, NOT vendored
 - HeYLinda (https://github.com/heyLindaOSS/heylinda, AGPL,: used only as a structural benchmark for how a calm-like app organizes its library; no assets/copy/text taken.
 - Medito (AGPL): same benchmark-only use;no assets/copy/text taken.

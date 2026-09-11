@@ -1552,6 +1552,10 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     Settings
                   </button>
+                  <button class="dash-nav-btn ${activeTab === 'coach' ? 'active' : ''}" onclick="switchDashTab('coach')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    Coach
+                  </button>
                 </div>
               </div>
 
@@ -2558,7 +2562,7 @@
           const freeFeatures = [
             ["Personalized 7-Day Reset Plan", "custom daily routines shaped around your answers"],
             ["Daily Mood Check-In & Energy Tracking", "watch honest patterns build over time"],
-            ["Inhale Breathing Ring", "a 4-4-4 paced breathing guide that settles your nervous system"],
+            ["Inhale Breathing Ring", "a 4-2-6 paced breathing guide that settles your nervous system"],
             ["Micro-Journal & Reflection Space", "offload mental chatter, keep what matters"],
             ["Daily Focus & Intention Anchors", "one clear priority, every morning"],
             ["Mood & Energy Analytics", "visualize emotional trends and energy cycles"],
@@ -2684,6 +2688,32 @@
         }
 
         // TAB 7: UNIFIED SETTINGS COMPONENT
+        // TAB: COACH (wellness companion grounded in the member's real week:
+        // check-ins, plan day, breath rounds. Rule-based, offline, no backend.)
+        if (activeTab === "coach") {
+          html += `
+            <div class="dash-welcome" style="margin-bottom:16px;">
+              <h1 class="dash-welcome-h1">Coach</h1>
+              <p style="font-size:12px; color:var(--theme-text-muted); margin-top:4px;">A companion that reads your real week - check-ins, plan progress, breath rounds - and answers from that, not from a script.</p>
+            </div>
+            <div class="dash-card pk-coach-card">
+              <div class="pk-coach-log" id="pk-coach-log" aria-live="polite"></div>
+              <div class="pk-coach-chips">
+                <button class="pk-coach-chip" onclick="coachAsk('How is my week looking?')">How is my week looking?</button>
+                <button class="pk-coach-chip" onclick="coachAsk('Low energy today')">Low energy today</button>
+                <button class="pk-coach-chip" onclick="coachAsk('Calm me down')">Calm me down</button>
+                <button class="pk-coach-chip" onclick="coachAsk('Celebrate with me')">Celebrate with me</button>
+              </div>
+              <div class="pk-coach-inputrow">
+                <input id="pk-coach-input" class="input" style="min-height:0; text-align:left;" placeholder="Say anything..." onkeydown="if(event.key==='Enter'){coachSend();}">
+                <button class="btn primary" style="font-size:13px; padding:10px 18px; flex-shrink:0;" onclick="coachSend()">Send</button>
+              </div>
+              <div class="pk-coach-safety">I am a supportive guide inside your app, not a medical professional. Nothing you write here leaves this device except anonymous usage pings.</div>
+            </div>
+          `;
+          setTimeout(() => { if (typeof coachBoot === 'function') coachBoot(); }, 60);
+        }
+
         if (activeTab === "settings") {
           const isAutoTheme = localStorage.getItem("peakora_auto_theme") === "true";
           const notifDaily = localStorage.getItem("peakora_notif_daily") !== "false";
@@ -5466,6 +5496,102 @@ window.appendInsightPlusCards = function() {
 // DASHBOARD HELPER FUNCTIONS (SCREENSHOTS 1 & 2)
     window.currentDashTab = "home";
 
+    /* WELLNESS COACH - data-grounded companion (pattern adapted from the MIT
+       openclaw-agents wellness-coach agent; rewritten for Peakora voice and
+       wired to real member data instead of chat channels). Rule-based and
+       offline: moods, plan day, breath rounds shape every answer. */
+    function coachSnapshot() {
+      let ins = null;
+      try { ins = (typeof collectWeekInsights === 'function') ? collectWeekInsights() : null; } catch (e) {}
+      let dayIdx = 0, dayTotal = 7, goal = null;
+      try {
+        dayIdx = (typeof getTodayPlanIndex === 'function') ? getTodayPlanIndex() : 0;
+        if (state && state.plan) dayTotal = state.plan.length;
+        goal = (state && state.answers && state.answers.goal) || null;
+      } catch (e) {}
+      return { ins: ins || { count: 0, dominant: 'steady', avgEnergy: null, topPractice: null, breathSessions: 0 }, dayIdx, dayTotal, goal };
+    }
+    function coachPush(who, text) {
+      const log = document.getElementById('pk-coach-log');
+      if (!log) return;
+      const div = document.createElement('div');
+      div.className = 'pk-coach-msg pk-coach-' + who;
+      div.textContent = text;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+    window.coachBoot = function() {
+      const log = document.getElementById('pk-coach-log');
+      if (!log || log.children.length) return;
+      const s = coachSnapshot();
+      let line = "Hey. I read your week before I open my mouth.";
+      if (s.ins.count > 0) {
+        line += " " + s.ins.count + " check-ins, mostly " + s.ins.dominant +
+          (s.ins.avgEnergy != null ? ", energy around " + s.ins.avgEnergy + "/100" : "") + ".";
+      } else {
+        line += " No check-ins yet, so tell me how today feels and we will start there.";
+      }
+      if (s.goal) line += " Working toward " + s.goal + ".";
+      coachPush('coach', line + " What do you need right now?");
+    };
+    window.coachSend = function() {
+      const input = document.getElementById('pk-coach-input');
+      const text = (input && input.value.trim()) || "";
+      if (!text) return;
+      if (input) input.value = "";
+      window.coachAsk(text);
+    };
+    window.coachAsk = function(text) {
+      const msg = String(text || "").trim();
+      if (!msg) return;
+      coachPush('user', msg);
+      setTimeout(() => coachPush('coach', coachReply(msg)), 450);
+    };
+    function coachReply(rawText) {
+      const t = String(rawText || "").toLowerCase();
+      const s = coachSnapshot();
+      const crisisRe = /(kill myself|suicide|self[-\s]?harm|cutting myself|want to die|end (it|my life)|hurt myself|no reason to (live|go on))/;
+      if (crisisRe.test(t)) {
+        return "Thank you for trusting me with that. I am an automated guide, not a professional, and I cannot help with this safely. Please reach out right now to someone you trust, call your local emergency number, or contact a crisis helpline in your country. You matter, and support exists beyond this screen.";
+      }
+      if (/(pattern|progress|week looking|how am i|my week|report|doing so far)/.test(t)) {
+        if (s.ins.count === 0) return "Nothing logged yet, so no pattern to read. Check in once on the Home tab and come back - even one honest dot gives me something real to work with.";
+        let out = "Your week so far: " + s.ins.count + " check-ins, mostly " + s.ins.dominant +
+          (s.ins.avgEnergy != null ? ", average energy " + s.ins.avgEnergy + "/100" : "") + ".";
+        if (s.ins.topPractice) out += " Your brighter moments pair with " + s.ins.topPractice + ".";
+        out += " Day " + (s.dayIdx + 1) + " of " + s.dayTotal + " on the plan.";
+        if (s.ins.breathSessions > 0) out += " Plus " + s.ins.breathSessions + " breathing round" + (s.ins.breathSessions > 1 ? "s" : "") + " banked.";
+        return out;
+      }
+      if (/(tired|exhaust|low energy|drained|sleepy|no energy|wiped|fatigue)/.test(t)) {
+        let out = "Low-energy day protocol. First: no heroics, rest is productive.";
+        if (s.ins.avgEnergy != null && s.ins.avgEnergy < 45) out += " Your week average sits at " + s.ins.avgEnergy + ", so today is not the day to push.";
+        out += " One 15-minute walk instead of anything intense, water before anything else, and tonight 30 minutes earlier. If you do one thing, make it the walk.";
+        return out;
+      }
+      if (/(breath|anxious|anxiety|calm|stress|panic|overwhelm|worried|nervous)/.test(t)) {
+        return "Let's do 4-2-6 right now: in for 4, hold for 2, out for 6. Three rounds, shoulders down. The breathing ring in Soundscapes will pace you visually, same rhythm, about two minutes for the full ten cycles.";
+      }
+      if (/(proud|celebrat|win|good news|great|better|happy|grateful)/.test(t)) {
+        let out = "Good. Name it out loud, one sentence, so it counts.";
+        out += s.ins.topPractice
+          ? " And since " + s.ins.topPractice + " keeps showing up on your bright days, stack the next win right behind it."
+          : " Want to stack it? Attach one tiny win to something you already do today, coffee, doorway, bedtime.";
+        return out;
+      }
+      if (/(plan|week|goal|stuck|behind|missed|restart)/.test(t)) {
+        let out = "Day " + (s.dayIdx + 1) + " of " + s.dayTotal + ".";
+        if (s.goal) out += " Goal on file: " + s.goal + ".";
+        out += " Behind is a story, not a state: repeat your favorite day so far, or take today as rest. Both count. The Plans tab rebuilds the week whenever you are ready.";
+        return out;
+      }
+      if (/^(hi|hey|hello|yo|salam|morning|evening|afternoon)\b/.test(t)) {
+        return s.ins.count > 0
+          ? "Hey. " + s.ins.count + " check-ins in, mostly " + s.ins.dominant + ". What's alive for you right now?"
+          : "Hey. Tell me in one line how today actually feels, and we will go from there.";
+      }
+      return "I hear you. Say a little more - is it energy, mood, sleep, or the plan itself? Or tap one of the buttons above and I will meet you there.";
+    }
     window.switchDashTab = function(tabName) {
       window.currentDashTab = tabName;
       toggleDashDrawer(false);
@@ -5667,7 +5793,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=67").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=68").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

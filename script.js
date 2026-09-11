@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
       thirdStep: (name) =>
         `Small focus blocks protect your cognitive energy. Once momentum begins, clarity naturally follows.`,
       followUpReplies: [
-        "Tell me about Solfeggio soundscapes",
+        "Tell me about the soundscapes",
         "Give me a 5-minute task strategy",
         "What is Peakora Plus?"
       ]
@@ -91,11 +91,24 @@ document.addEventListener("DOMContentLoaded", () => {
         "What features does Peakora offer?"
       ]
     },
+    breath: {
+      firstStep: (name) =>
+        `Let's slow this down together, ${name}. The 4-2-6 rhythm works: breathe in for 4, hold for 2, let go for 6.`,
+      secondStep: (name) =>
+        `Three slow rounds is enough to feel your shoulders drop. The breathing ring inside the app paces it visually so you don't have to count.`,
+      thirdStep: (name) =>
+        `That calmer minute is yours now. Come back to it any time it spikes.`,
+      followUpReplies: [
+        "Evening wind-down routine",
+        "Connect me to Peakora Assistant",
+        "What is Peakora Plus?"
+      ]
+    },
     pricing: {
       firstStep: (name) =>
         `Peakora offers both a free foundational wellness experience and Peakora Plus for deeper personal support. Would you like to know more about our plan options?`,
       secondStep: (name) =>
-        `Peakora Plus includes full access to our interactive AI Assistant dashboard, custom Solfeggio sound frequency generators, unlimited emotional logging, and personalized daily routines.`,
+        `Peakora Plus opens the guided assistant dashboard, layered ambient sound worlds with real recorded nature beds, unlimited check-ins, and personalized daily routines.`,
       thirdStep: (name) =>
         `All subscriptions are secured via Dodo Payments billing, with a simple cancel-anytime policy directly from your member profile.`,
       followUpReplies: [
@@ -312,6 +325,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (t.includes("price") || t.includes("cost") || t.includes("plus") || t.includes("crown") || t.includes("subscription") || t.includes("dodo") || t.includes("member")) {
       return "pricing";
     }
+    if (t.includes("breath") || t.includes("breathe") || t.includes("inhale") || t.includes("exhale") || t.includes("calm down") || t.includes("panic") || t.includes("anxious") || t.includes("anxiety")) {
+      return "breath";
+    }
 
     return "general";
   }
@@ -329,6 +345,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     assistantInput.value = "";
     clearSmartReplies();
+
+    // Crisis line: an automated guide must never freelance here.
+    if (/(kill myself|suicide|self[-\s]?harm|cutting myself|want to die|end (it|my life)|hurt myself|no reason to (live|go on))/i.test(text)) {
+      addAssistantMessageWithDelay("Thank you for trusting me with that. I am an automated guide, not a professional, and I cannot help with this safely. Please reach out right now to someone you trust, call your local emergency number, or contact a crisis helpline in your country. You matter, and support exists.");
+      return;
+    }
 
     // --------------------
     // STAGE 1 — ASK NAME
