@@ -2525,7 +2525,7 @@
           ].map((cat, ci) => { libTotalSessions += cat.kinds.length;
             const accent = (libAccents.find(a => a.id === cat.id) || {}).accent || 'var(--theme-accent)';
             return `
-                <div class="dash-card pk-lib-card${ci === 0 ? '' : ' pk-collapsed'}" style="--pk-lib-accent:${accent};">
+                <div class="dash-card pk-lib-card pk-collapsed" style="--pk-lib-accent:${accent};">
                   <div class="pk-lib-head" onclick="this.closest('.pk-lib-card').classList.toggle('pk-collapsed')">
                     <span class="pk-lib-icon">${cat.label.charAt(0)}</span>
                     <div class="pk-lib-titles">
@@ -6114,7 +6114,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=76").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=77").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
