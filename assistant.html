@@ -5863,6 +5863,26 @@ window.appendInsightPlusCards = function() {
       if (/(sad|down\b|depress|lonely|crying|hopeless|empty inside)/.test(t)) {
         return "I'm sorry today feels like that. You don't have to fix it right now: one slow breath, one glass of water, one kind sentence to yourself. If heaviness sticks around, please talk to someone you trust or a professional. I'm here for the daily part.";
       }
+      if (/(price|cost|plus|subscription|pay|premium|membership|upgrade|billing)/.test(t)) {
+        return "Peakora+ is $9.99 a month or $95.88 a year, 7-day money-back, cancel anytime. It opens the Coach you are talking to, the full library, adaptive weeks, and saved history. The Membership tab has the buttons whenever you're ready.";
+      }
+      if (/(librar|meditat|session|course|stor(y|ies)|audio|frequency|music)/.test(t)) {
+        return "The Library holds 11 collections and 113 sessions: meditations, body scans, frequencies, micro practices, 20 narrated sleep stories, real storm beds, deep music loops. Tell me what the evening needs and I'll point at the shelf.";
+      }
+      if (/(sound|soundscape|noise|rain|ocean|wave)/.test(t)) {
+        return "The Soundscapes tab is your audio home: six free worlds, a live wave that moves with the sound, and the breathing ring in the same card. Tell me the mood and I'll pick the world.";
+      }
+      if (/(journal|write|writing|diary|note|reflect)/.test(t)) {
+        return "Get it out of your head and onto the page: one honest sentence in the Home reflection box, or a quote worth keeping. Writing it down counts as doing something.";
+      }
+      if (/(streak|habit|consistent|discipline|routine)/.test(t)) {
+        return s.streak > 1
+          ? "You're on a " + s.streak + "-day rhythm right now. Protect it the boring way: same tiny anchor, same time, no heroics."
+          : "Forget streaks. One tiny anchor, same time daily, a breath, a glass of water, a check-in. Three days of that and I'll be the first to celebrate it.";
+      }
+      if (/(motivat|give up|lazy|willpower|procrastinat|no point|useless)/.test(t)) {
+        return "Motivation follows motion, never the reverse. Shrink today's task until it feels almost silly, then do only that. What is the smallest version?";
+      }
       if (/(help|what can you|what else|abilities|topics|how do you work|what do you do)/.test(t)) {
         return "Here's what I'm actually good at: reading your week back to you (patterns, energy, streaks), low-energy day plans, 4-2-6 calm-downs, sleep and habit logging, celebrating wins, and plan check-ins. Try 'How is my week looking?' I can't answer general questions, no weather, no news. I'm built for one job: your reset.";
       }
@@ -5871,7 +5891,12 @@ window.appendInsightPlusCards = function() {
           ? "Hey. " + s.ins.count + " check-ins in, mostly " + s.ins.dominant + ". What's alive for you right now?"
           : "Hey. Tell me in one line how today actually feels, and we will go from there.";
       }
-      return "I hear you. Say a little more - is it energy, mood, sleep, or the plan itself? Or tap one of the buttons above and I will meet you there.";
+      var scopeReplies = [
+        "That's outside what I'm built for, and I'd rather say so than fake it. I'm not a general chatbot: no weather, no news, no homework. I read your check-ins, sleep, habits and plan. Ask me about your week and I'll have something real.",
+        "Honest answer: I don't know that one, and I won't pretend. My whole world is your reset: energy, mood, sleep, breath, habits, plan. Pick any of those and I'm useful.",
+        "Not my territory, friend. I'm a specialist, not a search engine: your week, your energy, your sleep, your breath, your plan. Everything else, your browser does better."
+      ];
+      return scopeReplies[msg.length % scopeReplies.length];
     }
     window.switchDashTab = function(tabName) {
       window.currentDashTab = tabName;
@@ -6074,7 +6099,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=74").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

@@ -104,6 +104,58 @@ document.addEventListener("DOMContentLoaded", () => {
         "What is Peakora Plus?"
       ]
     },
+    library: {
+      firstStep: (name) =>
+        `The Peakora library holds real things, ${name}: guided meditations, sleep stories, healing frequencies, and calming soundscapes. What kind of evening are you having?`,
+      secondStep: (name) =>
+        `For winding down, most people reach for a sleep story or rain soundscape. For focus, the theta frequency sessions pair well with a single clear task.`,
+      thirdStep: (name) =>
+        `Everything in the library is included with Peakora Plus, and the core soundscapes are free. Open the assistant and browse by mood.`,
+      followUpReplies: [
+        "Evening wind-down routine",
+        "Tell me about the soundscapes",
+        "What is Peakora Plus?"
+      ]
+    },
+    guarantee: {
+      firstStep: (name) =>
+        `Fair question, ${name}. Every Peakora+ subscription carries a 7-day money-back guarantee.`,
+      secondStep: (name) =>
+        `If it does not earn its place in your evenings, one email gets you a full refund. No questions, no forms, and you can cancel anytime from your profile.`,
+      thirdStep: (name) =>
+        `That guarantee is exactly why trying it is risk-free. The button below opens the assistant whenever you're ready.`,
+      followUpReplies: [
+        "What is Peakora Plus?",
+        "Connect me to Peakora Assistant",
+        "Ask about routines"
+      ]
+    },
+    contact: {
+      firstStep: (name) =>
+        `You can reach a human here, ${name}. Email peakora.network@gmail.com and we reply personally.`,
+      secondStep: (name) =>
+        `For anything urgent with billing, include the email you subscribed with and we'll sort it out directly.`,
+      thirdStep: (name) =>
+        `No ticket queues, no bots pretending to be people. Just us.`,
+      followUpReplies: [
+        "What is Peakora Plus?",
+        "Connect me to Peakora Assistant",
+        "Ask about routines"
+      ]
+    },
+    start: {
+      firstStep: (name) =>
+        `Starting is one click, ${name}. Open the assistant and answer a few honest questions - your first 7-day plan builds itself from your words.`,
+      secondStep: (name) =>
+        `No account, no card, no install needed. It runs in your browser and works offline once added to your home screen.`,
+      thirdStep: (name) =>
+        `Give it one week. Check in daily, follow the small steps, and notice what shifts.`,
+      followUpReplies: [
+        "Connect me to Peakora Assistant",
+        "What is Peakora Plus?",
+        "I feel overwhelmed"
+      ]
+    },
     pricing: {
       firstStep: (name) =>
         `Peakora offers both a free foundational wellness experience and Peakora Plus for deeper personal support. Would you like to know more about our plan options?`,
@@ -120,10 +172,22 @@ document.addEventListener("DOMContentLoaded", () => {
     general: {
       firstStep: (name) =>
         `Thank you for reaching out, ${name}. Taking a moment to check in with yourself is a meaningful step. Tell me a bit more about what you would like to work through today.`,
-      secondStep: (name) =>
-        `I am listening. Whatever you are navigating—stress, routine changes, or simply seeking clarity—we can take it one gentle step at a time.`,
-      thirdStep: (name) =>
-        `You are fully capable of navigating this. I am here whenever you need a calm sounding board.`,
+      secondStep: (name) => {
+        const variants = [
+          `I am listening, ${name}. Whatever you are navigating—stress, routine changes, or simply seeking clarity—we can take it one gentle step at a time.`,
+          `Say more, ${name}. Is it your energy, your sleep, your routine, or something heavier? The more specific you are, the better I can point you.`,
+          `Got it, ${name}. I answer best on stress, sleep, routines, breathing, and Peakora itself. Which of those is closest to what's on your mind?`
+        ];
+        return variants[Math.floor(Math.random() * variants.length)];
+      },
+      thirdStep: (name) => {
+        const variants = [
+          `You are fully capable of navigating this. I am here whenever you need a calm sounding board.`,
+          `One honest note: I'm a guided helper, not a general chatbot. Ask me about reset, rest, routine, or Peakora and you'll get my best.`,
+          `Whatever you pick, keep it small enough to finish today. That finished feeling is the whole engine.`
+        ];
+        return variants[Math.floor(Math.random() * variants.length)];
+      },
       followUpReplies: [
         "I feel overwhelmed",
         "I need a breath reset",
@@ -324,6 +388,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (t.includes("price") || t.includes("cost") || t.includes("plus") || t.includes("crown") || t.includes("subscription") || t.includes("dodo") || t.includes("member")) {
       return "pricing";
+    }
+    if (t.includes("librar") || t.includes("meditat") || t.includes("session") || t.includes("course") || t.includes("stor") || t.includes("audio") || t.includes("music")) {
+      return "library";
+    }
+    if (t.includes("guarantee") || t.includes("refund") || t.includes("money back") || t.includes("cancel")) {
+      return "guarantee";
+    }
+    if (t.includes("contact") || t.includes("support") || t.includes("email you") || t.includes("talk to human") || t.includes("help me") && t.includes("person")) {
+      return "contact";
+    }
+    if (t.includes("start") || t.includes("begin") || t.includes("sign up") || t.includes("join") || t.includes("how do i use") || t.includes("get started")) {
+      return "start";
     }
     if (t.includes("breath") || t.includes("breathe") || t.includes("inhale") || t.includes("exhale") || t.includes("calm down") || t.includes("panic") || t.includes("anxious") || t.includes("anxiety")) {
       return "breath";
