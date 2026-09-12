@@ -2851,14 +2851,7 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   border-color: var(--theme-accent);
   box-shadow: 0 0 0 3px rgba(244,162,97,0.15), 0 0 22px var(--theme-accent-glow);
 }
-.pk-coach-inputrow .input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  padding: 10px 0;
-  font-size: 13px;
-}
+/* Superseded by the Ask-style .pk-coach-inputrow input rule below. */
 .pk-coach-inputrow .input:focus { border: none; box-shadow: none; }
 .pk-send-btn {
   width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
@@ -2881,6 +2874,89 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .pk-coach-msg,
   .pk-coach-mini-orb { animation: none !important; }
 }
+
+/* COACH THREAD MIRRORS ASK PEAKORA GEOMETRY (assistant theme vars, so Plus
+   themes re-tint it automatically; free members see the default theme).
+   Block bubbles, normal word wrapping, no squeezed flex rows. */
+.pk-coach-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pk-coach-msg {
+  display: block;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: left;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--theme-card-border);
+  color: var(--theme-text-main);
+  animation: pkMsgIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pk-coach-coach {
+  align-self: flex-start;
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+}
+.pk-coach-user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #e07a5f, #f4a261);
+  border: none;
+  color: #ffffff;
+}
+.pk-coach-msg.pk-coach-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(244, 162, 97, 0.35);
+  box-shadow: 0 0 16px rgba(224, 122, 95, 0.20);
+}
+.pk-coach-inputrow {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  background: none;
+  border: none;
+}
+.pk-coach-inputrow input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--theme-card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--theme-text-main);
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+.pk-coach-inputrow input:focus {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 12px var(--theme-accent-glow);
+}
+.pk-coach-send {
+  padding: 12px 20px;
+  background: var(--theme-primary-grad);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.pk-coach-send:hover { opacity: 0.92; transform: translateY(-1px); }
+.pk-coach-send:active { transform: scale(0.96); }
 
 /* LIBRARY rebuild: accent spine, calm header, session rows */
 .pk-lib-stats {
