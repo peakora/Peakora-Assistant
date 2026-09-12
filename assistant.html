@@ -2752,8 +2752,8 @@
                   <button class="pk-coach-chip" onclick="coachAsk('Celebrate with me')">Celebrate with me</button>
                 </div>
                 <div class="pk-coach-inputrow">
-                  <input id="pk-coach-input" class="input" style="min-height:0; text-align:left;" placeholder="Say anything..." onkeydown="if(event.key==='Enter'){coachSend();}">
-                  <button class="btn primary" style="font-size:13px; padding:10px 18px; flex-shrink:0;" onclick="coachSend()">Send</button>
+                  <input id="pk-coach-input" class="input" style="min-height:0; text-align:left;" placeholder="Say anything..." onkeydown="if(event.key==='Enter'){coachSend();}" aria-label="Message your coach">
+                  <button class="pk-send-btn" onclick="coachSend()" aria-label="Send message">&#8593;</button>
                 </div>
                 <div class="pk-coach-tools">
                   <button class="pk-coach-tool" onclick="coachResetChat()">Reset chat</button>
@@ -5659,7 +5659,15 @@ window.appendInsightPlusCards = function() {
       if (!log) return;
       const div = document.createElement('div');
       div.className = 'pk-coach-msg pk-coach-' + who;
-      div.textContent = text;
+      if (who === 'coach') {
+        const orb = document.createElement('span');
+        orb.className = 'pk-coach-mini-orb';
+        div.appendChild(orb);
+      }
+      const bubble = document.createElement('span');
+      bubble.className = 'pk-coach-bubble';
+      bubble.textContent = text;
+      div.appendChild(bubble);
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
       if (!silent) {
@@ -6040,7 +6048,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=70").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=71").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.

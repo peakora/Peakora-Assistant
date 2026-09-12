@@ -2773,6 +2773,114 @@ body[data-theme="sunset"], [data-theme="sunset"] {
   .week-bar-grow { transform: scaleX(1) !important; }
 }
 
+/* COACH REBUILD - assistant-grade chat in Peakora colors.
+   Thread: coach rows wear the orb avatar, user rows float right in amber
+   glass. Every message slides up softly; nothing snaps or blinks. */
+.pk-coach-card {
+  padding: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(600px 200px at 50% -60px, rgba(244,162,97,0.10), transparent 70%),
+    var(--theme-card-bg);
+}
+.pk-coach-head {
+  padding: 16px 18px 12px;
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,0,0,0.18);
+}
+.pk-coach-log {
+  max-height: 420px;
+  padding: 16px 16px 8px;
+  gap: 14px;
+}
+.pk-coach-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  max-width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  animation: pkMsgIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pkMsgIn {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.pk-coach-coach { justify-content: flex-start; background: none; border: none; }
+.pk-coach-user { justify-content: flex-end; background: none; border: none; }
+.pk-coach-chips { margin: 0; }
+.pk-coach-mini-orb {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, #ffd9a8, #f4a261 45%, #a78bfa 100%);
+  box-shadow: 0 0 12px rgba(244,162,97,0.55);
+  animation: pkOrbBreathe 4.5s ease-in-out infinite;
+}
+.pk-coach-bubble {
+  display: inline-block;
+  max-width: 86%;
+  padding: 11px 15px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.pk-coach-coach .pk-coach-bubble {
+  background: rgba(167,139,250,0.08);
+  border: 1px solid rgba(167,139,250,0.22);
+  border-bottom-left-radius: 5px;
+  color: var(--theme-text-main);
+}
+.pk-coach-user .pk-coach-bubble {
+  background: linear-gradient(135deg, rgba(224,122,95,0.28), rgba(244,162,97,0.16));
+  border: 1px solid rgba(244,162,97,0.45);
+  border-bottom-right-radius: 5px;
+  color: #ffffff;
+}
+.pk-coach-typing { padding: 0; }
+.pk-coach-chips { padding: 10px 16px 2px; }
+.pk-coach-inputrow {
+  margin: 10px 14px 0;
+  padding: 6px 6px 6px 16px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.pk-coach-inputrow:focus-within {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px rgba(244,162,97,0.15), 0 0 22px var(--theme-accent-glow);
+}
+.pk-coach-inputrow .input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 10px 0;
+}
+.pk-coach-inputrow .input:focus { border: none; box-shadow: none; }
+.pk-send-btn {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  border: none; cursor: pointer;
+  font-size: 17px; font-weight: 800; line-height: 1;
+  color: #1a1208;
+  background: linear-gradient(135deg, #e07a5f, #f4a261);
+  box-shadow: 0 4px 16px rgba(244,162,97,0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pk-send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 22px rgba(244,162,97,0.6); }
+.pk-send-btn:active { transform: scale(0.96); }
+.pk-coach-tools { padding: 0 16px; }
+.pk-coach-safety { padding: 0 18px 16px; margin-top: 10px; }
+.pk-coach-daily {
+  margin: 14px 16px 0;
+  animation: dashFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pk-coach-msg,
+  .pk-coach-mini-orb { animation: none !important; }
+}
+
 /* LIBRARY rebuild: accent spine, calm header, session rows */
 .pk-lib-stats {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
