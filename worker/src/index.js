@@ -213,9 +213,15 @@ function cors( response , request ) {
   response.headers.set( 'Access-Control-Allow-Methods', 'GET, POST, OPTIONS' );
   response.headers.set( 'Access-Control-Allow-Headers', 'Content-Type, x-admin-token, x-affiliate-token, x-affiliate-email' );
   response.headers.set( 'Access-Control-Max-Age', '86400' );
-  if ( request && request.credentials === 'include' ) {
-    response.headers.set( 'Access-Control-Allow-Credentials', 'true' );
-  }
+  // Always allow credentials: the client's telemetry/checkout calls use
+  // credentials mode 'include' (sendBeacon defaults to it), so both the
+  // preflight and the actual response must carry this header or the browser
+  // blocks the request. Safe because allowOrigin only reflects an allowed
+  // origin (disallowed origins get the sites-default origin echoed back,
+  // which never matches the requester, so no cross-origin reader gains
+  // access). Cloudflare does not reliably surface request.credentials on
+  // preflights or beacons, so gate on the origin allowlist instead of it.
+  response.headers.set( 'Access-Control-Allow-Credentials', 'true' );
   return response ;
 }
 
@@ -850,14 +856,7 @@ export default {
     const method = request.method;
 
     if (method === 'OPTIONS') {
-      // Preflight must always allow credentials: the client sends the actual
-      // request (e.g. telemetry sendBeacon) with credentials mode 'include',
-      // so the browser demands Access-Control-Allow-Credentials on the
-      // preflight response too. The origin echo in cors() still gates who is
-      // allowed, so this cannot widen access beyond the CORS allowlist.
-      const res = cors(new Response(null, { status: 204 }), request);
-      res.headers.set('Access-Control-Allow-Credentials', 'true');
-      return res;
+      return cors(new Response(null, { status: 204 }), request);
     }
 
     let response;
