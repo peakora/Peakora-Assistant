@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your 5-Minute Reset Guide - Peakora</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #0c0a15;
+    color: #f8fafc;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: linear-gradient(180deg, #0c0a15 0%, #130f24 50%, #0c0a15 100%);
+    padding: 18mm 16mm 14mm;
+    position: relative;
+    overflow: hidden;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.35; pointer-events: none; }
+  .glow-amber { width: 150px; height: 150px; background: #f4a261; top: -40px; right: -30px; }
+  .glow-violet { width: 130px; height: 130px; background: #a78bfa; bottom: -50px; left: -40px; }
+
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(244,162,97,0.35);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #f4a261;
+    text-transform: uppercase;
+  }
+  .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, #e07a5f, #f4a261); display: inline-block; }
+
+  h1 {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: #ffffff;
+    margin: 14px 0 6px;
+  }
+  .subtitle { font-size: 13.5px; color: #a0aec0; max-width: 150mm; }
+  .subtitle strong { color: #f4a261; font-weight: 600; }
+  .rule {
+    height: 1px;
+    margin: 16px 0 20px;
+    background: linear-gradient(90deg, rgba(244,162,97,0.6), rgba(167,139,250,0.3), transparent);
+  }
+
+  .section { margin-bottom: 15px; page-break-inside: avoid; }
+  .sec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .sec-num {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0c0a15;
+    background: linear-gradient(135deg, #e07a5f, #f4a261);
+    border-radius: 8px;
+    min-width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sec-title {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  .sec-title span.tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #a78bfa; margin-left: 8px; border: 1px solid rgba(167,139,250,0.35); border-radius: 999px; padding: 1px 9px; vertical-align: middle;
+  }
+  .sec-body p { color: #cbd5e1; font-size: 12.5px; margin: 0 0 6px; padding-left: 38px; }
+  .sec-body p b { color: #f8fafc; }
+  .sec-body .steps { padding-left: 38px; list-style: none; counter-reset: step; margin: 0; }
+  .sec-body .steps li {
+    counter-increment: step;
+    padding-left: 20px; position: relative; color: #cbd5e1; font-size: 12px; margin-bottom: 3px;
+  }
+  .sec-body .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0;
+    color: #f4a261; font-weight: 700; font-size: 11px;
+  }
+  .sec-tip {
+    margin: 6px 0 0 38px;
+    background: rgba(244,162,97,0.07);
+    border-left: 2px solid #f4a261;
+    border-radius: 0 8px 8px 0;
+    padding: 7px 12px;
+    font-size: 11.5px;
+    color: #fbd8ab;
+  }
+  .sec-tip b { color: #f4a261; }
+
+  .rule-bottom {
+    height: 1px;
+    margin: 18px 0 14px;
+    background: linear-gradient(90deg, transparent, rgba(244,162,97,0.4), transparent);
+  }
+
+  .note-line { font-size: 12px; color: #a0aec0; text-align: center; margin: 0 0 4px; }
+  .cta { margin: 14px 0 0; text-align: center; }
+  .cta a {
+    display: inline-block;
+    background: linear-gradient(135deg, #e07a5f, #f4a261);
+    color: #0c0a15;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    letter-spacing: 0.02em;
+  }
+  .footer { margin-top: 20px; text-align: center; color: #5a6478; font-size: 10px; letter-spacing: 0.04em; }
+  .footer .brandline { color: #718096; font-weight: 600; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="glow glow-amber"></div>
+  <div class="glow glow-violet"></div>
+
+  <div class="brand"><span class="dot"></span>&nbsp;Peakora</div>
+  <h1>Your 5-Minute Reset Guide</h1>
+  <p class="subtitle">Five real resets you can do anywhere in five minutes or less. No account, no card, no streaks to protect. Just small, honest things that bring you back to yourself - and every one of them lives inside the free Peakora Assistant.</p>
+  <div class="rule"></div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-num">1</span>
+      <span class="sec-title">The Breath Ring <span class="tag">1 minute</span></span>
+    </div>
+    <div class="sec-body">
+      <p>A hard day usually starts in the body before the mind catches up. The breath ring slows that down: one slow <b>4-2-6 breathing cycle</b> - <b>inhale for 4 seconds, hold for 2, exhale for 6</b>.</p>
+      <ol class="steps">
+        <li>Sit or stand somewhere you can be still for a minute.</li>
+        <li>Open Peakora and tap the breath ring on the Home tab (free, always).</li>
+        <li>Follow the ring for 10 cycles. Do not force it. Let the exhale be longer than the inhale.</li>
+        <li>When the session ends, notice one thing: your shoulders are usually lower.</li>
+      </ol>
+      <div class="sec-tip"><b>Why it works:</b> the longer exhale tells your nervous system the threat signal can stand down. It is the fastest physical reset in the whole app.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-num">2</span>
+      <span class="sec-title">The Mood Check <span class="tag">2 minutes</span></span>
+    </div>
+    <div class="sec-body">
+      <p>Half of managing a day is simply naming what is actually going on. Peakora's mood check is one honest feeling, no journaling homework, no streaks.</p>
+      <ol class="steps">
+        <li>Log how you feel right now - just one word or feeling.</li>
+        <li>That is it. You are done.</li>
+        <li>Come back at the end of the day if you want: two honest feelings, one day, and the shape of the week shows up in Insights.</li>
+      </ol>
+      <div class="sec-tip"><b>Why it works:</b> naming an emotion sinks the spike by activating the reasoning part of the brain. Two minutes, no effort, real data for the week.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-num">3</span>
+      <span class="sec-title">One Soundscape, On Purpose <span class="tag">3-5 minutes</span></span>
+    </div>
+    <div class="sec-body">
+      <p>Sound shapes mood faster than words. Peakora's Soundscape Studio (free) has <b>8 ambient worlds</b> - <b>bowl, rain, fire, om, wind, binaural, ocean, night</b> - layered and tunable.</p>
+      <ol class="steps">
+        <li>For focus: rain or binaural, low volume, headphones or not.</li>
+        <li>For sleep: ocean or night, dim the screen, set one track and put the phone down.</li>
+        <li>For a jittery mind: bowl or om - one layer, nothing else, three minutes.</li>
+      </ol>
+      <div class="sec-tip"><b>Why it works:</b> you are not "relaxing", you are deliberately changing the soundtrack your brain is processing. That is a choice, not a mood you have to wait for.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-num">4</span>
+      <span class="sec-title">One Quiet Minute <span class="tag">1 minute</span></span>
+    </div>
+    <div class="sec-body">
+      <p>The hardest reset is the one with nothing in it - and it is often the most useful. One quiet minute with no goal, no track, no counting.</p>
+      <ol class="steps">
+        <li>Set a one-minute timer (or just use the clock on your phone).</li>
+        <li>Sit. Let your eyes rest on something soft. No phone swiping, no list-running.</li>
+        <li>When the minute ends, notice what changed - it is usually more than a minute's worth.</li>
+      </ol>
+      <div class="sec-tip"><b>Why it works:</b> the pause is the point. You are practicing being with yourself without doing anything - the skill every other reset builds on.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head">
+      <span class="sec-num">5</span>
+      <span class="sec-title">One Tiny Win <span class="tag">under 5 minutes</span></span>
+    </div>
+    <div class="sec-body">
+      <p>Momentum is not sustained - it is rekindled, repeatedly. The smallest win today is the thing tomorrow stands on. Write down one thing you will actually do today, then do it.</p>
+      <ol class="steps">
+        <li>Write one thing, not a list. One thing that, if done, makes tomorrow lighter.</li>
+        <li>Make it embarrassingly small if today is heavy: drink water, step outside, send the text.</li>
+        <li>Do it. Then give yourself credit - that was the day's reset.</li>
+      </ol>
+      <div class="sec-tip"><b>Why it works:</b> deciding beats planning. One small action proves to you that momentum is possible today.</div>
+    </div>
+  </div>
+
+  <div class="rule-bottom"></div>
+
+  <p class="note-line">All five resets live in the free Peakora Assistant - no account, no card.</p>
+  <div class="cta">
+    <a href="https://peakora-assistant.pages.dev/assistant.html">Open the Assistant - it is free</a>
+  </div>
+
+  <div class="footer">
+    <div class="brandline">PEAKORA</div>
+    <div>Gentle guidance. Real momentum.</div>
+    <div>&copy; 2026 Peakora</div>
+  </div>
+</div>
+</body>
+</html>

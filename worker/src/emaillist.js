@@ -5,7 +5,7 @@
  * Replaces MailerLite with a fully owned pipeline:
  *   - Templates live in this repo (Peakora dark-luxury design), version-controlled.
  *   - Recipients + progress live in D1 (the `subscribers` + `email_sends` tables).
- *   - Sending uses Resend (https://resend.com) via its REST API — one env secret.
+ *   - Sending uses Resend (https://resend.com) via its REST API - one env secret.
  *   - Scheduling rides the existing Worker cron trigger (0 9 * * * UTC), so no
  *     extra infra and no GitHub Actions runner minutes are consumed.
  *
@@ -13,7 +13,7 @@
  * after a newsletter signup, then the subscriber moves to a weekly nurture cadence.
  *
  * Env:
- *   RESEND_API_KEY   — Resend API key (set via `wrangler secret put RESEND_API_KEY`)
+ *   RESEND_API_KEY   - Resend API key (set via `wrangler secret put RESEND_API_KEY`)
  *   FROM_EMAIL       . sender address (default: onboarding@resend.dev, no DNS needed)
  *                      IMPORTANT: must be on a verified Resend domain.
  *
@@ -21,8 +21,8 @@
  *   email_sends (id, email, sequence, step, status, resend_id, sent_at, error)
  *
  * Public API (for the Worker router):
- *   sendWelcomeImmediate(env, email)  — send email #1 right at signup
- *   runSequenceTick(env)              — advance the drip for due subscribers
+ *   sendWelcomeImmediate(env, email)  - send email #1 right at signup
+ *   runSequenceTick(env)              - advance the drip for due subscribers
  */
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
@@ -58,6 +58,8 @@ Take one breath,
 The Peakora team`,
     ctaLabel: 'Open the Assistant',
     ctaUrl: 'https://peakora-assistant.pages.dev/assistant.html',
+    downloadUrl: 'https://peakora-assistant.pages.dev/assets/reset-guide/Peakora-5-Minute-Reset-Guide.pdf',
+    downloadLabel: 'Download the Reset Guide (PDF)',
   },
   {
     step: 2,
@@ -103,7 +105,7 @@ The Peakora team`,
     ctaUrl: 'https://peakora-assistant.pages.dev/assistant.html?open=tripwire',
   },
 ];
-// ── Weekly nurture cadence (deposit, deposit, offer — the offer frame lives in copy) ──
+// ── Weekly nurture cadence (deposit, deposit, offer - the offer frame lives in copy) ──
 // delayDays is measured from subscribed_at. Steps n1/n2/n3 at days 7/14/21.
 const NURTURE_WEEKS = [
   {
@@ -245,9 +247,9 @@ function renderEmailHtml(step, opts) {
     <tr><td align="center" style="padding:32px 16px;">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#151122;border:1px solid rgba(255,255,255,0.08);border-radius:24px;box-shadow:0 28px 70px rgba(0,0,0,0.9);overflow:hidden;">
         <!-- Brand header -->
-        <tr><td style="padding:28px 32px 0;text-align:center;">
-          <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF.gif" alt="Peakora" width="128" style="display:inline-block;width:128px;max-width:70%;height:auto;border-radius:16px;margin-bottom:12px;">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:0.08em;color:#ffffff;">PEAKORA</div>
+        <tr><td style="padding:32px 32px 0;text-align:center;">
+          <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF.gif" alt="Peakora" width="280" style="display:block;margin:0 auto 6px;width:280px;max-width:85%;height:auto;border-radius:20px;">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:0.18em;color:#ffffff;margin-top:10px;">PEAKORA</div>
           <div style="font-size:12px;color:#a0aec0;margin-top:4px;letter-spacing:0.04em;">Gentle guidance. Real momentum.</div>
         </td></tr>
         <!-- Preheader / step indicator -->
@@ -267,8 +269,11 @@ function renderEmailHtml(step, opts) {
           <p style="font-size:15px;line-height:1.7;color:#e2e8f0;white-space:pre-line;margin:0 0 16px;">${escapeHtml(opts.body)}</p>
         </td></tr>
         <!-- CTA -->
-        <tr><td style="padding:8px 32px 28px;text-align:center;">
+        <tr><td style="padding:8px 32px 12px;text-align:center;">
           <a href="${escapeAttr(opts.ctaUrl)}" style="display:inline-block;padding:14px 32px;border-radius:12px;background:linear-gradient(135deg,#e07a5f,#f4a261);color:#ffffff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.02em;">${escapeHtml(opts.ctaLabel)}</a>
+          ${opts.downloadUrl ? `<div style="margin-top:12px;">
+            <a href="${escapeAttr(opts.downloadUrl)}" style="display:inline-block;padding:10px 22px;border-radius:12px;border:1px solid rgba(244,162,97,0.5);color:#ffbe85;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.02em;">${escapeHtml(opts.downloadLabel || 'Download the Reset Guide (PDF)')}</a>
+          </div>` : ''}
         </td></tr>
         <!-- Divider -->
         <tr><td style="padding:0 32px;">
@@ -303,9 +308,9 @@ function escapeAttr(s) {
 // ── Resend transport ──────────────────────────────────────────────────────
 // Marketing rail contract: this Resend key sends ONLY sequence + nurture
 // marketing. Transactional receipts are sent by Dodo itself (Merchant of
-// Record) — never route auth resets, invoices, or order emails here;
+// Record) - never route auth resets, invoices, or order emails here;
 // their deliverability depends on this rail staying clean.
-async function sendViaResend(env, { to, subject, html, text }) {
+async function sendViaResend(env, { to, subject, html, text, attachments }) {
   if (!env.RESEND_API_KEY) {
     return { ok: false, status: 0, error: 'RESEND_API_KEY not set' };
   }
@@ -317,6 +322,7 @@ async function sendViaResend(env, { to, subject, html, text }) {
     text: text || subject,
     tags: [{ name: 'source', value: 'peakora-sequence' }],
   };
+  if (attachments && attachments.length) payload.attachments = attachments;
   try {
     const r = await fetch(RESEND_ENDPOINT, {
       method: 'POST',
@@ -361,16 +367,48 @@ async function alreadySent(env, email, sequence, step) {
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
+/* Peakora Reset Guide: hosted PDF, attached to the welcome email so the
+   lead magnet arrives as a real file (not just a link). Fetched from Pages
+   at send time - the asset ships with the repo, so it is always in sync. */
+const RESET_GUIDE_PDF_URL = 'https://peakora-assistant.pages.dev/assets/reset-guide/Peakora-5-Minute-Reset-Guide.pdf';
+
+async function fetchResetGuideAttachment() {
+  try {
+    const r = await fetch(RESET_GUIDE_PDF_URL);
+    if (!r.ok) return null;
+    const buf = new Uint8Array(await r.arrayBuffer());
+    // Chunked base64: String.fromCharCode(...) on the whole array would blow
+    // the argument limit for files this size, so encode 8KB at a time.
+    let b64 = '';
+    const CHUNK = 8192;
+    for (let i = 0; i < buf.length; i += CHUNK) {
+      const slice = buf.subarray(i, i + CHUNK);
+      b64 += String.fromCharCode.apply(null, slice);
+    }
+    b64 = btoa(b64);
+    return [{
+      filename: 'Peakora-5-Minute-Reset-Guide.pdf',
+      content: b64,
+      type: 'application/pdf',
+    }];
+  } catch (e) {
+    console.warn('[EmailSeq] guide attachment fetch error (non-blocking):', e && e.message);
+    return null;
+  }
+}
+
 /** Send email #1 immediately at signup (best-effort, never blocks /subscribe). */
 export async function sendWelcomeImmediate(env, email) {
   try {
     const tpl = WELCOME_SEQUENCE[0];
     if (await alreadySent(env, email, 'welcome-3', tpl.step)) return { skipped: true };
+    const attachments = await fetchResetGuideAttachment();
     const result = await sendViaResend(env, {
       to: email,
       subject: tpl.subject,
       html: renderEmailHtml(tpl.step, tpl),
-      text: tpl.body + '\n\n' + tpl.ctaLabel + ': ' + tpl.ctaUrl,
+      text: tpl.body + '\n\n' + tpl.ctaLabel + ': ' + tpl.ctaUrl + '\n' + (tpl.downloadUrl ? 'Download the guide: ' + tpl.downloadUrl : ''),
+      attachments,
     });
     await recordSend(env, email, 'welcome-3', tpl.step, result);
     // Advance the subscriber's sequence progress marker.
@@ -408,11 +446,14 @@ export async function runSequenceTick(env) {
     for (const tpl of WELCOME_SEQUENCE) {
       if (elapsedHours < tpl.delayHours) break; // not due yet for this or later steps
       if (await alreadySent(env, sub.email, 'welcome-3', tpl.step)) continue; // already sent
+      // Step 1 carries the Reset Guide PDF attachment (same as the immediate path).
+      const attachments = tpl.step === 1 ? await fetchResetGuideAttachment() : null;
       const result = await sendViaResend(env, {
         to: sub.email,
         subject: tpl.subject,
         html: renderEmailHtml(tpl.step, tpl),
-        text: tpl.body + '\n\n' + tpl.ctaLabel + ': ' + tpl.ctaUrl,
+        text: tpl.body + '\n\n' + tpl.ctaLabel + ': ' + tpl.ctaUrl + (tpl.downloadUrl ? '\nDownload the guide: ' + tpl.downloadUrl : ''),
+        attachments,
       });
       await recordSend(env, sub.email, 'welcome-3', tpl.step, result);
       if (result.ok) { sent++; anyWelcomeSent = true; } else failed++;
@@ -480,11 +521,15 @@ export function previewEmail(step) {
 /** Admin: send a test email to one address. */
 export async function sendTestEmail(env, to, step) {
   const tpl = WELCOME_SEQUENCE.find(t => t.step === Number(step)) || WELCOME_SEQUENCE[0];
+  // Attach the Reset Guide PDF when testing step 1, so the lead magnet arrives
+  // exactly as a real signup would see it.
+  const attachments = Number(step) === 1 ? await fetchResetGuideAttachment() : null;
   const result = await sendViaResend(env, {
     to,
     subject: '[TEST] ' + tpl.subject,
     html: renderEmailHtml(tpl.step, tpl),
     text: tpl.body,
+    attachments,
   });
   return result;
 }
