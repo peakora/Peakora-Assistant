@@ -2760,7 +2760,7 @@
                   <button class="pk-coach-tool" onclick="coachResetChat()">Reset chat</button>
                   <button class="pk-coach-tool" onclick="coachResetCounts()">Reset today's counts</button>
                 </div>
-                <div class="pk-coach-safety">I am a supportive guide inside your app, not a medical professional. Everything you log stays on this device.</div>
+                <div class="pk-coach-safety">Ask me about your week, energy, sleep, breath, habits, or plan. I can't answer general questions. Supportive guide, not a medical professional. Everything you log stays on this device.</div>
               </div>
             `;
           }
@@ -5841,6 +5841,31 @@ window.appendInsightPlusCards = function() {
         out += " Behind is a story, not a state: repeat your favorite day so far, or take today as rest. Both count. The Plans tab rebuilds the week whenever you are ready.";
         return out;
       }
+      if (/(what time|time is it|what day|today's date|what date|clock)/.test(t)) {
+        try {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+          return "It's " + timeStr + " on " + dateStr + ". Mornings love one clear intention; nights love a wind-down sound. Which side of the day are you on?";
+        } catch (e) {
+          return "I can't read the clock from here, but your device can. What does the hour need from you, rest or motion?";
+        }
+      }
+      if (/(your name|who are you|are you (ai|real|human|a robot)|^robot$|machine|human or)/.test(t)) {
+        return "I'm Coach, the part of Peakora that reads your check-ins, sleep, habits and plan, then talks back. Automated guide, not a person, not a doctor. Everything I say comes from what you logged, never from the open internet.";
+      }
+      if (/(thank|thanks|shukran|appreciated|great thanks)/.test(t)) {
+        return "Anytime. Small steps count double when they're yours.";
+      }
+      if (/^(bye|goodbye|good ?night|see you|later|ciao)\b/.test(t)) {
+        return "Rest well. I'll be here with your week memorized.";
+      }
+      if (/(sad|down\b|depress|lonely|crying|hopeless|empty inside)/.test(t)) {
+        return "I'm sorry today feels like that. You don't have to fix it right now: one slow breath, one glass of water, one kind sentence to yourself. If heaviness sticks around, please talk to someone you trust or a professional. I'm here for the daily part.";
+      }
+      if (/(help|what can you|what else|abilities|topics|how do you work|what do you do)/.test(t)) {
+        return "Here's what I'm actually good at: reading your week back to you (patterns, energy, streaks), low-energy day plans, 4-2-6 calm-downs, sleep and habit logging, celebrating wins, and plan check-ins. Try 'How is my week looking?' I can't answer general questions, no weather, no news. I'm built for one job: your reset.";
+      }
       if (/^(hi|hey|hello|yo|salam|morning|evening|afternoon)\b/.test(t)) {
         return s.ins.count > 0
           ? "Hey. " + s.ins.count + " check-ins in, mostly " + s.ins.dominant + ". What's alive for you right now?"
@@ -6049,7 +6074,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=72").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=73").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
