@@ -237,7 +237,7 @@ function renderEmailHtml(step, opts) {
         <tr><td style="padding:36px 32px 0;text-align:center;">
           <div style="position:relative;width:340px;max-width:92%;margin:0 auto;">
             <div style="position:absolute;top:-22px;right:-22px;bottom:-22px;left:-22px;border-radius:50%;background:radial-gradient(circle,rgba(244,162,97,0.28) 0%,rgba(167,139,250,0.15) 45%,rgba(244,162,97,0) 70%);filter:blur(4px);"></div>
-            <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF.gif" alt="Peakora" width="340" style="position:relative;display:block;width:340px;max-width:100%;height:auto;border-radius:26px;-webkit-mask-image:radial-gradient(ellipse at center,black 55%,rgba(0,0,0,0) 88%);mask-image:radial-gradient(ellipse at center,black 55%,rgba(0,0,0,0) 88%);">
+            <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF-fade.gif" alt="Peakora" width="340" style="position:relative;display:block;width:340px;max-width:100%;height:auto;">
           </div>
           <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:21px;font-weight:800;letter-spacing:0.18em;color:#ffffff;margin-top:10px;">PEAKORA</div>
           <div style="font-size:12px;color:#a0aec0;margin-top:4px;letter-spacing:0.04em;">Gentle guidance. Real momentum.</div>
