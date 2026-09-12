@@ -2738,11 +2738,12 @@
                   </div>
                 </div>
                 <div class="pk-coach-daily">
-                  <div class="pk-coach-metric"><span>Sleep</span><div class="pk-coach-dots">${sleepDots}</div></div>
-                  <div class="pk-coach-metric"><span>Stress</span><div class="pk-coach-dots">${stressDots}</div></div>
-                  <div class="pk-coach-metric"><span>Water</span><button class="pk-coach-mini" onclick="coachLog('water')">+ glass (<b id="pk-coach-water-n">${coachToday.water || 0}</b>)</button></div>
-                  <div class="pk-coach-metric"><span>Move</span><button class="pk-coach-mini${coachToday.move ? ' pk-on' : ''}" id="pk-coach-move-btn" onclick="coachLog('move')">${coachToday.move ? 'Moved today ✓' : 'Log movement'}</button></div>
+                  <div class="pk-coach-metric"><span>Sleep <button class="pk-info" onclick="coachInfo('sleep')" aria-label="What is the sleep score">i</button></span><div class="pk-coach-dots">${sleepDots}</div></div>
+                  <div class="pk-coach-metric"><span>Stress <button class="pk-info" onclick="coachInfo('stress')" aria-label="What is the stress score">i</button></span><div class="pk-coach-dots">${stressDots}</div></div>
+                  <div class="pk-coach-metric"><span>Water <button class="pk-info" onclick="coachInfo('water')" aria-label="What is the water count">i</button></span><button class="pk-coach-mini" onclick="coachLog('water')">+ glass (<b id="pk-coach-water-n">${coachToday.water || 0}</b>)</button></div>
+                  <div class="pk-coach-metric"><span>Move <button class="pk-info" onclick="coachInfo('move')" aria-label="What counts as movement">i</button></span><button class="pk-coach-mini${coachToday.move ? ' pk-on' : ''}" id="pk-coach-move-btn" onclick="coachLog('move')">${coachToday.move ? 'Moved today ✓' : 'Log movement'}</button></div>
                 </div>
+                <div class="pk-coach-info-text" id="pk-coach-info" hidden></div>
                 <div class="pk-coach-log" id="pk-coach-log" aria-live="polite"></div>
                 <div class="pk-coach-chips">
                   <button class="pk-coach-chip" onclick="coachAsk('How is my week looking?')">How is my week looking?</button>
@@ -2753,6 +2754,10 @@
                 <div class="pk-coach-inputrow">
                   <input id="pk-coach-input" class="input" style="min-height:0; text-align:left;" placeholder="Say anything..." onkeydown="if(event.key==='Enter'){coachSend();}">
                   <button class="btn primary" style="font-size:13px; padding:10px 18px; flex-shrink:0;" onclick="coachSend()">Send</button>
+                </div>
+                <div class="pk-coach-tools">
+                  <button class="pk-coach-tool" onclick="coachResetChat()">Reset chat</button>
+                  <button class="pk-coach-tool" onclick="coachResetCounts()">Reset today's counts</button>
                 </div>
                 <div class="pk-coach-safety">I am a supportive guide inside your app, not a medical professional. Everything you log stays on this device.</div>
               </div>
@@ -5649,7 +5654,7 @@ window.appendInsightPlusCards = function() {
       } catch (e) {}
       return { ins: ins || { count: 0, dominant: 'steady', avgEnergy: null, topPractice: null, breathSessions: 0 }, dayIdx, dayTotal, goal, sleep, stress, water, streak };
     }
-    function coachPush(who, text) {
+    function coachPush(who, text, silent) {
       const log = document.getElementById('pk-coach-log');
       if (!log) return;
       const div = document.createElement('div');
@@ -5657,10 +5662,61 @@ window.appendInsightPlusCards = function() {
       div.textContent = text;
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
+      if (!silent) {
+        try {
+          const hist = JSON.parse(localStorage.getItem("peakora_coach_chat") || "[]");
+          hist.push({ who, text: String(text).slice(0, 600), at: Date.now() });
+          localStorage.setItem("peakora_coach_chat", JSON.stringify(hist.slice(-20)));
+        } catch (e) {}
+      }
     }
-    window.coachBoot = function() {
+    window.coachResetChat = function() {
+      try { localStorage.removeItem("peakora_coach_chat"); } catch (e) {}
       const log = document.getElementById('pk-coach-log');
-      if (!log || log.children.length) return;
+      if (log) log.innerHTML = '';
+      if (typeof coachBoot === 'function') coachBoot(true);
+    };
+    window.coachResetCounts = function() {
+      if (!confirm("Clear today's sleep, stress, water and movement log? Your check-ins and streaks stay.")) return;
+      try {
+        const list = (typeof getCoachMetrics === 'function') ? getCoachMetrics() : [];
+        const today = todayStr();
+        saveCoachMetrics(list.filter(e => !e || e.date !== today));
+      } catch (e) {}
+      document.querySelectorAll('[data-coach-dot]').forEach(d => d.classList.remove('pk-on'));
+      const chip = document.getElementById('pk-coach-water-n');
+      if (chip) chip.textContent = '0';
+      const mv = document.getElementById('pk-coach-move-btn');
+      if (mv) { mv.textContent = 'Log movement'; mv.classList.remove('pk-on'); }
+      if (typeof showToastNotification === 'function') showToastNotification("Today's counts cleared - fresh page");
+    };
+    window.coachInfo = function(topic) {
+      const box = document.getElementById('pk-coach-info');
+      if (!box) return;
+      const copy = {
+        sleep: "Sleep score: rate last night from 1 (rough) to 5 (deep). Three nights in a row and I start connecting it to your days.",
+        stress: "Stress load: how heavy today feels, 1 (light) to 5 (heavy). A high run triggers my early warning.",
+        water: "Glasses of water today. Tap + glass each time you drink. Small lever, real afternoons.",
+        move: "Any intentional movement counts: a walk, stretching, stairs. It feeds your energy readouts."
+      };
+      const text = copy[topic] || "";
+      if (box.hidden || box.textContent !== text) {
+        box.textContent = text;
+        box.hidden = false;
+      } else {
+        box.hidden = true;
+      }
+    };
+    window.coachBoot = function(force) {
+      const log = document.getElementById('pk-coach-log');
+      if (!log || (log.children.length && !force)) return;
+      try {
+        const hist = JSON.parse(localStorage.getItem("peakora_coach_chat") || "[]");
+        if (hist.length && !force) {
+          hist.slice(-20).forEach(m => coachPush(m.who === 'user' ? 'user' : 'coach', String(m.text || '').slice(0, 600), true));
+          return;
+        }
+      } catch (e) {}
       const s = coachSnapshot();
       let line = "Hey. I read your week before I open my mouth.";
       if (s.ins.count > 0) {
@@ -5984,7 +6040,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=69").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=70").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
