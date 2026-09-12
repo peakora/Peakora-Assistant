@@ -11,83 +11,67 @@
     background: #0c0a15;
     color: #f8fafc;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    font-size: 13px;
-    line-height: 1.65;
+    font-size: 12px;
+    line-height: 1.55;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
   .page {
     width: 210mm;
-    min-height: 297mm;
+    height: 297mm;
     background: linear-gradient(180deg, #0c0a15 0%, #130f24 50%, #0c0a15 100%);
-    padding: 18mm 16mm 14mm;
+    padding: 14mm 15mm 10mm;
     position: relative;
     overflow: hidden;
   }
-  .glow { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.35; pointer-events: none; }
-  .glow-amber { width: 150px; height: 150px; background: #f4a261; top: -40px; right: -30px; }
-  .glow-violet { width: 130px; height: 130px; background: #a78bfa; bottom: -50px; left: -40px; }
-
-  .brand {
-    display: inline-flex; align-items: center; gap: 10px;
-    border: 1px solid rgba(244,162,97,0.35);
-    border-radius: 999px;
-    padding: 6px 16px;
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.18em;
-    color: #f4a261;
-    text-transform: uppercase;
-  }
-  .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, #e07a5f, #f4a261); display: inline-block; }
+  .glow { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.3; pointer-events: none; }
+  .glow-amber { width: 140px; height: 140px; background: #f4a261; top: -40px; right: -30px; }
+  .glow-violet { width: 120px; height: 120px; background: #a78bfa; bottom: -50px; left: -40px; }
 
   h1 {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.15;
     color: #ffffff;
-    margin: 14px 0 6px;
+    margin: 2px 0 4px;
   }
-  .subtitle { font-size: 13.5px; color: #a0aec0; max-width: 150mm; }
+  .subtitle { font-size: 12.5px; color: #a0aec0; max-width: 168mm; }
   .subtitle strong { color: #f4a261; font-weight: 600; }
   .rule {
     height: 1px;
-    margin: 16px 0 20px;
+    margin: 10px 0 12px;
     background: linear-gradient(90deg, rgba(244,162,97,0.6), rgba(167,139,250,0.3), transparent);
   }
 
-  .section { margin-bottom: 15px; page-break-inside: avoid; }
-  .sec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .section { margin-bottom: 10px; page-break-inside: avoid; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 3px;
+  }
   .sec-num {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 800;
     color: #0c0a15;
     background: linear-gradient(135deg, #e07a5f, #f4a261);
-    border-radius: 8px;
-    min-width: 28px; height: 28px;
+    border-radius: 7px;
+    min-width: 24px; height: 24px;
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
   .sec-title {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #ffffff;
   }
-  .sec-title span.tag {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: #a78bfa; margin-left: 8px; border: 1px solid rgba(167,139,250,0.35); border-radius: 999px; padding: 1px 9px; vertical-align: middle;
-  }
-  .sec-body p { color: #cbd5e1; font-size: 12.5px; margin: 0 0 6px; padding-left: 38px; }
+  .sec-body p { color: #cbd5e1; font-size: 12px; margin: 0 0 5px; }
   .sec-body p b { color: #f8fafc; }
-  .sec-body .steps { padding-left: 38px; list-style: none; counter-reset: step; margin: 0; }
+  .sec-body .steps { list-style: none; counter-reset: step; margin: 4px 0 5px; }
   .sec-body .steps li {
     counter-increment: step;
-    padding-left: 20px; position: relative; color: #cbd5e1; font-size: 12px; margin-bottom: 3px;
+    padding-left: 18px; position: relative; color: #cbd5e1; font-size: 11.5px; margin-bottom: 2px;
   }
   .sec-body .steps li::before {
     content: counter(step);
@@ -95,38 +79,38 @@
     color: #f4a261; font-weight: 700; font-size: 11px;
   }
   .sec-tip {
-    margin: 6px 0 0 38px;
+    margin: 0;
     background: rgba(244,162,97,0.07);
     border-left: 2px solid #f4a261;
     border-radius: 0 8px 8px 0;
-    padding: 7px 12px;
-    font-size: 11.5px;
+    padding: 6px 11px;
+    font-size: 11px;
     color: #fbd8ab;
   }
   .sec-tip b { color: #f4a261; }
 
   .rule-bottom {
     height: 1px;
-    margin: 18px 0 14px;
+    margin: 12px 0 10px;
     background: linear-gradient(90deg, transparent, rgba(244,162,97,0.4), transparent);
   }
 
-  .note-line { font-size: 12px; color: #a0aec0; text-align: center; margin: 0 0 4px; }
-  .cta { margin: 14px 0 0; text-align: center; }
+  .note-line { font-size: 11.5px; color: #a0aec0; text-align: center; margin: 0 0 3px; }
+  .cta { margin: 8px 0 0; text-align: center; }
   .cta a {
     display: inline-block;
     background: linear-gradient(135deg, #e07a5f, #f4a261);
     color: #0c0a15;
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 800;
     text-decoration: none;
     border-radius: 12px;
-    padding: 12px 28px;
+    padding: 10px 24px;
     letter-spacing: 0.02em;
   }
-  .footer { margin-top: 20px; text-align: center; color: #5a6478; font-size: 10px; letter-spacing: 0.04em; }
-  .footer .brandline { color: #718096; font-weight: 600; margin-bottom: 2px; }
+  .footer { margin-top: 12px; text-align: center; color: #5a6478; font-size: 9.5px; letter-spacing: 0.04em; }
+  .footer .brandline { color: #718096; font-weight: 600; margin-bottom: 1px; }
 </style>
 </head>
 <body>
@@ -134,71 +118,70 @@
   <div class="glow glow-amber"></div>
   <div class="glow glow-violet"></div>
 
-  <div class="brand"><span class="dot"></span>&nbsp;Peakora</div>
   <h1>Your 5-Minute Reset Guide</h1>
-  <p class="subtitle">Five real resets you can do anywhere in five minutes or less. No account, no card, no streaks to protect. Just small, honest things that bring you back to yourself - and every one of them lives inside the free Peakora Assistant.</p>
+  <p class="subtitle">Five small resets you can do anywhere in five minutes or less. None of them need an account, a card, or a streak to protect. They all live inside the free Peakora Assistant.</p>
   <div class="rule"></div>
 
   <div class="section">
     <div class="sec-head">
       <span class="sec-num">1</span>
-      <span class="sec-title">The Breath Ring <span class="tag">1 minute</span></span>
+      <span class="sec-title">The Breath Ring</span>
     </div>
     <div class="sec-body">
-      <p>A hard day usually starts in the body before the mind catches up. The breath ring slows that down: one slow <b>4-2-6 breathing cycle</b> - <b>inhale for 4 seconds, hold for 2, exhale for 6</b>.</p>
+      <p>A hard day usually starts in the body before the mind catches up. The breath ring slows that down: one slow <b>4-2-6 cycle</b> - <b>inhale for 4 seconds, hold for 2, exhale for 6</b>.</p>
       <ol class="steps">
         <li>Sit or stand somewhere you can be still for a minute.</li>
         <li>Open Peakora and tap the breath ring on the Home tab (free, always).</li>
         <li>Follow the ring for 10 cycles. Do not force it. Let the exhale be longer than the inhale.</li>
-        <li>When the session ends, notice one thing: your shoulders are usually lower.</li>
+        <li>When it ends, notice one thing: your shoulders are usually lower.</li>
       </ol>
-      <div class="sec-tip"><b>Why it works:</b> the longer exhale tells your nervous system the threat signal can stand down. It is the fastest physical reset in the whole app.</div>
+      <div class="sec-tip"><b>Why it works:</b> a longer exhale is what many people find slows a racing heart. It is the fastest physical reset in the app.</div>
     </div>
   </div>
 
   <div class="section">
     <div class="sec-head">
       <span class="sec-num">2</span>
-      <span class="sec-title">The Mood Check <span class="tag">2 minutes</span></span>
+      <span class="sec-title">The Mood Check</span>
     </div>
     <div class="sec-body">
-      <p>Half of managing a day is simply naming what is actually going on. Peakora's mood check is one honest feeling, no journaling homework, no streaks.</p>
+      <p>Half of managing a day is naming what is actually going on. Peakora's mood check is one honest feeling. No journaling homework, no streaks.</p>
       <ol class="steps">
-        <li>Log how you feel right now - just one word or feeling.</li>
+        <li>Log how you feel right now - one word or feeling is enough.</li>
         <li>That is it. You are done.</li>
-        <li>Come back at the end of the day if you want: two honest feelings, one day, and the shape of the week shows up in Insights.</li>
+        <li>Come back tonight if you want: two honest feelings, one day, and the shape of the week shows up in Insights.</li>
       </ol>
-      <div class="sec-tip"><b>Why it works:</b> naming an emotion sinks the spike by activating the reasoning part of the brain. Two minutes, no effort, real data for the week.</div>
+      <div class="sec-tip"><b>Why it works:</b> naming an emotion gives you a little distance from it. Two minutes, no effort, and a real record of your week.</div>
     </div>
   </div>
 
   <div class="section">
     <div class="sec-head">
       <span class="sec-num">3</span>
-      <span class="sec-title">One Soundscape, On Purpose <span class="tag">3-5 minutes</span></span>
+      <span class="sec-title">One Soundscape, On Purpose</span>
     </div>
     <div class="sec-body">
-      <p>Sound shapes mood faster than words. Peakora's Soundscape Studio (free) has <b>8 ambient worlds</b> - <b>bowl, rain, fire, om, wind, binaural, ocean, night</b> - layered and tunable.</p>
+      <p>Sound changes how you feel faster than words do. The Soundscape Studio (free) has <b>8 ambient worlds</b> - <b>bowl, rain, fire, om, wind, binaural, ocean, night</b> - layered and tunable.</p>
       <ol class="steps">
         <li>For focus: rain or binaural, low volume, headphones or not.</li>
-        <li>For sleep: ocean or night, dim the screen, set one track and put the phone down.</li>
+        <li>For sleep: ocean or night, dim the screen, pick one track and put the phone down.</li>
         <li>For a jittery mind: bowl or om - one layer, nothing else, three minutes.</li>
       </ol>
-      <div class="sec-tip"><b>Why it works:</b> you are not "relaxing", you are deliberately changing the soundtrack your brain is processing. That is a choice, not a mood you have to wait for.</div>
+      <div class="sec-tip"><b>Why it works:</b> you are not waiting for a mood to arrive. You are choosing the soundtrack your brain gets to process. That is a decision, and it is yours.</div>
     </div>
   </div>
 
   <div class="section">
     <div class="sec-head">
       <span class="sec-num">4</span>
-      <span class="sec-title">One Quiet Minute <span class="tag">1 minute</span></span>
+      <span class="sec-title">One Quiet Minute</span>
     </div>
     <div class="sec-body">
-      <p>The hardest reset is the one with nothing in it - and it is often the most useful. One quiet minute with no goal, no track, no counting.</p>
+      <p>The hardest reset is the one with nothing in it - and often the most useful. One quiet minute with no goal, no track, no counting.</p>
       <ol class="steps">
-        <li>Set a one-minute timer (or just use the clock on your phone).</li>
-        <li>Sit. Let your eyes rest on something soft. No phone swiping, no list-running.</li>
-        <li>When the minute ends, notice what changed - it is usually more than a minute's worth.</li>
+        <li>Set a one-minute timer (or just use your phone's clock).</li>
+        <li>Sit. Let your eyes rest on something soft. No swiping, no list-running.</li>
+        <li>When the minute ends, notice what changed. It is usually more than a minute's worth.</li>
       </ol>
       <div class="sec-tip"><b>Why it works:</b> the pause is the point. You are practicing being with yourself without doing anything - the skill every other reset builds on.</div>
     </div>
@@ -207,10 +190,10 @@
   <div class="section">
     <div class="sec-head">
       <span class="sec-num">5</span>
-      <span class="sec-title">One Tiny Win <span class="tag">under 5 minutes</span></span>
+      <span class="sec-title">One Tiny Win</span>
     </div>
     <div class="sec-body">
-      <p>Momentum is not sustained - it is rekindled, repeatedly. The smallest win today is the thing tomorrow stands on. Write down one thing you will actually do today, then do it.</p>
+      <p>Momentum is not carried all day - it is rekindled, on purpose. The smallest win today is the thing tomorrow stands on. Write down one thing you will do today, and do it.</p>
       <ol class="steps">
         <li>Write one thing, not a list. One thing that, if done, makes tomorrow lighter.</li>
         <li>Make it embarrassingly small if today is heavy: drink water, step outside, send the text.</li>

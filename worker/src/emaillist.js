@@ -40,14 +40,14 @@ const WELCOME_SEQUENCE = [
 
 Welcome to Peakora. Thank you for trusting this corner with your inbox.
 
-No overwhelm. No 47-step morning routine. Just one small, honest step you can take today to feel a little more like yourself.
+The idea here is small: one honest step you can take today to feel a little more like yourself. Nothing to set up, nothing to maintain. That is the whole offer.
 
-Over the next few days I will send you three short notes. Each one is a single idea you can read in under a minute and act on in under five. That is the whole promise. Here is what is inside:
+Over the next few days I will send you two more short notes. Each one is a single idea you can read in under a minute and act on in under five. Inside this email:
 
 1. The morning check-in - two minutes, one honest feeling, no streaks.
 2. The breath ring - one slow 4-2-6 round, right at your desk.
-3. The mood pattern - how your week actually feels at a glance;
-4. The wind-down - five minutes to hand your day back;
+3. The mood pattern - how your week actually feels at a glance.
+4. The wind-down - five minutes to hand your day back.
 5. A soundscape, if today needs one - rain, bowl, or ocean.
 
 Pick one today. Just one. The others will still be here tomorrow.
@@ -74,7 +74,7 @@ Not a master plan. Not a prioritized matrix. One thing that, if you did it today
 
 Then do it. That is the whole method.
 
-The reason it works is not the doing - it is the deciding. You stop carrying the mental weight of "what should I..." and let one small action prove to you that momentum is possible.
+The reason it works is the deciding, not the doing. You stop carrying the mental weight of "what should I..." and let one small action show you that momentum is possible.
 
 Pick your one thing.
 
@@ -91,15 +91,14 @@ The Peakora team`,
 
 By day three, most people feel the dip. The first burst fades and the old weight creeps back.
 
-That is not failure. It is the pattern.
+That is the pattern, not a failure on your part.
 
 The restart is smaller than you think: do not rebuild the whole routine. Do the smallest version of the thing that worked on day one. A one-minute version. A worse version. Just the shape of it.
 
-Momentum is not sustained - it is rekindled. Repeatedly. That is the skill.
+Momentum is not carried all day. It is rekindled, again and again. That is the skill.
 
-You are doing fine,
+P.S. There is a smaller step than the plan itself: the Quiet Start Mini Pack ($4.99 one-time) gives you 5 calm soundscapes - thunderstorm, studio room, deep fireplace, mountain brook, soft synth - to keep forever, no subscription and no streak to protect. If the plan feels too big today, that room is enough.
 
-P.S. There is a smaller step than the plan itself: the Quiet Start Mini Pack ($4.99 one-time) gives you 5 calm soundscapes to keep forever, no subscription and no streak to protect. If the plan feels too big today, that room is enough.
 The Peakora team`,
     ctaLabel: 'Get the Quiet Start Mini Pack',
     ctaUrl: 'https://peakora-assistant.pages.dev/assistant.html?open=tripwire',
@@ -121,8 +120,6 @@ Two minutes. One imperfect rep. That is the whole task. The muscle you are build
 
 Pick the same one thing - or a smaller one, if yesterday proved too big. Sitting down with the bowl of tea is a win too.
 
-
-
 The Peakora team`,
     ctaLabel: 'Open your one-list plan',
     ctaUrl: 'https://peakora-assistant.pages.dev/assistant.html',
@@ -136,15 +133,9 @@ The Peakora team`,
 
 A note from someone who had a day where nothing worked. The plan said "morning theme", and she could not get out of bed.
 
-
-
-She skipped the plan entirely - except she pressed the breath ring for one slow inhale on the way to the kettle. That was it. That counted as the whole reset that day..
-
-
+She skipped the plan entirely - except she pressed the breath ring for one slow inhale on the way to the kettle. That was it. That counted as the whole reset that day.
 
 The reset is not the plan; it is the moment you choose to come back. One breath is enough for that day. That is not failure; it is the skill, working.
-
-
 
 The Peakora team`,
     ctaLabel: 'Open the Assistant',
@@ -157,13 +148,9 @@ The Peakora team`,
     preheader: 'The Quiet Start pack + a softer Peakora+ offer.',
     body: `Hi there,
 
-By week three, some people feel the dip again. If the plan feels big today, there is a smaller step:the Quiet Start Mini Pack, one-time $4.99, five calm soundscapes that stay yours forever. No subscription, no streak. Some people need a room they can stand in before they plan a path.
+By week three, some people feel the dip again. If the plan feels big today, there is a smaller step: the Quiet Start Mini Pack, one-time $4.99, five calm soundscapes - thunderstorm, studio room, deep fireplace, mountain brook, soft synth - that stay yours forever. No subscription, no streak. Some people need a room they can stand in before they plan a path.
 
-
-
-And when you are ready for the full companion - Peakora+ at $9.99/mo unlocks the guided readings, body scans, healing frequencies, and the full library. This offer is live until Sunday evening; after that, the next note is just another small story, no chasing, no deadline hangover.
-
-
+And when you are ready for the full companion, Peakora+ at $9.99/mo unlocks the guided readings, body scans, healing frequencies, and the full library. No time limit on the offer, no chase. It is here when you are.
 
 The Peakora team`,
     ctaLabel: 'Get the Quiet Start Mini Pack',
@@ -182,11 +169,7 @@ const REENGAGE_SEQUENCE = [
 
 It has been a while since you opened a note. No guilt from us - life gets loud.
 
-
-
 Peakora is still here, same as before: one small step, one breath, no streaks, no pressure. If you want back, one click reopens the Assistant and we pick up where you were.
-
-
 
 The Peakora team`,
     ctaLabel: 'Open the Assistant',
@@ -199,13 +182,9 @@ The Peakora team`,
     preheader: 'The Wednesday 3pm reset, one more time.',
     body: `Hi there,
 
-Remember the person who reset at 3pm on a Wednesday, mid-scramble? She is you, some version, somewhere. She does not need a perfect day; she needs one two-minute thing that is hers.
-
-
+Remember the person who reset at 3pm on a Wednesday, mid-scramble? She does not need a perfect day; she needs one two-minute thing that is hers.
 
 That is all we ever asked: one thing, yours, today. If you want it back, it is one click away - and we remember your plan, your moods, your soundscapes.
-
-
 
 The Peakora team`,
     ctaLabel: 'Come back to your plan',
@@ -220,11 +199,7 @@ The Peakora team`,
 
 This is the last note for now. We will pause these emails until you come back - no churn tricks, no guilt. When you return, one click brings you right back: your plan, your mood pattern, your soundscape library, all saved.
 
-
-
 Until then, take care of the small things. That is where momentum lives.
-
-
 
 The Peakora team`,
     ctaLabel: 'Keep your reset ready',
@@ -235,6 +210,18 @@ The Peakora team`,
 // ── HTML template (Peakora dark luxury wellness design) ───────────────────
 function renderEmailHtml(step, opts) {
   const year = new Date().getUTCFullYear();
+  // Friendly progress marker for the preheader divider. The step keys are the
+  // sequence identity (1/2/3, n1-n3, r1-r3); the copy below is the only label
+  // shown, matching the repo's no-eyebrow rule.
+  const stepKey = String(step || '');
+  let stepLabel = opts.stepLabel || '';
+  if (!stepLabel) {
+    if (stepKey === '1') stepLabel = 'Your first note';
+    else if (stepKey === '2') stepLabel = 'Note two';
+    else if (stepKey === '3') stepLabel = 'Note three';
+    else if (stepKey[0] === 'n') stepLabel = 'Week ' + stepKey.slice(1);
+    else if (stepKey[0] === 'r') stepLabel = 'A note for you';
+  }
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -247,14 +234,17 @@ function renderEmailHtml(step, opts) {
     <tr><td align="center" style="padding:32px 16px;">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#151122;border:1px solid rgba(255,255,255,0.08);border-radius:24px;box-shadow:0 28px 70px rgba(0,0,0,0.9);overflow:hidden;">
         <!-- Brand header -->
-        <tr><td style="padding:32px 32px 0;text-align:center;">
-          <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF.gif" alt="Peakora" width="280" style="display:block;margin:0 auto 6px;width:280px;max-width:85%;height:auto;border-radius:20px;">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:0.18em;color:#ffffff;margin-top:10px;">PEAKORA</div>
+        <tr><td style="padding:36px 32px 0;text-align:center;">
+          <div style="position:relative;width:340px;max-width:92%;margin:0 auto;">
+            <div style="position:absolute;top:-22px;right:-22px;bottom:-22px;left:-22px;border-radius:50%;background:radial-gradient(circle,rgba(244,162,97,0.28) 0%,rgba(167,139,250,0.15) 45%,rgba(244,162,97,0) 70%);filter:blur(4px);"></div>
+            <img src="https://peakora-assistant.pages.dev/assets/Peakora-logo-GIF.gif" alt="Peakora" width="340" style="position:relative;display:block;width:340px;max-width:100%;height:auto;border-radius:26px;-webkit-mask-image:radial-gradient(ellipse at center,black 55%,rgba(0,0,0,0) 88%);mask-image:radial-gradient(ellipse at center,black 55%,rgba(0,0,0,0) 88%);">
+          </div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:21px;font-weight:800;letter-spacing:0.18em;color:#ffffff;margin-top:10px;">PEAKORA</div>
           <div style="font-size:12px;color:#a0aec0;margin-top:4px;letter-spacing:0.04em;">Gentle guidance. Real momentum.</div>
         </td></tr>
         <!-- Preheader / step indicator -->
-        <tr><td style="padding:10px 32px 0;text-align:center;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#a0aec0;text-transform:uppercase;">Peakora</div>
+        <tr><td style="padding:14px 32px 6px;text-align:center;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;color:#a0aec0;text-transform:uppercase;">${escapeHtml(stepLabel)}</div>
         </td></tr>
         <!-- Subject -->
         <tr><td style="padding:18px 32px 0;">
