@@ -1,3 +1,13 @@
+## 2026-09-12 handoff (Peakora Assistant - SOUNDSCAPE HERO, LIBRARY 106, ONBOARDING RESTORED, COACH LIVE)
+- DONE + PUSHED (main HEAD e1a8a5f, tree clean, SW v76 + register ?v=76 TOGETHER; gates green every commit). Supersedes older notes below: page-style onboarding is BACK (the v24 "gone forever" rule is void per Ala), Plans builder card removed again, library is 10 collections / 106 sessions, Coach tab exists under Libraries (Plus-gated).
+- Tabs now: Home, Plans, Insights, Soundscape (unified BREATHING & SOUNDSCAPES hero), Picks (Peakora Picks), Libraries (10 cats), Coach (Plus), Membership, Settings. Onboarding (13 page steps) shows ONLY on landing ?fresh=1 with no plan, restart, new plan, full reset; boot and refresh always home (router-gated, empty-card bug class dead).
+- Plans memory: Plus auto-archive on finish, all-user insights snapshots, next-plan weaving (moods, brightest practice, reflection quote), finished-week nudge banner, 6 answers feed generator (builder removed, onboarding owns questions).
+- Coach engine: keyword intents (~28) over live snapshot (check-ins, sleep, stress, water, move, streaks, plan day, breath), typing delays, history, resets, crisis short-circuit, rotating scope replies. Ask Peakora: same honesty treatment + new intents. No AI backend anywhere (rule-based only).
+- Library audio: synth beds, Kenney one-shots, 20 LibriVox narrations, 4 PD nature mp3s, 2 CC-BY music loops (notices filed). 7 bed-identical dupes deleted. Peter Rabbit narration fixed.
+- Checkout: return_url absolute + email passthrough (worker + dodo-billing.js); master bypass = peakora.network@gmail.com. Ala must still verify Dodo dashboard return-URL allowlist + webhook secret + payment status.
+- Landing: Feels wall (approved-only) + form, honest proof replaces testimonials, all sections synced to app reality.
+- PENDING (Ala tomorrow): email magnet protocol; 4 affiliate platforms via Dodo; affiliate protocol pre-launch check. RULES (unchanged): commit+push every task; no em-dashes; no emoji; execute don't ask; node --check gates; SW version + register move together.
+
 ## 2026-09-09 v50 handoff (Peakora Assistant - PER-SECTION ANIMATIONS DONE + LIVE)
 - DONE + LIVE (committed: 85c1c6a, pushed, tree clean; Pages live-verified: SW CACHE_VERSION = 2026-09-09-v50-per-section-animations + register ?v=50 MOVED TOGETHER; live /assistant serves v=50; live index serves the pk-landing-glyph markup).
 - TASK 4 PER-SECTION HERO MOTION DONE ( pure CSS, no libs, theme tokens, prefers-reduced-motion respected(:
