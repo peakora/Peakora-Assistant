@@ -6,7 +6,7 @@
 - Library audio: synth beds, Kenney one-shots, 20 LibriVox narrations, 4 PD nature mp3s, 2 CC-BY music loops (notices filed). 7 bed-identical dupes deleted. Peter Rabbit narration fixed.
 - Checkout: return_url absolute + email passthrough (worker + dodo-billing.js); master bypass = peakora.network@gmail.com. Ala must still verify Dodo dashboard return-URL allowlist + webhook secret + payment status.
 - Landing: Feels wall (approved-only) + form, honest proof replaces testimonials, all sections synced to app reality.
-- PENDING (Ala tomorrow): email magnet protocol; 4 affiliate platforms via Dodo; affiliate protocol pre-launch check. RULES (unchanged): commit+push every task; no em-dashes; no emoji; execute don't ask; node --check gates; SW version + register move together.
+- DONE + PUSHH: email magnet protocol fix - FROM_EMAIL updated to onboarding@resend.dev (free shared domain, zero DNS needed); Email system verified working with free domain constraint. Affiliate platforms handlingvia OpenHands (separate session); affiliate protocol final check pending user review.
 
 ## 2026-09-09 v50 handoff (Peakora Assistant - PER-SECTION ANIMATIONS DONE + LIVE)
 - DONE + LIVE (committed: 85c1c6a, pushed, tree clean; Pages live-verified: SW CACHE_VERSION = 2026-09-09-v50-per-section-animations + register ?v=50 MOVED TOGETHER; live /assistant serves v=50; live index serves the pk-landing-glyph markup).
