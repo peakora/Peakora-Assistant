@@ -850,7 +850,14 @@ export default {
     const method = request.method;
 
     if (method === 'OPTIONS') {
-      return cors(new Response(null, { status: 204 }), request);
+      // Preflight must always allow credentials: the client sends the actual
+      // request (e.g. telemetry sendBeacon) with credentials mode 'include',
+      // so the browser demands Access-Control-Allow-Credentials on the
+      // preflight response too. The origin echo in cors() still gates who is
+      // allowed, so this cannot widen access beyond the CORS allowlist.
+      const res = cors(new Response(null, { status: 204 }), request);
+      res.headers.set('Access-Control-Allow-Credentials', 'true');
+      return res;
     }
 
     let response;
