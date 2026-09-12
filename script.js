@@ -156,6 +156,45 @@ document.addEventListener("DOMContentLoaded", () => {
         "I feel overwhelmed"
       ]
     },
+    themes: {
+      firstStep: (name) =>
+        `Seven palettes live in the app, ${name}: Sunrise, Twilight, Sage, Amethyst, Solar, Sunset, Ocean. Plus members get auto mode, where the whole app re-tints with each logged mood.`,
+      secondStep: (name) =>
+        `Pick the palette that matches this evening, then let auto mode take over once you're Plus. Your feelings set the scene.`,
+      thirdStep: (name) =>
+        `Small thing, big difference. The right colors at night genuinely soften the whole experience.`,
+      followUpReplies: [
+        "What is Peakora Plus?",
+        "Connect me to Peakora Assistant",
+        "Evening wind-down routine"
+      ]
+    },
+    install: {
+      firstStep: (name) =>
+        `No app store needed, ${name}. It runs in your browser and installs to your home screen in one tap.`,
+      secondStep: (name) =>
+        `Phone: browser menu, Add to Home Screen. Desktop Chrome or Edge: the install icon in the address bar. It then works offline, and your words never leave the device.`,
+      thirdStep: (name) =>
+        `Once installed it opens like any app and keeps working without a connection.`,
+      followUpReplies: [
+        "Connect me to Peakora Assistant",
+        "What is Peakora Plus?",
+        "Ask about routines"
+      ]
+    },
+    history: {
+      firstStep: (name) =>
+        `Finished weeks save themselves for Plus members, ${name}, under Saved Weeks in Plans, and any of them re-activates in one tap.`,
+      secondStep: (name) =>
+        `Your history is proof that rough weeks still count. Revisit what worked, then shape the next week from it.`,
+      thirdStep: (name) =>
+        `Free weeks live fully in the present: finish one clean, and your check-ins still shape whatever comes next.`,
+      followUpReplies: [
+        "What is Peakora Plus?",
+        "Connect me to Peakora Assistant",
+        "Morning focus routine"
+      ]
+    },
     pricing: {
       firstStep: (name) =>
         `Peakora offers both a free foundational wellness experience and Peakora Plus for deeper personal support. Would you like to know more about our plan options?`,
@@ -388,6 +427,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (t.includes("price") || t.includes("cost") || t.includes("plus") || t.includes("crown") || t.includes("subscription") || t.includes("dodo") || t.includes("member")) {
       return "pricing";
+    }
+    if (t.includes("theme") || t.includes("dark mode") || t.includes("color") || t.includes("palette") || t.includes("appearance")) {
+      return "themes";
+    }
+    if (t.includes("install") || t.includes("pwa") || t.includes("offline") || t.includes("download") || t.includes("home screen") || t.includes("app store")) {
+      return "install";
+    }
+    if (t.includes("histor") || t.includes("archive") || t.includes("past") || t.includes("saved") || t.includes("previous")) {
+      return "history";
     }
     if (t.includes("librar") || t.includes("meditat") || t.includes("session") || t.includes("course") || t.includes("stor") || t.includes("audio") || t.includes("music")) {
       return "library";

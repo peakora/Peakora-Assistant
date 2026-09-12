@@ -5835,6 +5835,14 @@ window.appendInsightPlusCards = function() {
           : " Want to stack it? Attach one tiny win to something you already do today, coffee, doorway, bedtime.";
         return out;
       }
+      if (/(histor|archive|past|saved|old week|previous)/.test(t)) {
+        return isPeakoraPlusActive()
+          ? "Finished weeks save themselves here, in Plans under Saved Weeks, and any of them re-activates in one tap. Your history is the proof that rough weeks still count."
+          : "Saved Weeks is a Plus treat: finished weeks archive themselves and re-activate in one tap. Your current week still finishes clean, then shapes the next one.";
+      }
+      if (/(how.*(start|begin|use|work)|onboard|sign up|join|new here|first time|beginner)/.test(t)) {
+        return "Start with the welcome questions when they appear, or open Plans and shape the week yourself: your goal, what's heavy, your minutes. Three honest lines build all seven days.";
+      }
       if (/(plan|week|goal|stuck|behind|missed|restart)/.test(t)) {
         let out = "Day " + (s.dayIdx + 1) + " of " + s.dayTotal + ".";
         if (s.goal) out += " Goal on file: " + s.goal + ".";
@@ -5880,11 +5888,26 @@ window.appendInsightPlusCards = function() {
           ? "You're on a " + s.streak + "-day rhythm right now. Protect it the boring way: same tiny anchor, same time, no heroics."
           : "Forget streaks. One tiny anchor, same time daily, a breath, a glass of water, a check-in. Three days of that and I'll be the first to celebrate it.";
       }
-      if (/(motivat|give up|lazy|willpower|procrastinat|no point|useless)/.test(t)) {
+      if (/(motivat|give up|lazy|willpower|no point|useless)/.test(t)) {
         return "Motivation follows motion, never the reverse. Shrink today's task until it feels almost silly, then do only that. What is the smallest version?";
       }
+      if (/(focus|concentrat|distract|productiv|procrastinat)/.test(t)) {
+        return "One thing, one block: name today's single priority, give it 15 undivided minutes, close everything else. Day 2 of your plan is built exactly for this. What gets the block?";
+      }
+      if (/(theme|themes|dark mode|darkmode|color|palette|appearance|twilight|sage|amethyst|solar)/.test(t)) {
+        return "Seven palettes live in the theme picker: Sunrise, Twilight, Sage, Amethyst, Solar, Sunset, Ocean. Plus members get auto mode, the whole app re-tints with each logged mood. Which mood should dress the app today?";
+      }
+      if (/(install|pwa|offline|download.*app|app download|home ?screen|on my phone)/.test(t)) {
+        return "No app store needed. Phone: browser menu, Add to Home Screen. Desktop Chrome or Edge: the install icon in the address bar. It then works offline, and your words never leave the device.";
+      }
+      if (/(setting|account|notif|remind|profile|password|delete.*data|privacy|export)/.test(t)) {
+        return "Settings holds themes, sounds, reminders, export, and full reset. Your words stay on this device; only anonymous usage pings ever leave it. What needs adjusting?";
+      }
+      if (/(pick|partner|affiliate|sponsor|recommend)/.test(t)) {
+        return "Peakora Picks: three partner tools we'd hand a friend. Outside links, clearly marked, and Peakora earns a small commission at no cost to you. The app stays whole without them.";
+      }
       if (/(help|what can you|what else|abilities|topics|how do you work|what do you do)/.test(t)) {
-        return "Here's what I'm actually good at: reading your week back to you (patterns, energy, streaks), low-energy day plans, 4-2-6 calm-downs, sleep and habit logging, celebrating wins, and plan check-ins. Try 'How is my week looking?' I can't answer general questions, no weather, no news. I'm built for one job: your reset.";
+        return "Here's what I'm actually good at: reading your week back to you, low-energy day plans, calm-downs, sleep and habits, plus anything in the app: plans, sounds, library, themes, history, pricing. Try 'How is my week looking?' I can't answer general questions, no weather, no news. I'm built for one job: your reset.";
       }
       if (/^(hi|hey|hello|yo|salam|morning|evening|afternoon)\b/.test(t)) {
         return s.ins.count > 0
@@ -6099,7 +6122,7 @@ window.appendInsightPlusCards = function() {
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js?v=74").catch(() => {});
+      navigator.serviceWorker.register("./service-worker.js?v=75").catch(() => {});
       // When a new SW takes control (skipWaiting -> controllerchange), reload once
       // so an already-open installed PWA picks up the fresh version instead of
       // running stale HTML/CSS until the next manual reload.
